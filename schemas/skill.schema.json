@@ -57,28 +57,19 @@
       "minLength": 1,
       "description": "EXPERIMENTAL and not portable. Space-separated pre-approved tool patterns. Honored by Claude Code CLI and Copilot; ignored by the Claude Agent SDK. Prefer omitting it."
     },
-    "x-runtime": {
-      "type": "object",
-      "description": "Non-standard, runtime-specific hints. Conforming runtimes ignore this key; the install tooling projects it into runtime-native frontmatter fields.",
-      "additionalProperties": false,
-      "properties": {
-        "copilot": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "user-invocable": { "type": "boolean" },
-            "disable-model-invocation": { "type": "boolean" },
-            "argument-hint": { "type": "string", "maxLength": 200 }
-          }
-        },
-        "claude": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "disable-model-invocation": { "type": "boolean" }
-          }
-        }
-      }
+    "user-invocable": {
+      "type": "boolean",
+      "description": "EXTENSION (Copilot VS Code + Claude Code). Exposes the skill as an explicit slash command. Ignored by strict open-standard validators."
+    },
+    "disable-model-invocation": {
+      "type": "boolean",
+      "description": "EXTENSION (Copilot VS Code + Claude Code). Prevents autonomous activation; the skill must be invoked explicitly. Use for destructive or expensive workflows."
+    },
+    "argument-hint": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "EXTENSION (Copilot VS Code + Claude Code). Placeholder text shown after the slash command."
     }
   }
 }
