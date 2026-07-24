@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cody-Sims/agent-skills/schemas/skill.schema.json",
+  "title": "Agent Skills SKILL.md Frontmatter",
+  "description": "Portable frontmatter contract for SKILL.md. Core fields follow the open Agent Skills specification (https://agentskills.io/specification). Runtime extension fields are namespaced under x-runtime and are stripped or ignored by conforming validators.",
+  "type": "object",
+  "required": ["name", "description"],
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "not": { "pattern": "(?:anthropic|claude)" },
+      "description": "Lowercase ASCII letters, digits, and single hyphens only. Must equal the parent skill directory name. Reserved words 'anthropic' and 'claude' are rejected by Anthropic's hosted validation."
+    },
+    "description": {
+      "type": "string",
+      "minLength": 40,
+      "maxLength": 1024,
+      "pattern": "^[^<>]+$",
+      "description": "Third person. States what the skill does AND when to use it. Angle brackets are excluded for Anthropic hosted-platform compatibility."
+    },
+    "license": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Short license identifier or reference to a bundled license file."
+    },
+    "compatibility": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "description": "Concrete environment, runtime, package, command, or network requirements. Omit when there are none."
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Client- or organization-specific metadata. All values must be strings.",
+      "propertyNames": { "type": "string", "minLength": 1 },
+      "additionalProperties": { "type": "string" },
+      "properties": {
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "description": "Semantic version of this skill, as a quoted string."
+        },
+        "author": { "type": "string" },
+        "tier": {
+          "type": "string",
+          "enum": ["core", "extended", "experimental"]
+        }
+      }
+    },
+    "allowed-tools": {
+      "type": "string",
+      "minLength": 1,
+      "description": "EXPERIMENTAL and not portable. Space-separated pre-approved tool patterns. Honored by Claude Code CLI and Copilot; ignored by the Claude Agent SDK. Prefer omitting it."
+    },
+    "x-runtime": {
+      "type": "object",
+      "description": "Non-standard, runtime-specific hints. Conforming runtimes ignore this key; the install tooling projects it into runtime-native frontmatter fields.",
+      "additionalProperties": false,
+      "properties": {
+        "copilot": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "user-invocable": { "type": "boolean" },
+            "disable-model-invocation": { "type": "boolean" },
+            "argument-hint": { "type": "string", "maxLength": 200 }
+          }
+        },
+        "claude": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "disable-model-invocation": { "type": "boolean" }
+          }
+        }
+      }
+    }
+  }
+}
