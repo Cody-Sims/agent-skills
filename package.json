@@ -1,0 +1,27 @@
+{
+  "name": "agent-skills",
+  "version": "0.1.0",
+  "description": "Portable Agent Skills for Claude Code, GitHub Copilot, and OpenAI Codex",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "validate": "node scripts/validate-skills.mjs",
+    "install:agents": "node scripts/manage-skills.mjs install",
+    "check:agents": "node scripts/manage-skills.mjs check",
+    "uninstall:agents": "node scripts/manage-skills.mjs uninstall",
+    "list": "node scripts/manage-skills.mjs list",
+    "test": "node --test tests/"
+  },
+  "keywords": [
+    "agent-skills",
+    "claude-code",
+    "github-copilot",
+    "openai-codex",
+    "agents-md"
+  ],
+  "author": "Cody Sims",
+  "license": "MIT"
+}

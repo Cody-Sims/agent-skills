@@ -1,0 +1,26 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+npm-debug.log*
+.npm/
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# Build / temp
+dist/
+tmp/
+temp/
+*.tgz
+.cache/
+
+# Local agent runtime state (never commit installed copies or receipts)
+.copilot/
+.claude/
+.codex/
+*.receipt.json
