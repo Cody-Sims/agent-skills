@@ -1,0 +1,70 @@
+name: Validate Agent Skills
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate, test, and registry (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['22', '24']
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      # No dependency install: this repository has zero runtime npm dependencies.
+
+      - name: Validate all skills
+        run: npm run validate
+
+      - name: Validate JSON diagnostics mode
+        run: npm run validate:json
+
+      - name: Run tooling tests
+        run: npm test
+
+      - name: Check the generated registry is current
+        run: node scripts/generate-registry.mjs --check
+
+  spec-conformance:
+    name: Agent Skills spec conformance (gh skill)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Validate skills against the Agent Skills specification
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh skill --help >/dev/null 2>&1; then
+            gh skill publish --dry-run
+          else
+            echo "::warning::gh skill is unavailable on this runner (requires GitHub CLI >= 2.90); skipping spec conformance." >&2
+          fi

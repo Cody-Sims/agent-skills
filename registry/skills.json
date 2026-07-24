@@ -1,0 +1,217 @@
+{
+  "schemaVersion": 1,
+  "skills": [
+    {
+      "name": "code-review",
+      "description": "Reviews a diff, pull request, or set of staged changes for correctness, tests, error and edge cases, security, performance, readability, and architectural fit, then reports severity-ranked, actionable findings with file and line references. Use when reviewing a PR, examining staged or unstaged changes, giving feedback on a patch, or deciding whether a change is safe to merge.",
+      "version": "1.0.0",
+      "license": "MIT",
+      "tier": "core",
+      "path": "skills/code-review",
+      "skillFile": "skills/code-review/SKILL.md",
+      "sha256": "50aa64ec203e5e6cf1648cd30dd9ee8b6897c5dc1c81b07ead385a4b62845e43",
+      "resources": [
+        "references/review-checklist.md"
+      ]
+    },
+    {
+      "name": "codebase-exploration",
+      "description": "Builds a focused, evidence-based map of an unfamiliar repository before modifying it, locating entry points, build, test, and lint commands, architecture boundaries, conventions, the dependency graph, and the nearest agent instructions, then reading tests to learn intended behavior and finding the smallest correct change site. Use when onboarding to a new or unfamiliar codebase, orienting before a change, or answering how a project is structured and where to edit, while staying read-only.",
+      "version": "1.0.0",
+      "license": "MIT",
+      "tier": "core",
+      "path": "skills/codebase-exploration",
+      "skillFile": "skills/codebase-exploration/SKILL.md",
+      "sha256": "97189845348c006e644e8505a44fd170fa761586a94e50475cabdc1b3e247ef9",
+      "resources": [
+        "references/exploration-playbook.md"
+      ]
+    },
+    {
+      "name": "documentation-maintenance",
+      "description": "Keeps README, API docs, architecture notes, ADRs, and changelogs accurate when code changes by identifying which documents a change invalidates, documenting rationale, keeping setup instructions and examples runnable, updating the changelog with user-visible changes, and removing stale content. Use when code, configuration, commands, interfaces, or behavior change and documentation must be updated, or when writing an ADR or changelog entry.",
+      "version": "1.0.0",
+      "license": "MIT",
+      "tier": "core",
+      "path": "skills/documentation-maintenance",
+      "skillFile": "skills/documentation-maintenance/SKILL.md",
+      "sha256": "d0edc5ca357eae0fb7f288f56e20ddbcc63b1aef59799288d2a22a5764dd6144",
+      "resources": [
+        "assets/adr-template.md",
+        "assets/changelog-entry.md"
+      ]
+    },
+    {
+      "name": "external-skill-review",
+      "description": "Reviews third-party agent skills as untrusted code before installing or updating them, assessing provenance, license, the full file tree, scripts, hidden Unicode, network and secret access, destructive commands, tool permissions, and supply-chain risk. Use when installing, updating, vetting, or auditing an external skill, a gh skill install candidate, or any skill from an untrusted repository.",
+      "version": "1.0.0",
+      "license": "MIT",
+      "tier": "core",
+      "path": "skills/external-skill-review",
+      "skillFile": "skills/external-skill-review/SKILL.md",
+      "sha256": "3f80b1fe9e662464df6b7c9e41d1d6fc1153069a00adfe6d49a27d176ee89df1",
+      "resources": [
+        "references/inspection-checklist.md"
+      ]
+    },
+    {
+      "name": "git-and-pr-workflow",
+      "description": "Guides Git branching, atomic commits, rebasing, resolving merge conflicts, worktrees, pull request descriptions, and safely finishing a branch. Use when creating branches, staging and committing changes, rebasing or squashing, resolving conflicts, opening or updating a pull request, or cleaning up after merge.",
+      "version": "1.0.0",
+      "license": "MIT",
+      "tier": "core",
+      "path": "skills/git-and-pr-workflow",
+      "skillFile": "skills/git-and-pr-workflow/SKILL.md",
+      "sha256": "ccfb5c1aa0b695fcc0a6b5970904d9bfc68443b19243328087c9d6ee3aff0c5a",
+      "resources": [
+        "references/commit-messages.md",
+        "references/worktrees-and-conflicts.md"
+      ]
+    },
+    {
+      "name": "planning-and-task-breakdown",
+      "description": "Decomposes an approved specification into small, ordered, dependency-aware tasks, each with explicit acceptance criteria and a verification command, and identifies which tasks are independent and safely parallelizable without overlapping writes. Use when planning multi-step work, breaking a spec or feature into tasks, sequencing dependencies, or coordinating parallel agents, after requirements are agreed and before implementation begins.",
+      "version": "1.0.0",
+      "license": "MIT",
+      "tier": "core",
+      "path": "skills/planning-and-task-breakdown",
+      "skillFile": "skills/planning-and-task-breakdown/SKILL.md",
+      "sha256": "a0a8110db64bb00a8184ed5ee5d1872234e4f82545e71eaf8d407fb8b7e1ad23",
+      "resources": [
+        "assets/plan-template.md"
+      ]
+    },
+    {
+      "name": "refactoring-and-dead-code-removal",
+      "description": "Changes code structure without changing behavior and removes unused code safely by establishing a passing baseline, making one mechanical change at a time, re-running tests between steps, and proving code is dead before deleting it. Use when cleaning up, simplifying, restructuring, extracting, renaming, or deleting suspected unused code, imports, functions, or files.",
+      "version": "1.0.0",
+      "license": "MIT",
+      "tier": "core",
+      "path": "skills/refactoring-and-dead-code-removal",
+      "skillFile": "skills/refactoring-and-dead-code-removal/SKILL.md",
+      "sha256": "b3e0e013c1b31954f5caaadb21459a27818eef555b6d900c1417fe69f8d7238a",
+      "resources": [
+        "references/dead-code-evidence.md"
+      ]
+    },
+    {
+      "name": "repository-agent-bootstrap",
+      "description": "Audits and bootstraps repository-owned agent customization including AGENTS.md, repository and path-scoped instructions, custom agents, and skills, without overwriting established conventions. Use to set up, review, or maintain a repository's agent guidance, add a skill or agent, or fix overlapping, stale, or overly broad customization.",
+      "version": "1.0.0",
+      "license": "MIT",
+      "tier": "core",
+      "path": "skills/repository-agent-bootstrap",
+      "skillFile": "skills/repository-agent-bootstrap/SKILL.md",
+      "sha256": "274dee9ac2596aabffd23fbc63c1be2cbda76dfd0ee3827bdd7ee48f7b305737",
+      "resources": [
+        "references/artifact-selection.md"
+      ]
+    },
+    {
+      "name": "requirements-and-spec-writing",
+      "description": "Turns an ambiguous or large request into an agreed written specification before implementation, covering objective, users and use cases, requirements, non-goals, interfaces and data contracts, security and privacy, error and edge cases, acceptance criteria, open questions, alternatives considered, and rollout and rollback. Use when a request is vague, scope or acceptance criteria are unclear, or the user asks for a spec, requirements, or a design before coding begins.",
+      "version": "1.0.0",
+      "license": "MIT",
+      "tier": "core",
+      "path": "skills/requirements-and-spec-writing",
+      "skillFile": "skills/requirements-and-spec-writing/SKILL.md",
+      "sha256": "95b907ce5d7ae5c2797c4a1a42d46cc532015e71eb0b2eeda752638238a6e8a5",
+      "resources": [
+        "assets/spec-template.md"
+      ]
+    },
+    {
+      "name": "security-review",
+      "description": "Performs threat-focused security review of a code change or component using STRIDE, checking authentication, authorization and ownership, input validation, injection, deserialization, SSRF, secrets handling, dependency and supply-chain risk, cryptography, and untrusted data including prompt injection. Use when reviewing a diff, feature, endpoint, or integration for vulnerabilities, threat modeling, or hardening before merge or release.",
+      "version": "1.0.0",
+      "license": "MIT",
+      "tier": "core",
+      "path": "skills/security-review",
+      "skillFile": "skills/security-review/SKILL.md",
+      "sha256": "b42dc8e62e4fc02d0e341699e9d0b56169fc5742f98b2f00f1038101157f1bdb",
+      "resources": [
+        "references/secrets-and-dependencies.md",
+        "references/threat-checklist.md"
+      ]
+    },
+    {
+      "name": "shadow-architecture",
+      "description": "Builds, inspects, checks, updates, or renders a repository's .shadow decision graph as durable, evidence-linked architecture memory. Use to record durable architecture decisions, anchor claims to code, tests, docs, and commits, detect drift between decisions and implementation, or maintain the .shadow directory convention.",
+      "version": "1.0.0",
+      "license": "MIT",
+      "tier": "core",
+      "path": "skills/shadow-architecture",
+      "skillFile": "skills/shadow-architecture/SKILL.md",
+      "sha256": "82fb0e9fc8f466f61fa973a38095ee1f621ea6cfa5ce5fffd50855cc1e32430c",
+      "resources": [
+        "references/shadow-conventions.md"
+      ]
+    },
+    {
+      "name": "skill-creator",
+      "description": "Creates, audits, and improves Agent Skills in this catalog. Captures intent, triggers, and outputs, checks the catalog for overlap, drafts positive and negative trigger prompts, writes routing descriptions, applies progressive disclosure, decides prose versus script, and validates frontmatter. Use when authoring a new SKILL.md, editing or reviewing an existing skill, fixing a skill that fails validation or fails to trigger, or when someone mentions skill authoring, skill frontmatter, or the skill catalog.",
+      "version": "1.0.0",
+      "license": "MIT",
+      "tier": "core",
+      "path": "skills/skill-creator",
+      "skillFile": "skills/skill-creator/SKILL.md",
+      "sha256": "f9b2f2901bea7882fd49e63d45cd21ee48bf6689008ef6eaca8b68499fbec9f6",
+      "resources": [
+        "assets/SKILL.template.md",
+        "references/description-patterns.md",
+        "references/frontmatter.md"
+      ]
+    },
+    {
+      "name": "systematic-debugging",
+      "description": "Diagnoses bugs, failing tests, build failures, crashes, exceptions, stack traces, and unexpected or intermittent behavior by reproducing the failure, capturing exact error output, isolating the root cause, and fixing the cause rather than the symptom. Use when something is broken, a test or build fails, output is wrong, or a defect must be traced to its origin.",
+      "version": "1.0.0",
+      "license": "MIT",
+      "tier": "core",
+      "path": "skills/systematic-debugging",
+      "skillFile": "skills/systematic-debugging/SKILL.md",
+      "sha256": "bcb845888072accf79b00173628fa427d6013dbb3b59acd9677698d652debf7d",
+      "resources": [
+        "references/flaky-tests.md",
+        "references/root-cause-tracing.md"
+      ]
+    },
+    {
+      "name": "test-driven-development",
+      "description": "Drives implementation with the red-green-refactor cycle by writing a failing behavior test first, confirming it fails for the expected reason, implementing the minimum code to pass, then refactoring while green. Use when adding a feature, fixing a bug with a reproducible case, changing behavior, or whenever tests should precede or guide the implementation.",
+      "version": "1.0.0",
+      "license": "MIT",
+      "tier": "core",
+      "path": "skills/test-driven-development",
+      "skillFile": "skills/test-driven-development/SKILL.md",
+      "sha256": "76048b40deb1229b2bb795958cf8fe120d5542543fb43159691d13c874967d59",
+      "resources": [
+        "references/test-design.md"
+      ]
+    },
+    {
+      "name": "verification-before-completion",
+      "description": "Requires fresh evidence before any claim that work is done, fixed, passing, working, complete, or ready. Run the relevant command now, read the actual output and exit status, inspect the produced artifact or diff, reproduce the original symptom and confirm it is gone, and distinguish verified results from assumed ones. Use before reporting completion, closing a task, or telling the user something works, and whenever tests, builds, or lint results are described as passing.",
+      "version": "1.0.0",
+      "license": "MIT",
+      "tier": "core",
+      "path": "skills/verification-before-completion",
+      "skillFile": "skills/verification-before-completion/SKILL.md",
+      "sha256": "e44f4f20777a14833e521ed1f85e983c4dc9ca4eaa2852a35966b96811ba5b5d",
+      "resources": []
+    },
+    {
+      "name": "web-research-and-verification",
+      "description": "Answers questions that depend on current external information by detecting the exact version in use, preferring primary and authoritative sources, corroborating with a second source, quoting and citing URLs, and separating verified fact from inference. Use when researching APIs, libraries, standards, release notes, CVEs, or any claim where accuracy and up-to-date sourcing matter, or when a source may be deprecated.",
+      "version": "1.0.0",
+      "license": "MIT",
+      "tier": "core",
+      "path": "skills/web-research-and-verification",
+      "skillFile": "skills/web-research-and-verification/SKILL.md",
+      "sha256": "23f5ba5c4172249d92de4fcace76a5b2e2cdc09f9ae531f9e28b8d0de2e031d1",
+      "resources": [
+        "references/source-hierarchy.md"
+      ]
+    }
+  ]
+}

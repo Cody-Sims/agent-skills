@@ -5,15 +5,19 @@
   "type": "module",
   "private": true,
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "scripts": {
     "validate": "node scripts/validate-skills.mjs",
+    "validate:json": "node scripts/validate-skills.mjs --format json",
+    "validate:portable": "node scripts/validate-skills.mjs --profile portable",
+    "registry": "node scripts/generate-registry.mjs",
+    "registry:check": "node scripts/generate-registry.mjs --check",
     "install:agents": "node scripts/manage-skills.mjs install",
     "check:agents": "node scripts/manage-skills.mjs check",
     "uninstall:agents": "node scripts/manage-skills.mjs uninstall",
     "list": "node scripts/manage-skills.mjs list",
-    "test": "node --test tests/"
+    "test": "node --test \"tests/**/*.test.mjs\""
   },
   "keywords": [
     "agent-skills",

@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cody-Sims/agent-skills/schemas/registry.schema.json",
+  "title": "Agent Skills Registry",
+  "description": "Machine-readable catalog generated from skills/*/SKILL.md by scripts/generate-registry.mjs.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "skills"],
+  "properties": {
+    "schemaVersion": {
+      "type": "integer",
+      "const": 1
+    },
+    "skills": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "description", "path", "skillFile", "sha256", "resources"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1
+          },
+          "version": {
+            "type": ["string", "null"],
+            "pattern": "^\\d+\\.\\d+\\.\\d+$"
+          },
+          "license": {
+            "type": ["string", "null"]
+          },
+          "tier": {
+            "type": ["string", "null"],
+            "enum": ["core", "extended", "experimental", null]
+          },
+          "path": {
+            "type": "string",
+            "pattern": "^skills/[a-z0-9-]+$"
+          },
+          "skillFile": {
+            "type": "string",
+            "pattern": "^skills/[a-z0-9-]+/SKILL\\.md$"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "resources": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    }
+  }
+}
