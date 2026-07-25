@@ -85,6 +85,13 @@ command surface.
 | `verification-before-completion` | Requires fresh command evidence before any claim that work is done, fixed, passing, or ready. |
 | `web-research-and-verification` | Answers questions that depend on current external information by detecting the version in use, preferring authoritative sources, corroborating, and citing URLs. |
 
+## Roadmap
+
+See [`BACKLOG.md`](BACKLOG.md) for the prioritized catalog improvements and the
+proposed two-agent continuous learning and improvement architecture. The
+governing architecture decision is
+[`ADR 0001`](docs/decisions/0001-bounded-continuous-improvement.md).
+
 ## Repository layout
 
 ```text
@@ -104,12 +111,14 @@ agent-skills/
 ├── docs/
 │   ├── authoring-guide.md      # How to write a good skill
 │   ├── compatibility.md        # Runtime compatibility matrix
+│   ├── decisions/              # Accepted and proposed architecture decisions
 │   └── research/               # Source-of-truth research reports
 ├── .github/
 │   ├── instructions/
 │   └── workflows/              # CI, including skill validation
 ├── AGENTS.md                   # Instructions for agents working on this repo
 ├── CONTRIBUTING.md
+├── BACKLOG.md                  # Prioritized catalog and agent infrastructure work
 ├── SECURITY.md
 ├── CHANGELOG.md
 └── package.json

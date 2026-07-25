@@ -6,6 +6,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- Prioritized catalog backlog covering behavior and routing evaluations,
+  discovery metadata, maturity policy, cross-runtime validation, workflow packs,
+  provenance, and a bounded two-agent continuous learning and improvement
+  architecture for local and Copilot cloud execution.
+- Architecture decision defining separate learning and improvement agents,
+  approval and evaluation gates, protected governance surfaces, cloud execution,
+  audit, budgets, stop conditions, and rollback.
+
 ## [0.1.0] - 2026-07-24
 
 ### Added
