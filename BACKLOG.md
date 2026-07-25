@@ -324,7 +324,7 @@ approval gates live outside the canonical skill format.
 
 ### SI-005: Configure the Copilot cloud environment
 
-- **Priority / status / scope:** P0 / proposed / S
+- **Priority / status / scope:** P0 / in-progress / S
 - **Purpose:** Give delegated cloud runs deterministic access to repository tools.
 - **Dependencies:** SI-001.
 - **Files likely touched:** `.github/workflows/copilot-setup-steps.yml` and cloud
@@ -337,6 +337,11 @@ approval gates live outside the canonical skill format.
   - Exercise the setup workflow before relying on cloud implementation runs.
 - **Verification:** The setup workflow succeeds from the default branch and a
   delegated session can run validation and tests.
+- **Result:** Added
+  [`.github/workflows/copilot-setup-steps.yml`](.github/workflows/copilot-setup-steps.yml)
+  with least-privilege read access, Node.js 22, and repository validation. Mark
+  this item `done` after the workflow succeeds from the default branch and a
+  delegated cloud session runs the same checks.
 
 ### SI-006: Document manual cloud delegation
 

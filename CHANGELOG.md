@@ -15,6 +15,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Architecture decision defining separate learning and improvement agents,
   approval and evaluation gates, protected governance surfaces, cloud execution,
   audit, budgets, stop conditions, and rollback.
+- Copilot cloud setup workflow that provisions Node.js 22 with read-only
+  repository access and verifies the catalog, tooling tests, and generated
+  registry before delegated work begins.
 
 ## [0.1.0] - 2026-07-24
 
