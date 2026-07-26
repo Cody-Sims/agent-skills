@@ -72,7 +72,9 @@ test('validates versioned suites and benchmark artifacts', async () => {
     }],
   };
   assert.deepEqual(validateEvaluationSuite(suiteSchema, suite), []);
+  assert.match(validateEvaluationSuite(suiteSchema, null).join('\n'), /expected type object/);
   assert.match(validateEvaluationSuite(suiteSchema, { ...suite, cases: [] }).join('\n'), /at least one case/);
+  assert.match(validateEvaluationSuite(suiteSchema, { ...suite, cases: [null] }).join('\n'), /expected type object/);
 
   const result = await runEvaluationSuite({
     suite,
@@ -81,6 +83,7 @@ test('validates versioned suites and benchmark artifacts', async () => {
     execute: async () => ({ text: 'Exit code 0', inputTokens: 1, outputTokens: 2, durationMs: 3 }),
   });
   assert.deepEqual(validateEvaluationResult(resultSchema, result), []);
+  assert.match(validateEvaluationResult(resultSchema, { ...result, cases: [null] }).join('\n'), /expected type object/);
   result.cases[0].candidate.outputSha256 = 'invalid';
   assert.match(validateEvaluationResult(resultSchema, result).join('\n'), /does not match pattern/);
 });

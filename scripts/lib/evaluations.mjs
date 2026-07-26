@@ -19,7 +19,12 @@ function duplicateIds(items) {
 
 export function validateEvaluationSuite(schema, suite) {
   const errors = validateAgainstSchema(schema, suite);
-  if (suite.cases?.length === 0) errors.push('$.cases: at least one case is required.');
+  if (suite?.cases?.length === 0) errors.push('$.cases: at least one case is required.');
+  if (!suite || typeof suite !== 'object' || Array.isArray(suite)
+      || !Array.isArray(suite.cases)
+      || suite.cases.some((entry) => !entry || typeof entry !== 'object' || !Array.isArray(entry.assertions))) {
+    return errors;
+  }
   for (const duplicate of duplicateIds(suite.cases ?? [])) errors.push(`$.cases: duplicate case ID ${JSON.stringify(duplicate)}.`);
   for (const [caseIndex, evaluationCase] of (suite.cases ?? []).entries()) {
     if (evaluationCase.assertions?.length === 0) errors.push(`$.cases[${caseIndex}].assertions: at least one objective assertion is required.`);
@@ -42,6 +47,7 @@ export function validateEvaluationSuite(schema, suite) {
 
 export function validateEvaluationResult(schema, result) {
   const errors = validateAgainstSchema(schema, result);
+  if (errors.length > 0) return errors;
   if (result.cases?.length === 0) errors.push('$.cases: at least one case result is required.');
   for (const [caseIndex, entry] of (result.cases ?? []).entries()) {
     for (const variant of ['baseline', 'candidate']) {
@@ -178,6 +184,7 @@ export async function runEvaluationSuite({
   suite,
   suiteDirectory,
   skillContent,
+  skillSha256 = sha256(skillContent),
   execute,
   tempRoot = resolve('tmp', 'evaluations'),
   generatedAt = new Date().toISOString(),
@@ -221,7 +228,7 @@ export async function runEvaluationSuite({
     suite: suite.name,
     skill: suite.skill,
     suiteSha256: sha256(JSON.stringify(suite)),
-    skillSha256: sha256(skillContent),
+    skillSha256,
     generatedAt,
     cases,
     summary: {

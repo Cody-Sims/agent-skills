@@ -24,13 +24,15 @@ function argumentsFor(name) {
 
 function changedSkillsFromGit(base) {
   const execution = spawnSync('git', [
-    'diff', '--name-only', '--diff-filter=AMR', `${base}...HEAD`, '--', 'skills',
+    'diff', '--name-only', '--diff-filter=ACDMR', `${base}...HEAD`, '--', 'skills',
   ], { cwd: ROOT, encoding: 'utf8' });
   if (execution.error) throw execution.error;
   if (execution.status !== 0) throw new Error(`git diff failed: ${execution.stderr.trim()}`);
   return execution.stdout.split('\n').flatMap((path) => {
     const match = path.match(/^skills\/([a-z0-9]+(?:-[a-z0-9]+)*)\//);
-    return match ? [match[1]] : [];
+    if (!match) return [];
+    const skill = match[1];
+    return existsSync(resolve(ROOT, 'skills', skill, 'SKILL.md')) ? [skill] : [];
   });
 }
 

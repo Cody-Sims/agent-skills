@@ -40,7 +40,8 @@ generated results, private prompts, secrets, or customer data in the repository.
 For contribution evidence, place a reviewed and sanitized result under a root
 `evals/results/` path and reference its committed suite. The contribution
 validator recomputes metrics and verifies the artifact's suite hash, candidate
-`SKILL.md` hash, declared rates, skill identity, and completed human review.
+complete skill-tree hash, declared rates, skill identity, and completed human
+review.
 These checks establish integrity, not run authenticity. Required CI, CODEOWNERS,
 and branch protection must ensure the evidence was produced and reviewed through
 the approved process; a contributor can otherwise hand-author internally

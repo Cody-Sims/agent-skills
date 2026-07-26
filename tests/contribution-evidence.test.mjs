@@ -5,7 +5,7 @@ import { resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
 import { validateContributionEvidence } from '../scripts/lib/contribution-evidence.mjs';
-import { sha256 } from '../scripts/lib/paths.mjs';
+import { sha256, sha256Tree } from '../scripts/lib/paths.mjs';
 import { makeTempDir, removeDir, REPO_ROOT } from './helpers.mjs';
 
 const schema = JSON.parse(readFileSync(resolve(REPO_ROOT, 'schemas/contribution-evidence.schema.json'), 'utf8'));
@@ -81,6 +81,7 @@ function fixture() {
   writeFileSync(resolve(root, 'evals', 'suite.json'), JSON.stringify(suite));
   writeFileSync(resolve(root, 'skills', 'example-skill', 'SKILL.md'), skillContent);
   writeFileSync(resolve(root, 'docs', 'internal-runbook.md'), '# Runbook\n');
+  artifact.skillSha256 = sha256Tree(resolve(root, 'skills', 'example-skill'));
   writeFileSync(resolve(root, 'result.json'), JSON.stringify(artifact));
   return { root, artifact, manifest: {
     schemaVersion: 1,
@@ -233,6 +234,34 @@ test('rejects null suites and expertise references that are not files', () => {
   }
 });
 
+test('rejects null artifacts and artifacts stale against skill resources', () => {
+  const nullFixture = fixture();
+  try {
+    writeFileSync(resolve(nullFixture.root, 'result.json'), 'null');
+    assert.match(validate(nullFixture.manifest, nullFixture.root).join('\n'), /artifact must be a JSON object/);
+  } finally {
+    removeDir(nullFixture.root);
+  }
+
+  const nestedFixture = fixture();
+  try {
+    nestedFixture.artifact.cases = [null];
+    writeFileSync(resolve(nestedFixture.root, 'result.json'), JSON.stringify(nestedFixture.artifact));
+    assert.match(validate(nestedFixture.manifest, nestedFixture.root).join('\n'), /expected type object/);
+  } finally {
+    removeDir(nestedFixture.root);
+  }
+
+  const staleFixture = fixture();
+  try {
+    mkdirSync(resolve(staleFixture.root, 'skills', 'example-skill', 'references'), { recursive: true });
+    writeFileSync(resolve(staleFixture.root, 'skills', 'example-skill', 'references', 'guide.md'), '# Changed guidance\n');
+    assert.match(validate(staleFixture.manifest, staleFixture.root).join('\n'), /skill hash does not match/);
+  } finally {
+    removeDir(staleFixture.root);
+  }
+});
+
 test('CLI rejects a changed skill without evidence and accepts a valid manifest', () => {
   const temp = makeTempDir('contribution-');
   const artifactFixture = fixture();
@@ -261,4 +290,10 @@ test('CLI rejects a changed skill without evidence and accepts a valid manifest'
     removeDir(temp);
     removeDir(artifactFixture.root);
   }
+});
+
+test('CLI change detection includes deleted resources but exempts removed skills', () => {
+  const content = readFileSync(resolve(REPO_ROOT, 'scripts/validate-contributions.mjs'), 'utf8');
+  assert.match(content, /--diff-filter=ACDMR/);
+  assert.match(content, /existsSync\(resolve\(ROOT, 'skills', skill, 'SKILL\.md'\)\)/);
 });

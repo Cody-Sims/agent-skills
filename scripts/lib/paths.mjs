@@ -55,6 +55,16 @@ export function sha256File(path) {
   return sha256(readFileSync(path));
 }
 
+export function sha256Tree(root) {
+  const hash = createHash('sha256');
+  for (const path of walkFiles(root)) {
+    hash.update(`${Buffer.byteLength(path, 'utf8')}:`);
+    hash.update(path);
+    hash.update(`:${sha256File(resolve(root, path))}\n`);
+  }
+  return hash.digest('hex');
+}
+
 // Removes now-empty parent directories walking up from `path` but never crossing
 // or removing `root`.
 export function removeEmptyParents(path, root) {
@@ -76,11 +86,15 @@ const IGNORED_FILES = new Set(['.DS_Store', 'Thumbs.db']);
 // `dir` with POSIX separators. Rejects symlinks encountered in the tree.
 export function walkFiles(dir, { onSymlink = 'reject' } = {}) {
   const results = [];
+  const root = resolve(dir);
+  if (lstatSync(root).isSymbolicLink()) {
+    throw new Error(`Refusing a symlink as a managed root: ${root}`);
+  }
   const walk = (current, relBase) => {
     const entries = readdirSync(current, { withFileTypes: true }).sort((a, b) =>
       a.name < b.name ? -1 : a.name > b.name ? 1 : 0);
     for (const entry of entries) {
-      if (IGNORED_FILES.has(entry.name) || entry.name.startsWith('.git')) continue;
+      if (IGNORED_FILES.has(entry.name) || entry.name === '.git') continue;
       const abs = resolve(current, entry.name);
       const rel = relBase ? `${relBase}/${entry.name}` : entry.name;
       if (entry.isSymbolicLink()) {
@@ -96,6 +110,6 @@ export function walkFiles(dir, { onSymlink = 'reject' } = {}) {
       }
     }
   };
-  walk(resolve(dir), '');
+  walk(root, '');
   return results;
 }

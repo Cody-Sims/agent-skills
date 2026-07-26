@@ -3,7 +3,7 @@ import { isDeepStrictEqual } from 'node:util';
 
 import { validateAgainstSchema } from './jsonschema.mjs';
 import { validateEvaluationResult, validateEvaluationSuite } from './evaluations.mjs';
-import { assertNoSymlinks, sha256 } from './paths.mjs';
+import { assertNoSymlinks, sha256, sha256Tree } from './paths.mjs';
 
 export function validateContributionEvidence(schema, manifest, { artifactRoot, resultSchema, suiteSchema } = {}) {
   const errors = validateAgainstSchema(schema, manifest);
@@ -68,9 +68,15 @@ export function validateContributionEvidence(schema, manifest, { artifactRoot, r
       errors.push(`$.comparison.artifact: invalid result JSON (${error.message}).`);
       return errors;
     }
-    for (const error of validateEvaluationResult(resultSchema, artifact)) {
+    if (!artifact || typeof artifact !== 'object' || Array.isArray(artifact)) {
+      errors.push('$.comparison.artifact: artifact must be a JSON object.');
+      return errors;
+    }
+    const resultErrors = validateEvaluationResult(resultSchema, artifact);
+    for (const error of resultErrors) {
       errors.push(`$.comparison.artifact: ${error}`);
     }
+    if (resultErrors.length > 0) return errors;
     if (artifact.skill !== manifest.skill) {
       errors.push('$.comparison.artifact: result skill does not match manifest skill.');
     }
@@ -125,10 +131,11 @@ export function validateContributionEvidence(schema, manifest, { artifactRoot, r
       if (!casesMatch) errors.push('$.comparison.artifact: cases do not match committed suite.');
     }
     try {
-      const skillPath = assertNoSymlinks(artifactRoot, `skills/${manifest.skill}/SKILL.md`);
+      const skillRoot = assertNoSymlinks(artifactRoot, `skills/${manifest.skill}`);
+      const skillPath = assertNoSymlinks(skillRoot, 'SKILL.md');
       if (!existsSync(skillPath)) {
         errors.push('$.comparison.artifact: candidate skill file does not exist.');
-      } else if (artifact.skillSha256 !== sha256(readFileSync(skillPath))) {
+      } else if (artifact.skillSha256 !== sha256Tree(skillRoot)) {
         errors.push('$.comparison.artifact: skill hash does not match candidate skill content.');
       }
     } catch (error) {

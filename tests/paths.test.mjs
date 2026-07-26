@@ -43,3 +43,22 @@ test('walkFiles rejects symlinks in the tree', () => {
     removeDir(root);
   }
 });
+
+test('walkFiles includes git-prefixed resources and rejects a symlink root', () => {
+  const root = makeTempDir('paths-');
+  try {
+    const realDir = resolve(root, 'real');
+    const linkDir = resolve(root, 'link');
+    mkdirSync(resolve(realDir, '.github'), { recursive: true });
+    mkdirSync(resolve(realDir, '.git'), { recursive: true });
+    writeFileSync(resolve(realDir, '.github', 'guide.md'), 'guide');
+    writeFileSync(resolve(realDir, '.git-guide.md'), 'resource');
+    writeFileSync(resolve(realDir, '.git', 'config'), 'metadata');
+    symlinkSync(realDir, linkDir);
+
+    assert.deepEqual(walkFiles(realDir), ['.git-guide.md', '.github/guide.md']);
+    assert.throws(() => walkFiles(linkDir), /Refusing a symlink as a managed root/);
+  } finally {
+    removeDir(root);
+  }
+});

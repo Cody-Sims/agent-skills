@@ -9,6 +9,7 @@ import {
   validateEvaluationResult,
   validateEvaluationSuite,
 } from './lib/evaluations.mjs';
+import { sha256Tree } from './lib/paths.mjs';
 import { runJsonAdapter } from './lib/process-adapter.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -81,13 +82,15 @@ async function main() {
   const suiteErrors = validateEvaluationSuite(suiteSchema, suite);
   if (suiteErrors.length > 0) throw new Error(`Evaluation suite is invalid:\n${suiteErrors.join('\n')}`);
 
-  const skillPath = resolve(ROOT, 'skills', suite.skill, 'SKILL.md');
+  const skillRoot = resolve(ROOT, 'skills', suite.skill);
+  const skillPath = resolve(skillRoot, 'SKILL.md');
   if (!existsSync(skillPath)) throw new Error(`Evaluation skill does not exist: ${suite.skill}.`);
   const skillContent = readFileSync(skillPath, 'utf8');
   const result = await runEvaluationSuite({
     suite,
     suiteDirectory: dirname(suitePath),
     skillContent,
+    skillSha256: sha256Tree(skillRoot),
     execute: createProcessAdapter({ command: adapter, args: adapterArgs, timeoutMs, environmentNames }),
   });
   const resultSchema = readJson(resolve(ROOT, 'schemas/eval-result.schema.json'));
