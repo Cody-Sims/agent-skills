@@ -27,6 +27,15 @@ code you are about to run.
   arbitrary commands. Pre-approval is not a portable or reliable security
   boundary. Source: `docs/research/anthropic-spec.md` (section 1),
   `docs/research/copilot-skills.md` (section 7).
+- **Improvement-agent authority escalation.** A delegated agent could select
+  unapproved work, alter governance controls, claim multiple items, or attempt
+  to approve and merge its own output.
+- **Untrusted queue and research content.** Issues, comments, pull requests, and
+  external sources can contain prompt injection, malicious commands, secrets,
+  or false provenance.
+- **Duplicate and unbounded execution.** Concurrent claims, recursive retries,
+  stale leases, or missing cost limits can create conflicting changes and
+  uncontrolled consumption.
 
 ## Repository policies
 
@@ -46,6 +55,28 @@ review and by the validator:
   `external-skill-review` workflow before inclusion.
 - **Immutable pinning.** Installed third-party skills are pinned to an immutable
   commit or tag with recorded provenance, never a moving branch.
+- **Separated agent authority.** The learning agent has read, search, and web
+  tools only. The improvement agent cannot approve, merge, or select work.
+- **Approval-bound leases.** Queue transitions serialize through a workflow.
+  Claims bind one run and one lease to the SHA-256 digest of the approved issue
+  body.
+- **Protected governance paths.** CI compares changed files with approved paths
+  and requires explicit approval for agents, workflows, schemas, policy,
+  evaluation, and decision surfaces.
+- **Bounded runs.** Versioned limits cover duration, retries, Actions usage, AI
+  credits, open pull requests, concurrency, and lease lifetime.
+- **Pinned workflow dependencies.** GitHub Actions use full commit SHAs. Version
+  comments remain for reviewed dependency updates.
+- **Isolated evaluation adapters.** Model adapters run without a shell, inherit
+  only an explicit environment allowlist, suppress stdout and stderr on failure,
+  and execute suite regular expressions in terminable workers. Adapters remain
+  trusted code with filesystem and network access.
+- **Bound evaluation evidence.** Contribution artifacts are checked against the
+  exact committed suite and candidate skill hashes, recomputed metrics, local
+  expertise sources, and completed human review. Branch protection and Code
+  Owner review remain responsible for run and reviewer authenticity.
+- **Independent completion.** Agent pull requests open as drafts. Only a merged,
+  policy-checked pull request records an item as done.
 
 Source: `docs/research/repo-tooling.md` (sections 3–4),
 `docs/research/community-skills.md`.

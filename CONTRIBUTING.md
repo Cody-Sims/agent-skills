@@ -80,6 +80,29 @@ node scripts/validate-skills.mjs --profile portable
 
 All three must pass before you open a pull request.
 
+New or materially changed skills must also include realistic behavior cases and
+a baseline-versus-candidate result produced through the protocol in
+`docs/evaluations.md`. Synthetic smoke results verify tooling only; they do not
+demonstrate uplift. Safety and compliance controls may document a risk-reduction
+exception when average output quality is not the appropriate measure.
+
+Add `evals/contributions/<skill-name>.json` using
+`schemas/contribution-evidence.schema.json`. The manifest records real expertise
+sources and either an independently reviewed comparison artifact with positive
+uplift or a requested safety/compliance exception. Comparison artifacts must be
+contained local files, match the skill and declared rates, pass the result
+schema, and contain no pending human review. CODEOWNERS and branch protection
+provide trusted maintainer approval rather than self-declared manifest names.
+Pull-request CI detects
+changed paths under `skills/` and rejects a missing, malformed, or non-uplifting
+manifest with an actionable diagnostic.
+
+Validate one or more manifests locally with:
+
+```bash
+npm run contributions:validate -- --changed-skill <skill-name>
+```
+
 ## Review checklist
 
 - [ ] Skill lives at `skills/<name>/SKILL.md`; `name` equals the directory name.
@@ -94,6 +117,8 @@ All three must pass before you open a pull request.
       emoji, no marketing language, repository-agnostic.
 - [ ] `README.md` skills table and `CHANGELOG.md` are updated.
 - [ ] `npm run validate` and `npm test` pass.
+- [ ] Applicable behavior evaluations compare the candidate with no skill or
+   the previous release and include independent human review where needed.
 
 ## Third-party contributions
 

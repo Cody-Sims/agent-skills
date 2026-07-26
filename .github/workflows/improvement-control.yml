@@ -1,0 +1,337 @@
+name: Continuous Improvement Control
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: Queue transition to perform
+        required: true
+        type: choice
+        options:
+          - approve
+          - claim
+          - block
+          - expire
+          - reject
+      issue-number:
+        description: Improvement issue number
+        required: true
+        type: string
+      run-id:
+        description: Unique run ID required for claim
+        required: false
+        type: string
+      agent-login:
+        description: Expected GitHub login for the implementation PR author
+        required: false
+        type: string
+      reason:
+        description: Reason required for block or reject
+        required: false
+        type: string
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+concurrency:
+  group: continuous-improvement-queue
+  cancel-in-progress: false
+
+jobs:
+  transition:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      IMPROVEMENT_OPERATION: ${{ inputs.operation }}
+      IMPROVEMENT_ISSUE_NUMBER: ${{ inputs.issue-number }}
+      IMPROVEMENT_RUN_ID: ${{ inputs.run-id }}
+      IMPROVEMENT_AGENT_LOGIN: ${{ inputs.agent-login }}
+      IMPROVEMENT_REASON: ${{ inputs.reason }}
+    steps:
+      - name: Checkout trusted policy
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Apply guarded transition
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const crypto = require('node:crypto');
+            const fs = require('node:fs');
+            const policy = JSON.parse(fs.readFileSync('.github/continuous-improvement/policy.json', 'utf8'));
+            const operation = process.env.IMPROVEMENT_OPERATION;
+            const issueNumber = Number(process.env.IMPROVEMENT_ISSUE_NUMBER);
+            const runId = (process.env.IMPROVEMENT_RUN_ID ?? '').trim();
+            const expectedActor = (process.env.IMPROVEMENT_AGENT_LOGIN ?? '').trim();
+            const reason = (process.env.IMPROVEMENT_REASON ?? '').trim();
+            if (!Number.isInteger(issueNumber) || issueNumber < 1) {
+              core.setFailed('issue-number must be a positive integer.');
+              return;
+            }
+
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const actor = context.actor;
+            const stateLabels = [
+              'improvement:proposed',
+              'improvement:ready',
+              'improvement:in-progress',
+              'improvement:done',
+              'improvement:blocked',
+              'improvement:rejected',
+            ];
+            const colors = {
+              'improvement:proposed': 'D4C5F9',
+              'improvement:ready': '0E8A16',
+              'improvement:in-progress': 'FBCA04',
+              'improvement:done': '1D76DB',
+              'improvement:blocked': 'B60205',
+              'improvement:rejected': '6A737D',
+            };
+            for (const name of stateLabels) {
+              try {
+                await github.rest.issues.getLabel({ owner, repo, name });
+              } catch (error) {
+                if (error.status !== 404) throw error;
+                await github.rest.issues.createLabel({ owner, repo, name, color: colors[name] });
+              }
+            }
+
+            const { data: issue } = await github.rest.issues.get({ owner, repo, issue_number: issueNumber });
+            if (issue.pull_request) throw new Error('The queue item must be an issue.');
+            if (issue.state !== 'open' && !['block', 'expire'].includes(operation)) {
+              throw new Error('The queue item must be open.');
+            }
+            const labels = issue.labels.map((label) => typeof label === 'string' ? label : label.name);
+            const explicitStates = labels.filter((label) => stateLabels.includes(label));
+            if (explicitStates.length > 1) throw new Error('Issue has multiple improvement state labels.');
+            const current = explicitStates[0] ?? 'improvement:proposed';
+
+            const permission = await github.rest.repos.getCollaboratorPermissionLevel({ owner, repo, username: actor });
+            const isMaintainer = ['admin', 'maintain'].includes(permission.data.permission);
+            if (!isMaintainer) {
+              throw new Error(`${operation} requires maintain or admin permission.`);
+            }
+
+            const digest = crypto.createHash('sha256').update(issue.body ?? '').digest('hex');
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner, repo, issue_number: issueNumber, per_page: 100,
+            });
+            const events = comments.flatMap((comment) => {
+              const match = comment.body?.match(/<!-- improvement-control:v1\n([\s\S]*?)\n-->/);
+              if (!match) return [];
+              try {
+                const event = JSON.parse(match[1]);
+                if (comment.user?.login !== 'github-actions[bot]') return [];
+                return [event];
+              } catch { return []; }
+            });
+            const latestApproval = events.filter((event) => event.operation === 'approve').at(-1);
+            const transitions = {
+              approve: ['improvement:proposed', 'improvement:ready'],
+              claim: ['improvement:ready', 'improvement:in-progress'],
+              block: ['improvement:in-progress', 'improvement:blocked'],
+              expire: ['improvement:in-progress', 'improvement:blocked'],
+              reject: ['improvement:proposed', 'improvement:rejected'],
+            };
+            const [from, to] = transitions[operation] ?? [];
+            if (!from || ![from, to].includes(current)) throw new Error(`Invalid ${operation} transition from ${current}.`);
+            const completedOperation = events.find((event) => (
+              event.operation === operation
+              && event.payloadSha256 === digest
+              && (operation !== 'claim' || event.runId === runId)
+            ));
+            if (current === to && completedOperation) {
+              core.notice(`Transition ${operation} is already complete.`);
+              return;
+            }
+            const activeClaim = events.filter((event) => event.operation === 'claim').at(-1);
+            if (operation === 'claim' && current === to && activeClaim && activeClaim.runId !== runId) {
+              throw new Error(`Item is already leased to run ${activeClaim.runId}.`);
+            }
+            const now = new Date();
+            if (operation === 'claim') {
+              if (!runId) throw new Error('run-id is required for claim.');
+              if (!expectedActor) throw new Error('agent-login is required for claim.');
+              if (!latestApproval || latestApproval.payloadSha256 !== digest) {
+                throw new Error('The current issue body does not have maintainer approval.');
+              }
+              const approvalPermission = await github.rest.repos.getCollaboratorPermissionLevel({
+                owner, repo, username: latestApproval.actor,
+              });
+              if (!['admin', 'maintain'].includes(approvalPermission.data.permission)) {
+                throw new Error('The recorded approval actor is not a maintainer.');
+              }
+              const active = await github.paginate(github.rest.issues.listForRepo, {
+                owner, repo, state: 'all', labels: 'improvement:in-progress', per_page: 100,
+              });
+              const otherActive = [];
+              for (const candidate of active.filter((entry) => entry.number !== issueNumber)) {
+                const candidateComments = await github.paginate(github.rest.issues.listComments, {
+                  owner, repo, issue_number: candidate.number, per_page: 100,
+                });
+                const candidateClaims = candidateComments.flatMap((comment) => {
+                  const match = comment.body?.match(/<!-- improvement-control:v1\n([\s\S]*?)\n-->/);
+                  if (!match || comment.user?.login !== 'github-actions[bot]') return [];
+                  try {
+                    const event = JSON.parse(match[1]);
+                    return event.operation === 'claim' ? [event] : [];
+                  } catch { return []; }
+                });
+                const candidateClaim = candidateClaims.at(-1);
+                if (candidate.state !== 'open' || !candidateClaim || Date.parse(candidateClaim.expiresAt) <= now.getTime()) {
+                  throw new Error(`Stale lease on issue #${candidate.number}; dispatch expire before claiming new work.`);
+                }
+                otherActive.push(candidate);
+              }
+              if (otherActive.length >= policy.maxConcurrentRuns) {
+                throw new Error('Another improvement item is already leased.');
+              }
+              const openPulls = await github.paginate(github.rest.pulls.list, {
+                owner, repo, state: 'open', per_page: 100,
+              });
+              const improvementPulls = openPulls.filter((pull) => pull.labels.some((label) => label.name === 'continuous-improvement'));
+              if (improvementPulls.length >= policy.maxOpenPullRequests) {
+                throw new Error('Open continuous-improvement pull request budget exhausted.');
+              }
+            }
+            if (operation === 'expire') {
+              if (!activeClaim) throw new Error('Item has no claim to expire.');
+              if (issue.state === 'open' && Date.parse(activeClaim.expiresAt) > now.getTime()) {
+                throw new Error('The active lease has not expired.');
+              }
+            }
+            if (['block', 'reject'].includes(operation) && !reason) {
+              throw new Error(`reason is required for ${operation}.`);
+            }
+
+            const event = {
+              schemaVersion: 1,
+              operation,
+              from: from.replace('improvement:', ''),
+              to: to.replace('improvement:', ''),
+              actor,
+              at: now.toISOString(),
+              payloadSha256: digest,
+              reason: reason || (operation === 'expire' ? 'Lease expired or item closed before completion.' : null),
+              operationId: `${context.runId}:${context.runAttempt}`,
+            };
+            if (operation === 'claim') {
+              event.runId = runId;
+              event.expectedActor = expectedActor;
+              event.leaseId = crypto.randomUUID();
+              event.expiresAt = new Date(now.getTime() + policy.leaseMinutes * 60 * 1000).toISOString();
+            }
+            const nextLabels = labels.filter((label) => !stateLabels.includes(label));
+            nextLabels.push(to);
+            await github.rest.issues.setLabels({ owner, repo, issue_number: issueNumber, labels: nextLabels });
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: issueNumber,
+              body: `Continuous improvement transition: \`${event.from}\` to \`${event.to}\` by @${actor}.\n\n<!-- improvement-control:v1\n${JSON.stringify(event)}\n-->`,
+            });
+
+  complete:
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.base.ref == github.event.repository.default_branch &&
+      contains(github.event.pull_request.labels.*.name, 'continuous-improvement')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout trusted policy
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          persist-credentials: false
+
+      - name: Complete the merged improvement item
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const crypto = require('node:crypto');
+            const body = context.payload.pull_request.body ?? '';
+            const itemMatches = [...body.matchAll(/^Improvement-Item:\s*#(\d+)\s*$/gm)];
+            if (itemMatches.length !== 1) throw new Error('Merged improvement PR must identify exactly one item.');
+            const issueNumber = Number(itemMatches[0][1]);
+            const leaseId = body.match(/^Improvement-Lease:\s*(\S+)\s*$/m)?.[1];
+            const approval = body.match(/^Improvement-Approval:\s*([0-9a-f]{64})\s*$/m)?.[1];
+            const runId = body.match(/^Improvement-Run:\s*(\S+)\s*$/m)?.[1];
+            if (!leaseId || !approval || !runId) throw new Error('Merged improvement PR has incomplete lease metadata.');
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const { data: issue } = await github.rest.issues.get({ owner, repo, issue_number: issueNumber });
+            const labels = issue.labels.map((label) => typeof label === 'string' ? label : label.name);
+            if (!labels.includes('improvement:in-progress') && !labels.includes('improvement:done')) {
+              throw new Error('Merged improvement item was not in-progress.');
+            }
+            const digest = crypto.createHash('sha256').update(issue.body ?? '').digest('hex');
+            if (digest !== approval) throw new Error('Merged PR approval does not match the current item.');
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner, repo, issue_number: issueNumber, per_page: 100,
+            });
+            const events = comments.flatMap((comment) => {
+              const match = comment.body?.match(/<!-- improvement-control:v1\n([\s\S]*?)\n-->/);
+              if (!match || comment.user?.login !== 'github-actions[bot]') return [];
+              try { return [JSON.parse(match[1])]; } catch { return []; }
+            });
+            const claim = events.filter((candidate) => candidate.operation === 'claim').at(-1);
+            if (!claim || claim.leaseId !== leaseId || claim.runId !== runId || claim.payloadSha256 !== approval) {
+              throw new Error('Merged PR does not match the approved claim.');
+            }
+            if (claim.expectedActor !== context.payload.pull_request.user.login) {
+              throw new Error('Merged PR author does not match the approved claim.');
+            }
+            const prBodySha256 = crypto.createHash('sha256').update(body).digest('hex');
+            const submission = events.filter((candidate) => (
+              candidate.operation === 'draft-ready'
+              && candidate.pullRequest === context.payload.pull_request.number
+              && candidate.headSha === context.payload.pull_request.head.sha
+              && candidate.leaseId === leaseId
+              && candidate.payloadSha256 === approval
+              && candidate.runId === runId
+              && candidate.prBodySha256 === prBodySha256
+            )).at(-1);
+            if (!submission) throw new Error('Merged PR head has no policy-validated draft-ready event.');
+            const existingCompletion = events.filter((candidate) => (
+              candidate.operation === 'complete'
+              && candidate.pullRequest === context.payload.pull_request.number
+              && candidate.mergeCommit === context.payload.pull_request.merge_commit_sha
+            )).at(-1);
+            if (existingCompletion && issue.state === 'closed') {
+              core.notice('Merged improvement item is already complete.');
+              return;
+            }
+            if (issue.state !== 'open') throw new Error('Merged improvement item is closed without a completion event.');
+            const stateLabels = labels.filter((label) => !label.startsWith('improvement:'));
+            stateLabels.push('improvement:done');
+            await github.rest.issues.setLabels({ owner, repo, issue_number: issueNumber, labels: stateLabels });
+            const event = {
+              schemaVersion: 1,
+              operation: 'complete',
+              from: 'in-progress',
+              to: 'done',
+              actor: context.actor,
+              at: new Date().toISOString(),
+              pullRequest: context.payload.pull_request.number,
+              mergeCommit: context.payload.pull_request.merge_commit_sha,
+              approvalSha256: approval,
+              leaseId,
+              runId,
+              prBodySha256,
+            };
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: issueNumber,
+              body: `Continuous improvement completed by merged PR #${event.pullRequest}.\n\n<!-- improvement-control:v1\n${JSON.stringify(event)}\n-->`,
+            });
+            await github.rest.issues.update({ owner, repo, issue_number: issueNumber, state: 'closed', state_reason: 'completed' });

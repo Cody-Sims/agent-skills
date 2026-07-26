@@ -72,7 +72,7 @@ approval gates live outside the canonical skill format.
 
 ### AS-001: Add per-skill behavior evaluations
 
-- **Priority / status / scope:** P0 / proposed / L
+- **Priority / status / scope:** P0 / in-progress / L
 - **Purpose:** Measure whether each skill improves output quality over no skill
   or the previous released version.
 - **Dependencies:** None.
@@ -88,10 +88,15 @@ approval gates live outside the canonical skill format.
     requests.
 - **Verification:** `npm test` plus a documented eval command that produces a
   valid benchmark artifact for one pilot skill.
+- **Result:** Added versioned suite and result schemas, a no-shell adapter
+  protocol, isolated baseline and candidate workspaces, optional fixtures,
+  objective and pending human grading, metrics, a committed verification pilot,
+  and a synthetic smoke command. Real model runs and independently reviewed
+  uplift remain before this item is done.
 
 ### AS-002: Add routing and collision evaluations
 
-- **Priority / status / scope:** P0 / proposed / L
+- **Priority / status / scope:** P0 / in-progress / L
 - **Purpose:** Improve activation recall while preventing adjacent skills from
   competing for the same request.
 - **Dependencies:** AS-001 for shared result and reporting conventions.
@@ -107,10 +112,15 @@ approval gates live outside the canonical skill format.
 - **Verification:** A routing command reports stable results for at least the
   `code-review`/`security-review` and
   `requirements-and-spec-writing`/`planning-and-task-breakdown` boundaries.
+- **Result:** Added versioned routing suite and result schemas, repeated isolated
+  adapter trials, training and validation splits, activation, precision, recall,
+  collision, token, timing, and confusion reports, and both required boundary
+  pilots. Real model baselines, all-skill coverage, and measured thresholds
+  remain before this item is done.
 
 ### AS-003: Require demonstrated uplift for new skills
 
-- **Priority / status / scope:** P0 / proposed / M
+- **Priority / status / scope:** P0 / in-progress / M
 - **Purpose:** Avoid adding generic instructions that duplicate the base model's
   existing strengths.
 - **Dependencies:** AS-001.
@@ -125,6 +135,11 @@ approval gates live outside the canonical skill format.
     is risk reduction rather than higher average output quality.
 - **Verification:** A fixture contribution without evidence or uplift is rejected
   with an actionable diagnostic.
+- **Result:** Added a companion evidence schema, expertise-source requirements,
+  independently reviewed baseline comparisons, explicit safety/compliance
+  exceptions, changed-skill discovery, actionable diagnostics, and pull-request
+  CI enforcement. A hosted pull request must exercise the base-diff path before
+  this item is done.
 
 ### AS-004: Define tier promotion and demotion policy
 
@@ -268,7 +283,7 @@ approval gates live outside the canonical skill format.
 
 ### SI-002: Create the skill learning agent
 
-- **Priority / status / scope:** P0 / proposed / M
+- **Priority / status / scope:** P0 / in-progress / M
 - **Purpose:** Generate new, grounded improvement proposals without editing the
   product it evaluates.
 - **Dependencies:** SI-001 and AS-005.
@@ -286,10 +301,13 @@ approval gates live outside the canonical skill format.
   - Never edit skills, code, tests, policies, or its own profile.
 - **Verification:** Scenario tests reject duplicate, uncited, untestable, and
   out-of-scope proposals while accepting a grounded novel proposal.
+- **Result:** Added the read-only `.github/agents/skill-learning.agent.md`, the
+  structured issue form, and static authority tests. Behavioral scenario
+  evaluation remains blocked on AS-001 and AS-005.
 
 ### SI-003: Create the skill improvement agent
 
-- **Priority / status / scope:** P0 / proposed / M
+- **Priority / status / scope:** P0 / in-progress / M
 - **Purpose:** Implement approved work predictably and produce reviewable
   evidence.
 - **Dependencies:** SI-001, AS-001, and AS-004.
@@ -305,10 +323,13 @@ approval gates live outside the canonical skill format.
   - Never approve or merge its own pull request.
 - **Verification:** Scenario tests demonstrate correct refusal, one-item scope,
   independent-gate preservation, and complete pull request output.
+- **Result:** Added `.github/agents/skill-improvement.agent.md`, the draft pull
+  request contract, deterministic preflight and verification, and static
+  authority tests. Behavioral evaluation and a delegated cloud pilot remain.
 
 ### SI-004: Implement a versioned backlog state machine
 
-- **Priority / status / scope:** P0 / proposed / M
+- **Priority / status / scope:** P0 / in-progress / M
 - **Purpose:** Prevent duplicate claims, skipped approvals, and recursive work.
 - **Dependencies:** SI-002 and SI-003.
 - **Files likely touched:** Issue forms or a versioned manifest, labels, scripts,
@@ -321,6 +342,9 @@ approval gates live outside the canonical skill format.
   - Preserve an append-only audit trail of transitions and actor identity.
 - **Verification:** Concurrency tests prevent double claims and invalid
   transitions.
+- **Result:** Added schemas, state-transition functions, serialized GitHub
+  approval and claim operations, expiring leases, transition comments, and
+  merge-only completion. Hosted concurrency behavior still requires a pilot.
 
 ### SI-005: Configure the Copilot cloud environment
 
@@ -345,7 +369,7 @@ approval gates live outside the canonical skill format.
 
 ### SI-006: Document manual cloud delegation
 
-- **Priority / status / scope:** P0 / proposed / S
+- **Priority / status / scope:** P0 / in-progress / S
 - **Purpose:** Enable the improvement loop in Copilot cloud before recurring
   automation is enabled.
 - **Dependencies:** SI-003 and SI-005.
@@ -358,6 +382,8 @@ approval gates live outside the canonical skill format.
   - Require a clean or checkpointed local worktree before delegation.
 - **Verification:** A pilot delegated item opens a draft pull request and leaves
   merge authority with a maintainer.
+- **Result:** Added `docs/continuous-improvement-runbook.md`. The documented
+  flow still requires one successful delegated pilot before this item is done.
 
 ### SI-007: Add recurring cloud orchestration
 
@@ -384,7 +410,7 @@ approval gates live outside the canonical skill format.
 
 ### SI-008: Enforce audit, rollback, and budget controls
 
-- **Priority / status / scope:** P0 / proposed / M
+- **Priority / status / scope:** P0 / in-progress / M
 - **Purpose:** Bound operational and quality risk.
 - **Dependencies:** SI-004.
 - **Files likely touched:** Policy configuration, scripts, CI, and runbooks.
@@ -398,6 +424,9 @@ approval gates live outside the canonical skill format.
     agent rewrite shared history.
 - **Verification:** Fault-injection scenarios trip each stop condition and leave
   a reviewable audit record.
+- **Result:** Added versioned budgets, protected-path checks, approval and lease
+  audit events, prompt digests, CODEOWNERS, stop conditions, and rollback
+  guidance. Branch protection and hosted fault injection remain external gates.
 
 ### SI-009: Add post-merge learning and drift detection
 

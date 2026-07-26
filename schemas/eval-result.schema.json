@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cody-Sims/agent-skills/schemas/eval-result.schema.json",
+  "title": "Agent Skill Evaluation Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "suite", "skill", "suiteSha256", "skillSha256", "generatedAt", "cases", "summary"],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "suite": { "type": "string", "minLength": 1 },
+    "skill": { "type": "string", "minLength": 1 },
+    "suiteSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "skillSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "generatedAt": { "type": "string", "minLength": 1 },
+    "cases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "promptSha256", "baseline", "candidate", "humanReview"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "promptSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+          "baseline": { "$ref": "#/$defs/variant" },
+          "candidate": { "$ref": "#/$defs/variant" },
+          "humanReview": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["id", "question", "status"],
+              "properties": {
+                "id": { "type": "string", "minLength": 1 },
+                "question": { "type": "string", "minLength": 1 },
+                "status": { "type": "string", "enum": ["pending", "pass", "fail"] }
+              }
+            }
+          }
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["baseline", "candidate", "passRateDelta"],
+      "properties": {
+        "baseline": { "$ref": "#/$defs/summary" },
+        "candidate": { "$ref": "#/$defs/summary" },
+        "passRateDelta": { "type": "number", "minimum": -1, "maximum": 1 }
+      }
+    }
+  },
+  "$defs": {
+    "tokens": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["input", "output", "total"],
+      "properties": {
+        "input": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+        "output": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+        "total": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 }
+      }
+    },
+    "assertion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "passed", "evidence"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "type": { "type": "string", "enum": ["contains", "notContains", "regex"] },
+        "passed": { "type": "boolean" },
+        "evidence": {
+          "type": "string",
+          "enum": [
+            "Required text was present.",
+            "Required text was absent.",
+            "Forbidden text was absent.",
+            "Forbidden text was present.",
+            "Regular expression matched.",
+            "Regular expression did not match."
+          ]
+        }
+      }
+    },
+    "variant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["assertions", "passed", "total", "passRate", "durationMs", "tokens", "outputSha256"],
+      "properties": {
+        "assertions": { "type": "array", "items": { "$ref": "#/$defs/assertion" } },
+        "passed": { "type": "integer", "minimum": 0 },
+        "total": { "type": "integer", "minimum": 0 },
+        "passRate": { "type": "number", "minimum": 0, "maximum": 1 },
+        "durationMs": { "type": "number", "minimum": 0 },
+        "tokens": { "$ref": "#/$defs/tokens" },
+        "outputSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["passed", "assertions", "passRate", "durationMs", "tokens"],
+      "properties": {
+        "passed": { "type": "integer", "minimum": 0 },
+        "assertions": { "type": "integer", "minimum": 0 },
+        "passRate": { "type": "number", "minimum": 0, "maximum": 1 },
+        "durationMs": { "type": "number", "minimum": 0 },
+        "tokens": { "$ref": "#/$defs/tokens" }
+      }
+    }
+  }
+}

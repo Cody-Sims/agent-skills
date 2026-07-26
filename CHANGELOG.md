@@ -18,6 +18,38 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Copilot cloud setup workflow that provisions Node.js 22 with read-only
   repository access and verifies the catalog, tooling tests, and generated
   registry before delegated work begins.
+- Separate learning and improvement custom agents with minimal tool sets,
+  approval and lease requirements, protected-path boundaries, and draft pull
+  request evidence contracts.
+- Implementation custom agent with focused read-only exploration and review
+  specialists, Copilot CLI built-in agent routing, incremental editing, and
+  executable validation requirements.
+- Continuous-improvement issue and pull request templates, serialized GitHub
+  queue transitions, approval-bound leases, merge-only completion, CODEOWNERS,
+  versioned policy and schemas, deterministic validation tooling, and tests.
+- Manual Copilot cloud pilot runbook covering proposal, approval, claim,
+  delegation, review, cancellation, shutdown, and rollback.
+- Immutable commit pins for every GitHub Action used by validation, Copilot
+  setup, and continuous-improvement control workflows.
+- Versioned behavior-evaluation schemas and pilot suite, isolated comparative
+  runner, subprocess adapter protocol, objective and human grading records,
+  token and duration metrics, safe fixtures, and a synthetic smoke command.
+- Versioned routing suite and result schemas, repeated isolated adapter trials,
+  training and validation splits, activation, precision, recall, collision,
+  token, timing, and confusion reports for two adjacent-skill boundaries.
+- Contribution evidence manifests and pull-request enforcement requiring real
+  expertise sources plus measured uplift or an approved safety/compliance
+  exception for every changed skill.
+
+### Security
+
+- Evaluation adapters now use an explicit environment allowlist, suppress
+  process output on failure, cap output and workload sizes, isolate regular
+  expressions in terminable workers, and persist only generic assertion
+  evidence.
+- Evaluation and routing artifacts now reject unsafe counters and inconsistent
+  metrics, bind contribution evidence to committed suite and skill hashes, and
+  require local expertise sources and completed human review.
 
 ## [0.1.0] - 2026-07-24
 

@@ -85,12 +85,47 @@ command surface.
 | `verification-before-completion` | Requires fresh command evidence before any claim that work is done, fixed, passing, or ready. |
 | `web-research-and-verification` | Answers questions that depend on current external information by detecting the version in use, preferring authoritative sources, corroborating, and citing URLs. |
 
+## Implementation agent
+
+The repository includes an `Implementation` custom agent that coordinates the
+catalog's existing skills, delegates narrow code search and review into isolated
+read-only contexts, edits incrementally, and requires fresh validation before
+completion. Copilot CLI uses its optimized built-in `explore`, `task`, and
+`code-review` agents when available. Hidden repository profiles provide focused
+exploration and review fallbacks for VS Code.
+
+Select `Implementation` with `/agent` in an interactive Copilot CLI session, or
+invoke it directly from the repository root:
+
+```bash
+copilot --agent implementation --prompt "Implement the requested change and verify it"
+```
+
+To make the profiles available to Copilot CLI in every local repository, copy
+all three profiles into the documented user-level agent directory:
+
+```bash
+mkdir -p ~/.copilot/agents
+cp .github/agents/implementation*.agent.md ~/.copilot/agents/
+```
+
+For team-shared use in another repository, place the same files under that
+repository's `.github/agents/` directory. A user-level profile with the same
+filename overrides a repository-level profile. See GitHub's
+[custom-agent overview](https://docs.github.com/en/copilot/concepts/agents/copilot-cli/about-custom-agents),
+[CLI creation and invocation guide](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/create-custom-agents-for-cli),
+and [configuration reference](https://docs.github.com/en/copilot/reference/custom-agents-configuration).
+
 ## Roadmap
 
 See [`BACKLOG.md`](BACKLOG.md) for the prioritized catalog improvements and the
-proposed two-agent continuous learning and improvement architecture. The
+approval-gated two-agent continuous learning and improvement architecture. The
 governing architecture decision is
 [`ADR 0001`](docs/decisions/0001-bounded-continuous-improvement.md).
+Manual pilot operation is documented in the
+[`continuous improvement runbook`](docs/continuous-improvement-runbook.md).
+Behavior evaluation setup and the adapter protocol are documented in
+[`docs/evaluations.md`](docs/evaluations.md).
 
 ## Repository layout
 
@@ -114,8 +149,10 @@ agent-skills/
 │   ├── decisions/              # Accepted and proposed architecture decisions
 │   └── research/               # Source-of-truth research reports
 ├── .github/
+│   ├── agents/                 # Implementation, learning, and improvement agents
+│   ├── continuous-improvement/ # Versioned budgets and protected paths
 │   ├── instructions/
-│   └── workflows/              # CI, including skill validation
+│   └── workflows/              # Validation and queue policy enforcement
 ├── AGENTS.md                   # Instructions for agents working on this repo
 ├── CONTRIBUTING.md
 ├── BACKLOG.md                  # Prioritized catalog and agent infrastructure work
@@ -128,7 +165,16 @@ agent-skills/
 
 | Command | Runs | Purpose |
 |---|---|---|
-| `npm run validate` | `node scripts/validate-skills.mjs` | Validate every `SKILL.md` against the frontmatter contract and structure rules. |
+| `npm run validate` | Repository validators | Validate every `SKILL.md` and the continuous-improvement policy. |
+| `npm run improvement:validate` | Improvement policy validator | Validate budgets and protected-path configuration. |
+| `npm run improvement:preflight -- --item <item.json> --run <run.json>` | Improvement preflight | Validate approval, lease, scope, and budgets before editing. |
+| `npm run improvement:verify -- --item <item.json> --run <run.json>` | Improvement verification | Validate required checks and terminal run evidence. |
+| `npm run eval:validate` | Evaluation suite validator | Validate the committed behavior suite without model execution. |
+| `npm run eval:smoke` | Synthetic evaluation smoke test | Exercise isolation, grading, metrics, and artifact generation. |
+| `npm run eval -- --suite <suite> --adapter <command> --out <result>` | Behavior evaluation runner | Compare baseline and candidate outputs through a model adapter. |
+| `npm run routing:smoke` | Synthetic routing smoke test | Exercise repeated trials and confusion reporting. |
+| `npm run routing -- --suite <suite> --adapter <command> --out <result>` | Routing evaluation runner | Measure activation, precision, recall, collisions, tokens, and duration. |
+| `npm run contributions:validate -- --changed-skill <name>` | Contribution evidence validator | Require expertise provenance and uplift or an approved safety exception. |
 | `npm run install:agents` | `node scripts/manage-skills.mjs install` | Install skills into detected runtimes. |
 | `npm run check:agents` | `node scripts/manage-skills.mjs check` | Report what an install or uninstall would change, without writing. |
 | `npm run uninstall:agents` | `node scripts/manage-skills.mjs uninstall` | Remove installed skill copies. |

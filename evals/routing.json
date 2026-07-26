@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "name": "catalog-routing-pilot",
+  "trials": 3,
+  "cases": [
+    {
+      "id": "review-pull-request",
+      "split": "training",
+      "prompt": "Review this pull request diff for correctness bugs, edge cases, and missing tests.",
+      "expected": ["code-review"],
+      "excluded": ["security-review"]
+    },
+    {
+      "id": "audit-auth-security",
+      "split": "training",
+      "prompt": "Audit this authentication endpoint for authorization bypasses, injection, and leaked secrets.",
+      "expected": ["security-review"],
+      "excluded": ["code-review"]
+    },
+    {
+      "id": "specify-vague-request",
+      "split": "training",
+      "prompt": "Turn this vague product request into an agreed specification with requirements and non-goals.",
+      "expected": ["requirements-and-spec-writing"],
+      "excluded": ["planning-and-task-breakdown"]
+    },
+    {
+      "id": "plan-approved-spec",
+      "split": "training",
+      "prompt": "Break this approved specification into ordered implementation tasks with acceptance checks.",
+      "expected": ["planning-and-task-breakdown"],
+      "excluded": ["requirements-and-spec-writing"]
+    },
+    {
+      "id": "review-regression-patch",
+      "split": "validation",
+      "prompt": "Examine the staged patch for behavioral regressions and decide whether it is safe to merge.",
+      "expected": ["code-review"],
+      "excluded": ["security-review"]
+    },
+    {
+      "id": "threat-model-integration",
+      "split": "validation",
+      "prompt": "Threat model the new webhook integration, including SSRF, ownership, and untrusted payload risks.",
+      "expected": ["security-review"],
+      "excluded": ["code-review"]
+    },
+    {
+      "id": "write-data-contract",
+      "split": "validation",
+      "prompt": "Define the requirements, API data contract, error cases, privacy constraints, and rollout criteria.",
+      "expected": ["requirements-and-spec-writing"],
+      "excluded": ["planning-and-task-breakdown"]
+    },
+    {
+      "id": "sequence-delivery-work",
+      "split": "validation",
+      "prompt": "Sequence the accepted design into dependency-aware delivery tasks and identify parallel work.",
+      "expected": ["planning-and-task-breakdown"],
+      "excluded": ["requirements-and-spec-writing"]
+    }
+  ]
+}

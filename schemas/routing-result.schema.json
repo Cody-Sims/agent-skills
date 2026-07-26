@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cody-Sims/agent-skills/schemas/routing-result.schema.json",
+  "title": "Agent Skill Routing Evaluation Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "suite", "generatedAt", "thresholds", "cases", "confusion", "summary"],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "suite": { "type": "string", "minLength": 1 },
+    "generatedAt": { "type": "string", "minLength": 1 },
+    "thresholds": { "type": "null" },
+    "cases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "split", "promptSha256", "expected", "excluded", "activationRate", "trials"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "split": { "type": "string", "enum": ["training", "validation"] },
+          "promptSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+          "expected": { "type": "array", "items": { "type": "string" } },
+          "excluded": { "type": "array", "items": { "type": "string" } },
+          "activationRate": { "type": "number", "minimum": 0, "maximum": 1 },
+          "trials": { "type": "array", "items": { "$ref": "#/$defs/trial" } }
+        }
+      }
+    },
+    "confusion": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["overall", "training", "validation"],
+      "properties": {
+        "overall": { "$ref": "#/$defs/metrics" },
+        "training": { "$ref": "#/$defs/metrics" },
+        "validation": { "$ref": "#/$defs/metrics" }
+      }
+    }
+  },
+  "$defs": {
+    "tokens": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["input", "output", "total"],
+      "properties": {
+        "input": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+        "output": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+        "total": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 }
+      }
+    },
+    "trial": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trial", "selectedSkills", "truePositives", "falsePositives", "falseNegatives", "collision", "durationMs", "tokens"],
+      "properties": {
+        "trial": { "type": "integer", "minimum": 1 },
+        "selectedSkills": { "type": "array", "items": { "type": "string" } },
+        "truePositives": { "type": "integer", "minimum": 0 },
+        "falsePositives": { "type": "integer", "minimum": 0 },
+        "falseNegatives": { "type": "integer", "minimum": 0 },
+        "collision": { "type": "boolean" },
+        "durationMs": { "type": "number", "minimum": 0 },
+        "tokens": { "$ref": "#/$defs/tokens" }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["truePositives", "falsePositives", "falseNegatives", "collisions", "trials", "durationMs", "tokens", "precision", "recall", "collisionRate"],
+      "properties": {
+        "truePositives": { "type": "integer", "minimum": 0 },
+        "falsePositives": { "type": "integer", "minimum": 0 },
+        "falseNegatives": { "type": "integer", "minimum": 0 },
+        "collisions": { "type": "integer", "minimum": 0 },
+        "trials": { "type": "integer", "minimum": 0 },
+        "durationMs": { "type": "number", "minimum": 0 },
+        "tokens": { "$ref": "#/$defs/tokens" },
+        "precision": { "type": "number", "minimum": 0, "maximum": 1 },
+        "recall": { "type": "number", "minimum": 0, "maximum": 1 },
+        "collisionRate": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    }
+  }
+}

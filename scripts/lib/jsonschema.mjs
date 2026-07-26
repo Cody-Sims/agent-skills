@@ -18,7 +18,24 @@ function matchesType(value, type) {
   return actual === type;
 }
 
-export function validateAgainstSchema(schema, value, path = '$', errors = []) {
+function resolveLocalReference(rootSchema, reference) {
+  if (!reference.startsWith('#/')) return null;
+  return reference.slice(2).split('/').reduce((current, segment) => {
+    const key = segment.replaceAll('~1', '/').replaceAll('~0', '~');
+    return current?.[key];
+  }, rootSchema);
+}
+
+export function validateAgainstSchema(schema, value, path = '$', errors = [], rootSchema = schema) {
+  if (schema.$ref) {
+    const resolved = resolveLocalReference(rootSchema, schema.$ref);
+    if (!resolved) {
+      errors.push(`${path}: unresolved schema reference ${schema.$ref}.`);
+      return errors;
+    }
+    return validateAgainstSchema(resolved, value, path, errors, rootSchema);
+  }
+
   if (schema.type) {
     const types = Array.isArray(schema.type) ? schema.type : [schema.type];
     if (!types.some((t) => matchesType(value, t))) {
@@ -42,6 +59,9 @@ export function validateAgainstSchema(schema, value, path = '$', errors = []) {
     if (typeof schema.minLength === 'number' && value.length < schema.minLength) {
       errors.push(`${path}: string shorter than minLength ${schema.minLength}.`);
     }
+    if (typeof schema.maxLength === 'number' && value.length > schema.maxLength) {
+      errors.push(`${path}: string longer than maxLength ${schema.maxLength}.`);
+    }
   }
 
   if (typeof value === 'number') {
@@ -62,18 +82,24 @@ export function validateAgainstSchema(schema, value, path = '$', errors = []) {
     const properties = schema.properties ?? {};
     for (const [key, propValue] of Object.entries(value)) {
       if (key in properties) {
-        validateAgainstSchema(properties[key], propValue, `${path}.${key}`, errors);
+        validateAgainstSchema(properties[key], propValue, `${path}.${key}`, errors, rootSchema);
       } else if (schema.additionalProperties === false) {
         errors.push(`${path}: unknown property "${key}".`);
       } else if (typeof schema.additionalProperties === 'object') {
-        validateAgainstSchema(schema.additionalProperties, propValue, `${path}.${key}`, errors);
+        validateAgainstSchema(schema.additionalProperties, propValue, `${path}.${key}`, errors, rootSchema);
       }
     }
   }
 
   if (Array.isArray(value) && schema.items) {
+    if (typeof schema.minItems === 'number' && value.length < schema.minItems) {
+      errors.push(`${path}: array has fewer than minItems ${schema.minItems}.`);
+    }
+    if (typeof schema.maxItems === 'number' && value.length > schema.maxItems) {
+      errors.push(`${path}: array has more than maxItems ${schema.maxItems}.`);
+    }
     value.forEach((item, index) => {
-      validateAgainstSchema(schema.items, item, `${path}[${index}]`, errors);
+      validateAgainstSchema(schema.items, item, `${path}[${index}]`, errors, rootSchema);
     });
   }
 

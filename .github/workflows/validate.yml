@@ -25,18 +25,19 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
+          fetch-depth: 0
           persist-credentials: false
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: ${{ matrix.node }}
 
       # No dependency install: this repository has zero runtime npm dependencies.
 
-      - name: Validate all skills
+      - name: Validate repository policy and skills
         run: npm run validate
 
       - name: Validate JSON diagnostics mode
@@ -44,6 +45,10 @@ jobs:
 
       - name: Run tooling tests
         run: npm test
+
+      - name: Require evidence for changed skills
+        if: github.event_name == 'pull_request'
+        run: node scripts/validate-contributions.mjs --base "${{ github.event.pull_request.base.sha }}"
 
       - name: Check the generated registry is current
         run: node scripts/generate-registry.mjs --check
@@ -55,7 +60,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
 

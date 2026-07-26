@@ -160,6 +160,24 @@ calls or contain secrets. Source: `docs/research/anthropic-spec.md`
 - Duplicating an existing skill's triggers instead of extending it or drawing a
   boundary.
 
+## Behavior evaluations
+
+New or materially changed skills require a comparison against no skill or the
+previous released version. Use the versioned suite and adapter protocol in
+`docs/evaluations.md`.
+
+1. Write realistic prompts before tuning the skill.
+2. Define objective assertions and separate subjective human-review questions.
+3. Run baseline and candidate variants through the same model adapter.
+4. Record pass rate, duration, token usage, and per-assertion evidence.
+5. Treat the deterministic smoke adapter as plumbing verification only.
+6. Require independent review before using subjective results for promotion.
+
+Record the comparison and the expertise sources that informed the skill in
+`evals/contributions/<skill-name>.json`. The companion schema permits a safety
+or compliance exception when risk reduction, rather than average output uplift,
+is the correct success measure.
+
 ## Validation checklist
 
 - [ ] Skill is at `skills/<name>/SKILL.md`; `name` equals the directory name and
@@ -174,6 +192,8 @@ calls or contain secrets. Source: `docs/research/anthropic-spec.md`
 - [ ] Any script is justified, deterministic, and free of network calls and
       secrets.
 - [ ] `npm run validate` passes.
+- [ ] `npm run eval:validate` passes and applicable behavior comparisons are
+  attached for review.
 - [ ] `node scripts/validate-skills.mjs --profile portable` passes.
 - [ ] `npm test` passes.
 - [ ] `README.md` skills table and `CHANGELOG.md` are updated.

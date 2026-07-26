@@ -1,0 +1,217 @@
+name: Continuous Improvement Policy
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened, labeled, ready_for_review]
+
+permissions:
+  checks: read
+  contents: read
+  issues: write
+  pull-requests: read
+
+concurrency:
+  group: improvement-policy-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  policy:
+    if: >-
+      contains(github.event.pull_request.labels.*.name, 'continuous-improvement') ||
+      contains(github.event.pull_request.body, 'Improvement-Item:') ||
+      github.event.pull_request.user.login == 'copilot-swe-agent[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          persist-credentials: false
+
+      - name: Validate versioned policy
+        run: node scripts/continuous-improvement.mjs validate-policy
+
+      - name: Enforce item, lease, scope, and evidence
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const crypto = require('node:crypto');
+            const fs = require('node:fs');
+            const policy = JSON.parse(fs.readFileSync('.github/continuous-improvement/policy.json', 'utf8'));
+            const pull = context.payload.pull_request;
+            if (!pull.labels.some((label) => label.name === 'continuous-improvement')) {
+              throw new Error('A maintainer must add the continuous-improvement label.');
+            }
+            if (context.payload.action === 'opened' && !pull.draft) {
+              throw new Error('Continuous-improvement pull requests must open as drafts.');
+            }
+            const body = pull.body ?? '';
+            const itemMatches = [...body.matchAll(/^Improvement-Item:\s*#(\d+)\s*$/gm)];
+            if (itemMatches.length !== 1) throw new Error('PR body must contain exactly one Improvement-Item marker.');
+            const issueNumber = Number(itemMatches[0][1]);
+            const leaseId = body.match(/^Improvement-Lease:\s*(\S+)\s*$/m)?.[1];
+            const approval = body.match(/^Improvement-Approval:\s*([0-9a-f]{64})\s*$/m)?.[1];
+            const runId = body.match(/^Improvement-Run:\s*(\S+)\s*$/m)?.[1];
+            if (!leaseId || !approval || !runId) throw new Error('PR body must identify the lease, approval digest, and run.');
+            function numericMarker(name) {
+              const value = Number(body.match(new RegExp(`^${name}:\\s*([0-9]+(?:\\.[0-9]+)?)\\s*$`, 'm'))?.[1]);
+              if (!Number.isFinite(value) || value < 0) throw new Error(`PR body must contain a non-negative ${name}.`);
+              return value;
+            }
+            const usage = {
+              durationMinutes: numericMarker('Run-Duration-Minutes'),
+              retries: numericMarker('Run-Retries'),
+              actionsMinutes: numericMarker('Run-Actions-Minutes'),
+              aiCredits: numericMarker('Run-AI-Credits'),
+            };
+            if (!Number.isInteger(usage.retries)) throw new Error('Run-Retries must be an integer.');
+            if (usage.durationMinutes > policy.maxRunMinutes) throw new Error('Run duration budget exceeded.');
+            if (usage.retries > policy.maxRetries) throw new Error('Run retry budget exceeded.');
+            if (usage.actionsMinutes > policy.maxActionsMinutes) throw new Error('Run Actions budget exceeded.');
+            if (usage.aiCredits > policy.maxAiCredits) throw new Error('Run AI credit budget exceeded.');
+
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const { data: issue } = await github.rest.issues.get({ owner, repo, issue_number: issueNumber });
+            if (issue.state !== 'open') throw new Error('Improvement item is not open.');
+            const labels = issue.labels.map((label) => typeof label === 'string' ? label : label.name);
+            if (!labels.includes('improvement:in-progress')) throw new Error('Improvement item is not in-progress.');
+            const digest = crypto.createHash('sha256').update(issue.body ?? '').digest('hex');
+            if (digest !== approval) throw new Error('PR approval digest does not match the current issue body.');
+
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner, repo, issue_number: issueNumber, per_page: 100,
+            });
+            const events = comments.flatMap((comment) => {
+              const match = comment.body?.match(/<!-- improvement-control:v1\n([\s\S]*?)\n-->/);
+              if (!match || comment.user?.login !== 'github-actions[bot]') return [];
+              try { return [JSON.parse(match[1])]; } catch { return []; }
+            });
+            const claim = events.filter((event) => event.operation === 'claim').at(-1);
+            if (!claim || claim.leaseId !== leaseId || claim.runId !== runId || claim.payloadSha256 !== approval) {
+              throw new Error('PR does not match the active approved lease.');
+            }
+            if (claim.expectedActor !== pull.user.login) throw new Error('PR author does not match the approved claim.');
+            if (pull.head.repo.full_name !== `${owner}/${repo}`) throw new Error('Improvement PR head must belong to this repository.');
+            const prBodySha256 = crypto.createHash('sha256').update(body).digest('hex');
+            const acceptedHead = events.filter((event) => (
+              event.operation === 'draft-ready'
+              && event.pullRequest === pull.number
+              && event.headSha === pull.head.sha
+              && event.leaseId === leaseId
+              && event.payloadSha256 === approval
+              && event.runId === runId
+              && event.prBodySha256 === prBodySha256
+            )).at(-1);
+            const leaseExpired = Date.parse(claim.expiresAt) <= Date.now();
+            if (leaseExpired && !acceptedHead) throw new Error('Improvement lease expired before this PR head passed policy.');
+
+            function section(name) {
+              const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+              return (issue.body ?? '').match(new RegExp(`### ${escaped}\\n\\n([\\s\\S]*?)(?=\\n### |$)`))?.[1]?.trim() ?? '';
+            }
+            function patterns(name) {
+              const value = section(name);
+              if (!value || value === '_No response_' || value.toLowerCase() === 'none') return [];
+              return value.replace(/^```text\s*|\s*```$/g, '').split('\n').map((line) => line.trim().replace(/^[-*]\s+/, '').replace(/^`|`$/g, '')).filter(Boolean);
+            }
+            function pathMatches(path, pattern) {
+              let regex = '^';
+              for (let index = 0; index < pattern.length; index += 1) {
+                const character = pattern[index];
+                if (character === '*' && pattern[index + 1] === '*') { regex += '.*'; index += 1; }
+                else if (character === '*') regex += '[^/]*';
+                else regex += character.replace(/[|\\{}()[\]^$+?.]/g, '\\$&');
+              }
+              return new RegExp(`${regex}$`).test(path);
+            }
+            const allowedPaths = patterns('Allowed paths');
+            const approvedProtectedPaths = patterns('Approved protected paths');
+            const requiredChecks = patterns('Required checks');
+            if (allowedPaths.length === 0) throw new Error('Approved item has no allowed paths.');
+            if (requiredChecks.length === 0) throw new Error('Approved item has no required checks.');
+            const checkDeadline = Date.now() + (8 * 60 * 1000);
+            let checkRuns;
+            let missingChecks;
+            do {
+              checkRuns = await github.paginate(github.rest.checks.listForRef, {
+                owner,
+                repo,
+                ref: pull.head.sha,
+                per_page: 100,
+              });
+              missingChecks = requiredChecks.filter((requiredCheck) => !checkRuns.some((candidate) => (
+                candidate.name === requiredCheck
+                && candidate.head_sha === pull.head.sha
+                && candidate.status === 'completed'
+                && candidate.conclusion === 'success'
+              )));
+              if (missingChecks.length > 0 && Date.now() < checkDeadline) {
+                await new Promise((resolve) => setTimeout(resolve, 15_000));
+              }
+            } while (missingChecks.length > 0 && Date.now() < checkDeadline);
+            if (missingChecks.length > 0) {
+              throw new Error(`Required checks have not succeeded for this head: ${missingChecks.join(', ')}.`);
+            }
+            const verifiedChecks = [];
+            for (const requiredCheck of requiredChecks) {
+              const check = checkRuns.find((candidate) => (
+                candidate.name === requiredCheck
+                && candidate.head_sha === pull.head.sha
+                && candidate.status === 'completed'
+                && candidate.conclusion === 'success'
+              ));
+              verifiedChecks.push({ name: check.name, id: check.id });
+            }
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner, repo, pull_number: pull.number, per_page: 100,
+            });
+            for (const file of files) {
+              if (!allowedPaths.some((pattern) => pathMatches(file.filename, pattern))) {
+                throw new Error(`Changed path is outside approved scope: ${file.filename}.`);
+              }
+              const isProtected = policy.protectedPaths.some((pattern) => pathMatches(file.filename, pattern));
+              const isApproved = approvedProtectedPaths.some((pattern) => pathMatches(file.filename, pattern));
+              if (isProtected && !isApproved) throw new Error(`Protected path lacks explicit approval: ${file.filename}.`);
+            }
+
+            const openPulls = await github.paginate(github.rest.pulls.list, {
+              owner, repo, state: 'open', per_page: 100,
+            });
+            const improvementPulls = openPulls.filter((candidate) => candidate.labels.some((label) => label.name === 'continuous-improvement'));
+            if (improvementPulls.length > policy.maxOpenPullRequests) {
+              throw new Error('Open continuous-improvement pull request budget exceeded.');
+            }
+
+            for (const heading of ['Objective', 'Baseline', 'Changes', 'Acceptance Criteria', 'Validation And Evaluation', 'Sources And Provenance', 'Risks And Limitations', 'Rollback', 'Final State']) {
+              const escaped = heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+              const content = body.match(new RegExp(`## ${escaped}\\n\\n([\\s\\S]*?)(?=\\n## |$)`))?.[1]?.trim();
+              if (!content) throw new Error(`PR body section is empty: ${heading}.`);
+            }
+            const finalState = body.match(/## Final State\n\n([\s\S]*?)(?=\n## |$)/)?.[1]?.trim();
+            if (finalState !== '`draft-ready`' && finalState !== 'draft-ready') {
+              throw new Error('Only a draft-ready implementation may pass policy.');
+            }
+            if (!acceptedHead) {
+              const event = {
+                schemaVersion: 1,
+                operation: 'draft-ready',
+                actor: context.actor,
+                at: new Date().toISOString(),
+                pullRequest: pull.number,
+                headSha: pull.head.sha,
+                leaseId,
+                runId,
+                payloadSha256: approval,
+                prBodySha256,
+                usage,
+                verifiedChecks,
+              };
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: issueNumber,
+                body: `Continuous improvement PR #${pull.number} passed policy for head \`${pull.head.sha}\`.\n\n<!-- improvement-control:v1\n${JSON.stringify(event)}\n-->`,
+              });
+            }

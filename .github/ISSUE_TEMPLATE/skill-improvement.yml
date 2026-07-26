@@ -1,0 +1,85 @@
+name: Skill improvement proposal
+description: Propose one evidence-backed, independently verifiable catalog improvement.
+title: "[Improvement]: "
+labels:
+  - improvement:proposed
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Submit one bounded proposal. A maintainer must approve the unchanged issue body before implementation can begin.
+  - type: textarea
+    id: objective
+    attributes:
+      label: Objective
+      description: State the problem and the single outcome this item should achieve.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Separate verified facts, inferences, and unknowns. Cite publisher, URL, retrieval date, and version for external claims.
+    validations:
+      required: true
+  - type: textarea
+    id: benefit
+    attributes:
+      label: Expected benefit
+      description: State the expected measurable improvement without presenting it as proven.
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope and non-goals
+      description: Define the smallest complete change and what remains outside this item.
+    validations:
+      required: true
+  - type: textarea
+    id: risk
+    attributes:
+      label: Effort, risk, and dependencies
+      description: Include an S, M, or L effort estimate and every blocking dependency.
+    validations:
+      required: true
+  - type: textarea
+    id: criteria
+    attributes:
+      label: Acceptance criteria
+      description: Use stable identifiers and independently verifiable outcomes.
+      placeholder: |
+        - AC-1: Outcome. Verification: command or evaluation.
+    validations:
+      required: true
+  - type: textarea
+    id: allowed-paths
+    attributes:
+      label: Allowed paths
+      description: List exact repository paths or glob patterns, one per line.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: protected-paths
+    attributes:
+      label: Approved protected paths
+      description: List protected paths this item explicitly authorizes, one per line. Enter "None" when no protected path is approved.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: checks
+    attributes:
+      label: Required checks
+      description: List exact external GitHub check-run names, one per line. Do not list shell commands or the Continuous Improvement Policy check itself.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: duplicates
+    attributes:
+      label: Duplicate check
+      description: Record the backlog, issue, pull request, and history searches performed.
+    validations:
+      required: true

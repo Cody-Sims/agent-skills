@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cody-Sims/agent-skills/schemas/improvement-run.schema.json",
+  "title": "Continuous Improvement Run",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "runId",
+    "itemId",
+    "leaseId",
+    "agent",
+    "model",
+    "startedAt",
+    "permissions",
+    "baseCommit",
+    "headCommit",
+    "changedPaths",
+    "checks",
+    "sources",
+    "usage",
+    "promptSha256",
+    "finalState",
+    "stopReason"
+  ],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "runId": { "type": "string", "minLength": 1 },
+    "itemId": { "type": "string", "pattern": "^[A-Z]+-[0-9]+$" },
+    "leaseId": { "type": "string", "minLength": 1 },
+    "agent": { "type": "string", "minLength": 1 },
+    "model": { "type": ["string", "null"] },
+    "startedAt": { "type": "string", "minLength": 1 },
+    "permissions": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "baseCommit": { "type": "string", "pattern": "^[0-9a-f]{7,64}$" },
+    "headCommit": { "type": ["string", "null"], "pattern": "^[0-9a-f]{7,64}$" },
+    "changedPaths": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "passed", "evidence"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "passed": { "type": "boolean" },
+          "evidence": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["url", "publisher", "retrievedAt", "version"],
+        "properties": {
+          "url": { "type": "string", "minLength": 1 },
+          "publisher": { "type": "string", "minLength": 1 },
+          "retrievedAt": { "type": "string", "minLength": 1 },
+          "version": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "usage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["durationMinutes", "retries", "actionsMinutes", "aiCredits", "openPullRequests"],
+      "properties": {
+        "durationMinutes": { "type": "number", "minimum": 0 },
+        "retries": { "type": "integer", "minimum": 0 },
+        "actionsMinutes": { "type": "number", "minimum": 0 },
+        "aiCredits": { "type": "number", "minimum": 0 },
+        "openPullRequests": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "promptSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "finalState": { "type": "string", "enum": ["active", "draft-ready", "blocked"] },
+    "stopReason": { "type": ["string", "null"] }
+  }
+}
