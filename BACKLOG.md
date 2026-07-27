@@ -251,7 +251,7 @@ approval gates live outside the canonical skill format.
 
 ### AS-009: Publish composable workflow packs
 
-- **Priority / status / scope:** P2 / in-progress / L
+- **Priority / status / scope:** P2 / done / L
 - **Purpose:** Install complementary skills together without merging their
   instructions or creating routing collisions.
 - **Dependencies:** AS-005 and AS-007.
@@ -272,15 +272,18 @@ approval gates live outside the canonical skill format.
     registry v5 integration.
   - [x] Slice 2: Add atomic pack installation, uninstall, receipt, conflict
     preflight, and rollback transactions.
-  - [ ] Slice 3: Add composition routing and combined-context evaluation,
+  - [x] Slice 3: Add composition routing and combined-context evaluation,
     reporting, and promotion gates.
-- **Current result:** Implements strict versioned metadata, transactional pack lifecycle
+- **Result:** Publishes strict versioned metadata, transactional pack lifecycle
   operations, and composition suites for all three packs with exact-member
   routing, ordered-handoff and adjacent near-miss coverage, deterministic
-  context accounting, bound sanitized artifacts, and fixture-only CI smoke.
-  Hosted composition baselines and non-null promotion thresholds remain
-  follow-up evidence and are not claimed. Suite-at-source-commit provenance
-  remains blocked until the new suites exist in an immutable commit.
+  context accounting, and bound sanitized artifacts. Exact provenance
+  validation and smoke at immutable commit
+  `62835884e25fb1e06bba52216d0ca51b92e8ca91` validated all three suites and
+  passed `feature-delivery`, `release-readiness`, and `safe-refactor` using the
+  deterministic fixture adapter. This is verified fixture evidence with no
+  vendor host execution and is not promotion evidence. Hosted composition
+  baselines and non-null thresholds remain follow-up evidence.
 
 ### AS-010: Add provenance and lifecycle management
 

@@ -153,6 +153,14 @@ Execution or integrity failures terminate without writing a passing artifact.
 Each trial receives isolated home, configuration, cache, and temporary
 directories. Cleanup uncertainty preserves the trial root for operator action.
 
+## Completion evidence
+
+Local exact-provenance validation and deterministic fixture smoke passed for
+all three packs at immutable commit
+`62835884e25fb1e06bba52216d0ca51b92e8ca91`. The smoke executed no vendor host
+and is not promotion evidence. Hosted composition baselines and non-null
+thresholds remain follow-up work.
+
 `npm run registry` and `npm run registry:check` reject:
 
 - unknown, duplicate, inactive, or version-mismatched members;
