@@ -58,7 +58,7 @@ license: MIT
 metadata:
   version: "1.0.0"
   author: Cody-Sims
-  tier: core
+  tier: experimental
 ---
 ```
 
@@ -97,6 +97,18 @@ Pull-request CI detects
 changed paths under `skills/` and rejects a missing, malformed, or non-uplifting
 manifest with an actionable diagnostic.
 
+## Tier lifecycle
+
+New skills enter as `experimental`. Promotion to `extended` and then `core`
+requires dated structural, behavior, routing, runtime-smoke, and maintainer
+evidence in `registry/maturity.json`. Promotions cannot skip a tier.
+
+The initial catalog's existing `core` declarations are explicitly
+`unverified` until they complete the current gates. Do not describe an
+unverified entry as verified core. See
+[`docs/tier-lifecycle.md`](docs/tier-lifecycle.md) for entry, promotion,
+regression, demotion, deprecation, and removal criteria.
+
 Validate one or more manifests locally with:
 
 ```bash
@@ -119,6 +131,8 @@ npm run contributions:validate -- --changed-skill <skill-name>
 - [ ] `npm run validate` and `npm test` pass.
 - [ ] Applicable behavior evaluations compare the candidate with no skill or
    the previous release and include independent human review where needed.
+- [ ] Tier changes include complete maturity evidence and advance at most one
+      tier.
 
 ## Third-party contributions
 

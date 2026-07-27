@@ -126,6 +126,8 @@ Manual pilot operation is documented in the
 [`continuous improvement runbook`](docs/continuous-improvement-runbook.md).
 Behavior evaluation setup and the adapter protocol are documented in
 [`docs/evaluations.md`](docs/evaluations.md).
+Tier entry, promotion, regression, deprecation, and removal policy is documented
+in [`docs/tier-lifecycle.md`](docs/tier-lifecycle.md).
 
 ## Repository layout
 
@@ -141,7 +143,11 @@ agent-skills/
 │   ├── validate-skills.mjs     # Frontmatter and structure validator
 │   └── lib/                    # Shared tooling modules
 ├── schemas/
-│   └── skill.schema.json       # Frontmatter contract
+│   ├── skill.schema.json       # Frontmatter contract
+│   └── registry.schema.json    # Generated registry contract
+├── registry/
+│   ├── maturity.json           # Maintainer-authored tier evidence
+│   └── skills.json             # Generated catalog and maturity state
 ├── tests/                      # Tooling tests (node --test)
 ├── docs/
 │   ├── authoring-guide.md      # How to write a good skill
@@ -175,6 +181,8 @@ agent-skills/
 | `npm run routing:smoke` | Synthetic routing smoke test | Exercise repeated trials and confusion reporting. |
 | `npm run routing -- --suite <suite> --adapter <command> --out <result>` | Routing evaluation runner | Measure activation, precision, recall, collisions, tokens, and duration. |
 | `npm run contributions:validate -- --changed-skill <name>` | Contribution evidence validator | Require expertise provenance and uplift or an approved safety exception. |
+| `npm run registry` | Registry generator | Generate registry v2 with maturity status, evidence, and evaluation dates. |
+| `npm run registry:check -- --previous <registry.json>` | Registry validator | Check generated output and reject unsupported tier transitions against a base registry. |
 | `npm run install:agents` | `node scripts/manage-skills.mjs install` | Install skills into detected runtimes. |
 | `npm run check:agents` | `node scripts/manage-skills.mjs check` | Report what an install or uninstall would change, without writing. |
 | `npm run uninstall:agents` | `node scripts/manage-skills.mjs uninstall` | Remove installed skill copies. |

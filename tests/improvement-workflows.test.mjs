@@ -18,6 +18,18 @@ test('all repository workflow actions use immutable commit pins', () => {
   }
 });
 
+test('pull request validation checks tier transitions against the base registry', () => {
+  const content = workflow('validate');
+  assert.match(content, /github\.event\.pull_request\.base\.sha/);
+  assert.match(content, /git show "\$\{BASE_SHA\}:registry\/skills\.json"/);
+  assert.match(content, /--previous "\$RUNNER_TEMP\/previous-registry\.json"/);
+});
+
+test('maturity evidence requires maintainer review', () => {
+  const content = readFileSync(resolve(REPO_ROOT, '.github/CODEOWNERS'), 'utf8');
+  assert.match(content, /^\/registry\/maturity\.json @Cody-Sims$/m);
+});
+
 test('queue transitions require trusted inputs, maintainer authority, and bot audit provenance', () => {
   const content = workflow('improvement-control');
   assert.match(content, /const operation = process\.env\.IMPROVEMENT_OPERATION/);

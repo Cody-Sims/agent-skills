@@ -11,6 +11,7 @@
 /.github/CODEOWNERS @Cody-Sims
 /schemas/ @Cody-Sims
 /evals/ @Cody-Sims
+/registry/maturity.json @Cody-Sims
 /scripts/ @Cody-Sims
 /tests/ @Cody-Sims
 /scripts/continuous-improvement.mjs @Cody-Sims

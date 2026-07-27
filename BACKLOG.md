@@ -143,7 +143,7 @@ approval gates live outside the canonical skill format.
 
 ### AS-004: Define tier promotion and demotion policy
 
-- **Priority / status / scope:** P0 / proposed / M
+- **Priority / status / scope:** P0 / in-progress / M
 - **Purpose:** Make `experimental`, `extended`, and `core` meaningful maturity
   signals.
 - **Dependencies:** AS-001 and AS-002.
@@ -156,6 +156,11 @@ approval gates live outside the canonical skill format.
   - Surface tier evidence and last evaluation date in the registry.
 - **Verification:** Registry validation rejects an unsupported promotion and
   accepts a fixture with complete evidence.
+- **Result:** Added the tier lifecycle policy, registry v2 maturity records,
+  persistent evidence manifest, one-tier promotion and evidence-backed demotion
+  validation, legacy registry migration, and pull-request base comparison.
+  Catalog-wide portable validation remains blocked by pre-existing host
+  extension fields in unchanged skills.
 
 ### AS-005: Enrich registry discovery metadata
 

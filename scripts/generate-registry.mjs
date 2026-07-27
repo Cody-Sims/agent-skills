@@ -4,23 +4,40 @@
 // (no timestamps) so `--check` can enforce that the committed file is current
 // in CI. Validates the generated registry against schemas/registry.schema.json.
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, relative, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { discoverSkills } from './lib/skills.mjs';
 import { parseFrontmatter } from './lib/frontmatter.mjs';
-import { sha256, walkFiles } from './lib/paths.mjs';
+import { assertNoSymlinks, sha256, sha256File, walkFiles } from './lib/paths.mjs';
 import { validateAgainstSchema } from './lib/jsonschema.mjs';
+import { validateMaturity, validateTierTransition } from './lib/tier-policy.mjs';
 
 const REPOSITORY_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const DEFAULT_SKILLS_ROOT = resolve(REPOSITORY_ROOT, 'skills');
 const DEFAULT_REGISTRY_PATH = resolve(REPOSITORY_ROOT, 'registry', 'skills.json');
+const DEFAULT_MATURITY_PATH = resolve(REPOSITORY_ROOT, 'registry', 'maturity.json');
 const SCHEMA_PATH = resolve(REPOSITORY_ROOT, 'schemas', 'registry.schema.json');
+const MATURITY_SCHEMA_PATH = resolve(REPOSITORY_ROOT, 'schemas', 'maturity-evidence.schema.json');
 
 // Builds the registry object from a skills root. Pure and deterministic.
-export function buildRegistry(skillsRoot = DEFAULT_SKILLS_ROOT) {
+export function buildRegistry(
+  skillsRoot = DEFAULT_SKILLS_ROOT,
+  maturityManifest = { schemaVersion: 1, skills: {} },
+  artifactRoot = skillsRoot,
+) {
+  const manifestErrors = validateMaturityManifest(maturityManifest, { artifactRoot });
+  if (manifestErrors.length > 0) {
+    throw new Error(`Invalid maturity evidence manifest:\n${manifestErrors.join('\n')}`);
+  }
   const skills = discoverSkills(skillsRoot);
+  const skillNames = new Set(skills.map((skill) => skill.name));
+  for (const name of Object.keys(maturityManifest.skills)) {
+    if (!skillNames.has(name)) {
+      throw new Error(`maturity evidence references unknown skill ${name}.`);
+    }
+  }
   const entries = [];
   for (const skill of skills) {
     const skillFile = resolve(skill.dir, 'SKILL.md');
@@ -35,6 +52,11 @@ export function buildRegistry(skillsRoot = DEFAULT_SKILLS_ROOT) {
       version: typeof data.metadata?.version === 'string' ? data.metadata.version : null,
       license: typeof data.license === 'string' ? data.license : null,
       tier: typeof data.metadata?.tier === 'string' ? data.metadata.tier : null,
+      maturity: maturityManifest.skills[skill.name] ?? {
+        status: 'unverified',
+        lastEvaluatedAt: null,
+        evidence: [],
+      },
       path: `skills/${skill.name}`,
       skillFile: `skills/${skill.name}/SKILL.md`,
       sha256: sha256(content),
@@ -42,7 +64,7 @@ export function buildRegistry(skillsRoot = DEFAULT_SKILLS_ROOT) {
     });
   }
   entries.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
-  return { schemaVersion: 1, skills: entries };
+  return { schemaVersion: 2, skills: entries };
 }
 
 export function serializeRegistry(registry) {
@@ -53,16 +75,92 @@ function loadSchema() {
   return JSON.parse(readFileSync(SCHEMA_PATH, 'utf8'));
 }
 
-export function validateRegistry(registry) {
-  return validateAgainstSchema(loadSchema(), registry);
+function loadMaturitySchema() {
+  return JSON.parse(readFileSync(MATURITY_SCHEMA_PATH, 'utf8'));
+}
+
+export function validateMaturityManifest(manifest, { artifactRoot } = {}) {
+  const errors = validateAgainstSchema(loadMaturitySchema(), manifest);
+  if (!artifactRoot || !manifest?.skills || typeof manifest.skills !== 'object') {
+    return errors;
+  }
+  for (const [skill, maturity] of Object.entries(manifest.skills)) {
+    for (const [index, evidence] of (maturity?.evidence ?? []).entries()) {
+      const path = `$.skills.${skill}.evidence[${index}].reference`;
+      try {
+        const artifactPath = assertNoSymlinks(artifactRoot, evidence.reference);
+        if (!existsSync(artifactPath)) {
+          errors.push(`${path}: evidence artifact does not exist.`);
+        } else if (!statSync(artifactPath).isFile()) {
+          errors.push(`${path}: evidence artifact must be a regular file.`);
+        } else if (sha256File(artifactPath) !== evidence.sha256) {
+          errors.push(`${path}: evidence artifact hash does not match.`);
+        }
+      } catch (error) {
+        errors.push(`${path}: ${error.message}`);
+      }
+    }
+  }
+  return errors;
+}
+
+export function validateRegistry(registry, previousRegistry = null) {
+  const errors = validateAgainstSchema(loadSchema(), registry);
+  for (const [index, skill] of (registry.skills ?? []).entries()) {
+    errors.push(...validateMaturity(skill.tier, skill.maturity, `$.skills[${index}].maturity`));
+  }
+  if (previousRegistry) {
+    const previousErrors = previousRegistry.schemaVersion === 1
+      ? validateLegacyRegistry(previousRegistry)
+      : validateAgainstSchema(loadSchema(), previousRegistry);
+    for (const error of previousErrors) {
+      errors.push(`previous registry: ${error}`);
+    }
+    const previousByName = new Map(
+      (previousRegistry.skills ?? []).map((skill) => [skill.name, skill]),
+    );
+    for (const skill of registry.skills ?? []) {
+      errors.push(...validateTierTransition(previousByName.get(skill.name) ?? null, skill));
+    }
+  }
+  return errors;
+}
+
+function validateLegacyRegistry(registry) {
+  const errors = [];
+  if (!Array.isArray(registry.skills)) {
+    return ['$.skills: expected type array.'];
+  }
+  for (const [index, skill] of registry.skills.entries()) {
+    if (!skill || typeof skill !== 'object' || Array.isArray(skill)) {
+      errors.push(`$.skills[${index}]: expected type object.`);
+      continue;
+    }
+    if (typeof skill.name !== 'string') {
+      errors.push(`$.skills[${index}].name: expected type string.`);
+    }
+    if (!['experimental', 'extended', 'core'].includes(skill.tier)) {
+      errors.push(`$.skills[${index}].tier: value ${JSON.stringify(skill.tier)} is not a supported tier.`);
+    }
+  }
+  return errors;
 }
 
 async function main() {
   const args = process.argv.slice(2);
   const check = args.includes('--check');
-  const registry = buildRegistry();
+  const previousIndex = args.indexOf('--previous');
+  const previousPath = previousIndex >= 0 ? args[previousIndex + 1] : null;
+  if (previousIndex >= 0 && !previousPath) {
+    throw new Error('--previous requires a registry path.');
+  }
+  const maturityManifest = JSON.parse(readFileSync(DEFAULT_MATURITY_PATH, 'utf8'));
+  const registry = buildRegistry(DEFAULT_SKILLS_ROOT, maturityManifest, REPOSITORY_ROOT);
+  const previousRegistry = previousPath
+    ? JSON.parse(readFileSync(resolve(previousPath), 'utf8'))
+    : null;
 
-  const errors = validateRegistry(registry);
+  const errors = validateRegistry(registry, previousRegistry);
   if (errors.length > 0) {
     console.error('Generated registry failed schema validation:');
     for (const error of errors) console.error(`  ${error}`);

@@ -40,6 +40,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Contribution evidence manifests and pull-request enforcement requiring real
   expertise sources plus measured uplift or an approved safety/compliance
   exception for every changed skill.
+- Tier lifecycle policy, registry v2 maturity evidence and evaluation dates,
+  one-step promotion and evidence-backed demotion enforcement, and pull-request
+  comparison against the base registry.
 
 ### Security
 

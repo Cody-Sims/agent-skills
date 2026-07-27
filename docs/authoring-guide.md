@@ -178,6 +178,17 @@ Record the comparison and the expertise sources that informed the skill in
 or compliance exception when risk reduction, rather than average output uplift,
 is the correct success measure.
 
+## Tier maturity
+
+New skills start at `experimental`. `extended` and `core` are evidence-backed
+promotion states, not author-selected quality labels. Record dated maturity
+evidence in `registry/maturity.json`; the generated registry exposes the
+evidence status and last evaluation date. Promotions advance one tier at a time
+and require the gates in [`tier-lifecycle.md`](tier-lifecycle.md).
+
+Existing catalog entries that declared `core` before the policy are shown as
+`unverified` until fresh evidence supports the declaration.
+
 ## Validation checklist
 
 - [ ] Skill is at `skills/<name>/SKILL.md`; `name` equals the directory name and
@@ -197,3 +208,5 @@ is the correct success measure.
 - [ ] `node scripts/validate-skills.mjs --profile portable` passes.
 - [ ] `npm test` passes.
 - [ ] `README.md` skills table and `CHANGELOG.md` are updated.
+- [ ] New skills use `experimental`; tier changes include complete maturity
+      evidence.

@@ -51,7 +51,15 @@ jobs:
         run: node scripts/validate-contributions.mjs --base "${{ github.event.pull_request.base.sha }}"
 
       - name: Check the generated registry is current
-        run: node scripts/generate-registry.mjs --check
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          if [ -n "$BASE_SHA" ]; then
+            git show "${BASE_SHA}:registry/skills.json" > "$RUNNER_TEMP/previous-registry.json"
+            node scripts/generate-registry.mjs --check --previous "$RUNNER_TEMP/previous-registry.json"
+          else
+            node scripts/generate-registry.mjs --check
+          fi
 
   spec-conformance:
     name: Agent Skills spec conformance (gh skill)

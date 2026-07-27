@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "skills": [
     {
       "name": "code-review",
@@ -7,6 +7,11 @@
       "version": "1.0.0",
       "license": "MIT",
       "tier": "core",
+      "maturity": {
+        "status": "unverified",
+        "lastEvaluatedAt": null,
+        "evidence": []
+      },
       "path": "skills/code-review",
       "skillFile": "skills/code-review/SKILL.md",
       "sha256": "50aa64ec203e5e6cf1648cd30dd9ee8b6897c5dc1c81b07ead385a4b62845e43",
@@ -20,6 +25,11 @@
       "version": "1.0.0",
       "license": "MIT",
       "tier": "core",
+      "maturity": {
+        "status": "unverified",
+        "lastEvaluatedAt": null,
+        "evidence": []
+      },
       "path": "skills/codebase-exploration",
       "skillFile": "skills/codebase-exploration/SKILL.md",
       "sha256": "97189845348c006e644e8505a44fd170fa761586a94e50475cabdc1b3e247ef9",
@@ -33,6 +43,11 @@
       "version": "1.0.0",
       "license": "MIT",
       "tier": "core",
+      "maturity": {
+        "status": "unverified",
+        "lastEvaluatedAt": null,
+        "evidence": []
+      },
       "path": "skills/documentation-maintenance",
       "skillFile": "skills/documentation-maintenance/SKILL.md",
       "sha256": "d0edc5ca357eae0fb7f288f56e20ddbcc63b1aef59799288d2a22a5764dd6144",
@@ -47,6 +62,11 @@
       "version": "1.0.0",
       "license": "MIT",
       "tier": "core",
+      "maturity": {
+        "status": "unverified",
+        "lastEvaluatedAt": null,
+        "evidence": []
+      },
       "path": "skills/external-skill-review",
       "skillFile": "skills/external-skill-review/SKILL.md",
       "sha256": "3f80b1fe9e662464df6b7c9e41d1d6fc1153069a00adfe6d49a27d176ee89df1",
@@ -60,6 +80,11 @@
       "version": "1.0.0",
       "license": "MIT",
       "tier": "core",
+      "maturity": {
+        "status": "unverified",
+        "lastEvaluatedAt": null,
+        "evidence": []
+      },
       "path": "skills/git-and-pr-workflow",
       "skillFile": "skills/git-and-pr-workflow/SKILL.md",
       "sha256": "ccfb5c1aa0b695fcc0a6b5970904d9bfc68443b19243328087c9d6ee3aff0c5a",
@@ -74,6 +99,11 @@
       "version": "1.0.0",
       "license": "MIT",
       "tier": "core",
+      "maturity": {
+        "status": "unverified",
+        "lastEvaluatedAt": null,
+        "evidence": []
+      },
       "path": "skills/planning-and-task-breakdown",
       "skillFile": "skills/planning-and-task-breakdown/SKILL.md",
       "sha256": "a0a8110db64bb00a8184ed5ee5d1872234e4f82545e71eaf8d407fb8b7e1ad23",
@@ -87,6 +117,11 @@
       "version": "1.0.0",
       "license": "MIT",
       "tier": "core",
+      "maturity": {
+        "status": "unverified",
+        "lastEvaluatedAt": null,
+        "evidence": []
+      },
       "path": "skills/refactoring-and-dead-code-removal",
       "skillFile": "skills/refactoring-and-dead-code-removal/SKILL.md",
       "sha256": "b3e0e013c1b31954f5caaadb21459a27818eef555b6d900c1417fe69f8d7238a",
@@ -100,6 +135,11 @@
       "version": "1.0.0",
       "license": "MIT",
       "tier": "core",
+      "maturity": {
+        "status": "unverified",
+        "lastEvaluatedAt": null,
+        "evidence": []
+      },
       "path": "skills/repository-agent-bootstrap",
       "skillFile": "skills/repository-agent-bootstrap/SKILL.md",
       "sha256": "274dee9ac2596aabffd23fbc63c1be2cbda76dfd0ee3827bdd7ee48f7b305737",
@@ -113,6 +153,11 @@
       "version": "1.0.0",
       "license": "MIT",
       "tier": "core",
+      "maturity": {
+        "status": "unverified",
+        "lastEvaluatedAt": null,
+        "evidence": []
+      },
       "path": "skills/requirements-and-spec-writing",
       "skillFile": "skills/requirements-and-spec-writing/SKILL.md",
       "sha256": "95b907ce5d7ae5c2797c4a1a42d46cc532015e71eb0b2eeda752638238a6e8a5",
@@ -126,6 +171,11 @@
       "version": "1.0.0",
       "license": "MIT",
       "tier": "core",
+      "maturity": {
+        "status": "unverified",
+        "lastEvaluatedAt": null,
+        "evidence": []
+      },
       "path": "skills/security-review",
       "skillFile": "skills/security-review/SKILL.md",
       "sha256": "b42dc8e62e4fc02d0e341699e9d0b56169fc5742f98b2f00f1038101157f1bdb",
@@ -140,6 +190,11 @@
       "version": "1.0.0",
       "license": "MIT",
       "tier": "core",
+      "maturity": {
+        "status": "unverified",
+        "lastEvaluatedAt": null,
+        "evidence": []
+      },
       "path": "skills/shadow-architecture",
       "skillFile": "skills/shadow-architecture/SKILL.md",
       "sha256": "82fb0e9fc8f466f61fa973a38095ee1f621ea6cfa5ce5fffd50855cc1e32430c",
@@ -153,6 +208,11 @@
       "version": "1.0.0",
       "license": "MIT",
       "tier": "core",
+      "maturity": {
+        "status": "unverified",
+        "lastEvaluatedAt": null,
+        "evidence": []
+      },
       "path": "skills/skill-creator",
       "skillFile": "skills/skill-creator/SKILL.md",
       "sha256": "f9b2f2901bea7882fd49e63d45cd21ee48bf6689008ef6eaca8b68499fbec9f6",
@@ -168,6 +228,11 @@
       "version": "1.0.0",
       "license": "MIT",
       "tier": "core",
+      "maturity": {
+        "status": "unverified",
+        "lastEvaluatedAt": null,
+        "evidence": []
+      },
       "path": "skills/systematic-debugging",
       "skillFile": "skills/systematic-debugging/SKILL.md",
       "sha256": "bcb845888072accf79b00173628fa427d6013dbb3b59acd9677698d652debf7d",
@@ -182,6 +247,11 @@
       "version": "1.0.0",
       "license": "MIT",
       "tier": "core",
+      "maturity": {
+        "status": "unverified",
+        "lastEvaluatedAt": null,
+        "evidence": []
+      },
       "path": "skills/test-driven-development",
       "skillFile": "skills/test-driven-development/SKILL.md",
       "sha256": "76048b40deb1229b2bb795958cf8fe120d5542543fb43159691d13c874967d59",
@@ -195,6 +265,11 @@
       "version": "1.0.0",
       "license": "MIT",
       "tier": "core",
+      "maturity": {
+        "status": "unverified",
+        "lastEvaluatedAt": null,
+        "evidence": []
+      },
       "path": "skills/verification-before-completion",
       "skillFile": "skills/verification-before-completion/SKILL.md",
       "sha256": "e44f4f20777a14833e521ed1f85e983c4dc9ca4eaa2852a35966b96811ba5b5d",
@@ -206,6 +281,11 @@
       "version": "1.0.0",
       "license": "MIT",
       "tier": "core",
+      "maturity": {
+        "status": "unverified",
+        "lastEvaluatedAt": null,
+        "evidence": []
+      },
       "path": "skills/web-research-and-verification",
       "skillFile": "skills/web-research-and-verification/SKILL.md",
       "sha256": "23f5ba5c4172249d92de4fcace76a5b2e2cdc09f9ae531f9e28b8d0de2e031d1",
