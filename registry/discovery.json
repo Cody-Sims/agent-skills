@@ -1,0 +1,402 @@
+{
+  "schemaVersion": 1,
+  "skills": {
+    "code-review": {
+      "category": "quality",
+      "tags": ["correctness", "diff", "pull-request", "review"],
+      "inputs": [
+        { "type": "diff", "description": "A branch, pull request, or set of staged or unstaged changes." }
+      ],
+      "outputs": [
+        { "type": "review-findings", "description": "Severity-ranked, actionable findings with file and line references." }
+      ],
+      "risk": { "level": "low", "factors": ["read-only"] },
+      "runtimeCompatibility": [
+        { "runtime": "claude-code", "status": "compatible", "notes": null },
+        { "runtime": "github-copilot", "status": "compatible", "notes": null },
+        { "runtime": "openai-codex", "status": "compatible", "notes": null }
+      ],
+      "relatedSkills": ["security-review", "verification-discipline"],
+      "conflictingSkills": [],
+      "examplePrompts": [
+        "Review this pull request for correctness and regressions.",
+        "Inspect my staged changes and report only actionable findings."
+      ]
+    },
+    "codebase-exploration": {
+      "category": "discovery",
+      "tags": ["architecture", "codebase", "onboarding", "read-only"],
+      "inputs": [
+        { "type": "repository", "description": "An unfamiliar repository or component to map before modification." }
+      ],
+      "outputs": [
+        { "type": "repository-map", "description": "An evidence-based map of entry points, commands, boundaries, and change sites." }
+      ],
+      "risk": { "level": "low", "factors": ["read-only"] },
+      "runtimeCompatibility": [
+        { "runtime": "claude-code", "status": "compatible", "notes": null },
+        { "runtime": "github-copilot", "status": "compatible", "notes": null },
+        { "runtime": "openai-codex", "status": "compatible", "notes": null }
+      ],
+      "relatedSkills": ["systematic-debugging", "web-research-and-verification"],
+      "conflictingSkills": [],
+      "examplePrompts": [
+        "Map this repository before we change the authentication flow.",
+        "Find the entry points, test commands, and smallest correct edit location."
+      ]
+    },
+    "documentation-maintenance": {
+      "category": "documentation",
+      "tags": ["adr", "changelog", "documentation", "readme"],
+      "inputs": [
+        { "type": "code-change", "description": "A code, configuration, command, interface, or behavior change." },
+        { "type": "documentation-request", "description": "A request for an ADR, changelog entry, or documentation repair." }
+      ],
+      "outputs": [
+        { "type": "documentation-change", "description": "Accurate, runnable documentation aligned with current behavior." }
+      ],
+      "risk": { "level": "medium", "factors": ["file-write"] },
+      "runtimeCompatibility": [
+        { "runtime": "claude-code", "status": "compatible", "notes": null },
+        { "runtime": "github-copilot", "status": "compatible", "notes": null },
+        { "runtime": "openai-codex", "status": "compatible", "notes": null }
+      ],
+      "relatedSkills": ["requirements-and-spec-writing", "shadow-architecture"],
+      "conflictingSkills": [],
+      "examplePrompts": [
+        "Update the README and changelog for this command change.",
+        "Write an ADR for the new persistence boundary."
+      ]
+    },
+    "external-skill-review": {
+      "category": "security",
+      "tags": ["agent-skill", "provenance", "supply-chain", "untrusted-code"],
+      "inputs": [
+        { "type": "skill-package", "description": "A third-party skill directory or installation candidate." }
+      ],
+      "outputs": [
+        { "type": "risk-assessment", "description": "A provenance and supply-chain assessment with an install recommendation." }
+      ],
+      "risk": { "level": "low", "factors": ["read-only", "untrusted-content"] },
+      "runtimeCompatibility": [
+        { "runtime": "claude-code", "status": "compatible", "notes": null },
+        { "runtime": "github-copilot", "status": "compatible", "notes": null },
+        { "runtime": "openai-codex", "status": "compatible", "notes": null }
+      ],
+      "relatedSkills": ["security-review", "skill-creator"],
+      "conflictingSkills": [],
+      "examplePrompts": [
+        "Audit this third-party skill before I install it.",
+        "Review this gh skill install candidate for supply-chain risk."
+      ]
+    },
+    "git-and-pr-workflow": {
+      "category": "delivery",
+      "tags": ["branching", "commits", "git", "pull-request"],
+      "inputs": [
+        { "type": "git-repository", "description": "A repository with changes to branch, commit, rebase, or submit." }
+      ],
+      "outputs": [
+        { "type": "git-change", "description": "A reviewable branch, atomic commit history, or pull request." }
+      ],
+      "risk": { "level": "high", "factors": ["history-rewrite", "remote-write", "repository-write"] },
+      "runtimeCompatibility": [
+        { "runtime": "claude-code", "status": "compatible", "notes": null },
+        { "runtime": "github-copilot", "status": "compatible", "notes": null },
+        { "runtime": "openai-codex", "status": "compatible", "notes": null }
+      ],
+      "relatedSkills": ["code-review", "parallel-worktree-delivery"],
+      "conflictingSkills": [],
+      "examplePrompts": [
+        "Create an atomic commit and open a pull request for these changes.",
+        "Safely rebase my unshared branch and resolve its conflicts."
+      ]
+    },
+    "parallel-worktree-delivery": {
+      "category": "delivery",
+      "tags": ["git", "integration", "multi-agent", "worktree"],
+      "inputs": [
+        { "type": "task-plan", "description": "A dependency-aware plan with safely partitioned file ownership." }
+      ],
+      "outputs": [
+        { "type": "integrated-change", "description": "A verified integration branch assembled from isolated worktree changes." }
+      ],
+      "risk": { "level": "high", "factors": ["concurrent-write", "history-rewrite", "repository-write"] },
+      "runtimeCompatibility": [
+        { "runtime": "claude-code", "status": "compatible", "notes": null },
+        { "runtime": "github-copilot", "status": "compatible", "notes": null },
+        { "runtime": "openai-codex", "status": "compatible", "notes": null }
+      ],
+      "relatedSkills": ["git-and-pr-workflow", "planning-and-task-breakdown", "verification-before-completion"],
+      "conflictingSkills": [],
+      "examplePrompts": [
+        "Deliver this migration with parallel agents in isolated worktrees.",
+        "Coordinate dependency waves and integrate each branch safely."
+      ]
+    },
+    "planning-and-task-breakdown": {
+      "category": "planning",
+      "tags": ["acceptance-criteria", "dependencies", "planning", "tasks"],
+      "inputs": [
+        { "type": "approved-specification", "description": "An agreed specification or clearly bounded implementation request." }
+      ],
+      "outputs": [
+        { "type": "task-breakdown", "description": "Ordered, dependency-aware tasks with acceptance criteria and verification commands." }
+      ],
+      "risk": { "level": "low", "factors": ["read-only"] },
+      "runtimeCompatibility": [
+        { "runtime": "claude-code", "status": "compatible", "notes": null },
+        { "runtime": "github-copilot", "status": "compatible", "notes": null },
+        { "runtime": "openai-codex", "status": "compatible", "notes": null }
+      ],
+      "relatedSkills": ["parallel-worktree-delivery", "requirements-and-spec-writing"],
+      "conflictingSkills": [],
+      "examplePrompts": [
+        "Break this approved specification into implementation tasks.",
+        "Sequence this migration and identify safely parallel work."
+      ]
+    },
+    "refactoring-and-dead-code-removal": {
+      "category": "maintenance",
+      "tags": ["dead-code", "refactoring", "rename", "structure"],
+      "inputs": [
+        { "type": "source-code", "description": "Code to restructure, simplify, rename, or prove unused." }
+      ],
+      "outputs": [
+        { "type": "refactor", "description": "A behavior-preserving structural change with dead code safely removed." }
+      ],
+      "risk": { "level": "medium", "factors": ["code-execution", "file-write"] },
+      "runtimeCompatibility": [
+        { "runtime": "claude-code", "status": "compatible", "notes": null },
+        { "runtime": "github-copilot", "status": "compatible", "notes": null },
+        { "runtime": "openai-codex", "status": "compatible", "notes": null }
+      ],
+      "relatedSkills": ["test-driven-development", "verification-before-completion"],
+      "conflictingSkills": [],
+      "examplePrompts": [
+        "Extract this module without changing behavior.",
+        "Prove this helper is unused and remove it safely."
+      ]
+    },
+    "repository-agent-bootstrap": {
+      "category": "customization",
+      "tags": ["agent-instructions", "agents-md", "bootstrap", "repository"],
+      "inputs": [
+        { "type": "repository", "description": "A repository that needs agent instructions, profiles, or skills." }
+      ],
+      "outputs": [
+        { "type": "customization-plan", "description": "A minimal repository-owned agent customization structure and its files." }
+      ],
+      "risk": { "level": "medium", "factors": ["file-write", "instruction-change"] },
+      "runtimeCompatibility": [
+        { "runtime": "claude-code", "status": "compatible", "notes": null },
+        { "runtime": "github-copilot", "status": "compatible", "notes": null },
+        { "runtime": "openai-codex", "status": "compatible", "notes": null }
+      ],
+      "relatedSkills": ["documentation-maintenance", "skill-creator"],
+      "conflictingSkills": [],
+      "examplePrompts": [
+        "Bootstrap AGENTS.md and repository-owned skills for this project.",
+        "Audit our agent customization and fill the smallest useful gaps."
+      ]
+    },
+    "requirements-and-spec-writing": {
+      "category": "planning",
+      "tags": ["acceptance-criteria", "design", "requirements", "specification"],
+      "inputs": [
+        { "type": "request", "description": "An ambiguous or large feature, behavior, or design request." }
+      ],
+      "outputs": [
+        { "type": "specification", "description": "An agreed specification with requirements, boundaries, interfaces, and rollout." }
+      ],
+      "risk": { "level": "low", "factors": ["read-only"] },
+      "runtimeCompatibility": [
+        { "runtime": "claude-code", "status": "compatible", "notes": null },
+        { "runtime": "github-copilot", "status": "compatible", "notes": null },
+        { "runtime": "openai-codex", "status": "compatible", "notes": null }
+      ],
+      "relatedSkills": ["documentation-maintenance", "planning-and-task-breakdown"],
+      "conflictingSkills": [],
+      "examplePrompts": [
+        "Turn this feature idea into an implementation-ready specification.",
+        "Define requirements, non-goals, edge cases, and acceptance criteria."
+      ]
+    },
+    "security-review": {
+      "category": "security",
+      "tags": ["authorization", "security", "stride", "threat-model"],
+      "inputs": [
+        { "type": "component", "description": "A code change, endpoint, feature, or integration to review for vulnerabilities." }
+      ],
+      "outputs": [
+        { "type": "threat-report", "description": "Severity-ranked vulnerabilities, threat scenarios, and concrete mitigations." }
+      ],
+      "risk": { "level": "low", "factors": ["read-only", "sensitive-analysis"] },
+      "runtimeCompatibility": [
+        { "runtime": "claude-code", "status": "compatible", "notes": null },
+        { "runtime": "github-copilot", "status": "compatible", "notes": null },
+        { "runtime": "openai-codex", "status": "compatible", "notes": null }
+      ],
+      "relatedSkills": ["code-review", "external-skill-review"],
+      "conflictingSkills": [],
+      "examplePrompts": [
+        "Threat-model this new webhook endpoint.",
+        "Review this authentication change for exploitable vulnerabilities."
+      ]
+    },
+    "shadow-architecture": {
+      "category": "architecture",
+      "tags": ["architecture", "decision-graph", "drift", "shadow"],
+      "inputs": [
+        { "type": "decision-graph", "description": "A repository .shadow graph or architecture decision to record and check." }
+      ],
+      "outputs": [
+        { "type": "decision-graph", "description": "An evidence-linked architecture graph or drift report." }
+      ],
+      "risk": { "level": "medium", "factors": ["architecture-change", "file-write"] },
+      "runtimeCompatibility": [
+        { "runtime": "claude-code", "status": "compatible", "notes": null },
+        { "runtime": "github-copilot", "status": "compatible", "notes": null },
+        { "runtime": "openai-codex", "status": "compatible", "notes": null }
+      ],
+      "relatedSkills": ["codebase-exploration", "documentation-maintenance"],
+      "conflictingSkills": [],
+      "examplePrompts": [
+        "Record this architecture decision in the .shadow graph.",
+        "Check whether the implementation has drifted from recorded decisions."
+      ]
+    },
+    "skill-creator": {
+      "category": "authoring",
+      "tags": ["agent-skill", "frontmatter", "routing", "skill-authoring"],
+      "inputs": [
+        { "type": "skill-requirements", "description": "A capability, realistic trigger requests, or an existing skill to improve." }
+      ],
+      "outputs": [
+        { "type": "skill-package", "description": "A validated portable skill directory with reliable routing metadata." }
+      ],
+      "risk": { "level": "medium", "factors": ["file-write", "instruction-change"] },
+      "runtimeCompatibility": [
+        { "runtime": "claude-code", "status": "compatible", "notes": null },
+        { "runtime": "github-copilot", "status": "compatible", "notes": null },
+        { "runtime": "openai-codex", "status": "compatible", "notes": null }
+      ],
+      "relatedSkills": ["external-skill-review", "repository-agent-bootstrap"],
+      "conflictingSkills": [],
+      "examplePrompts": [
+        "Create a portable skill for database migration reviews.",
+        "Audit this SKILL.md and improve its routing description."
+      ]
+    },
+    "systematic-debugging": {
+      "category": "maintenance",
+      "tags": ["debugging", "failure", "reproduction", "root-cause"],
+      "inputs": [
+        { "type": "failure", "description": "A bug, failing test, build error, crash, or unexpected behavior." }
+      ],
+      "outputs": [
+        { "type": "root-cause-fix", "description": "A reproduced diagnosis and verified fix for the underlying cause." }
+      ],
+      "risk": { "level": "medium", "factors": ["code-execution", "file-write"] },
+      "runtimeCompatibility": [
+        { "runtime": "claude-code", "status": "compatible", "notes": null },
+        { "runtime": "github-copilot", "status": "compatible", "notes": null },
+        { "runtime": "openai-codex", "status": "compatible", "notes": null }
+      ],
+      "relatedSkills": ["codebase-exploration", "test-driven-development"],
+      "conflictingSkills": [],
+      "examplePrompts": [
+        "Reproduce and fix this intermittent test failure.",
+        "Trace this exception to its root cause instead of patching the symptom."
+      ]
+    },
+    "test-driven-development": {
+      "category": "quality",
+      "tags": ["behavior", "red-green-refactor", "testing", "tdd"],
+      "inputs": [
+        { "type": "behavior-requirement", "description": "A feature or reproducible bug whose behavior can be tested first." }
+      ],
+      "outputs": [
+        { "type": "tested-implementation", "description": "A minimal implementation developed through a demonstrated red-green-refactor cycle." }
+      ],
+      "risk": { "level": "medium", "factors": ["code-execution", "file-write"] },
+      "runtimeCompatibility": [
+        { "runtime": "claude-code", "status": "compatible", "notes": null },
+        { "runtime": "github-copilot", "status": "compatible", "notes": null },
+        { "runtime": "openai-codex", "status": "compatible", "notes": null }
+      ],
+      "relatedSkills": ["systematic-debugging", "verification-discipline"],
+      "conflictingSkills": [],
+      "examplePrompts": [
+        "Add this behavior using red-green-refactor.",
+        "Write a failing regression test before fixing this bug."
+      ]
+    },
+    "verification-before-completion": {
+      "category": "quality",
+      "tags": ["completion", "evidence", "validation", "verification"],
+      "inputs": [
+        { "type": "completion-claim", "description": "A claim that work is fixed, passing, ready, or complete." }
+      ],
+      "outputs": [
+        { "type": "verification-report", "description": "Fresh command or artifact evidence supporting or rejecting the claim." }
+      ],
+      "risk": { "level": "medium", "factors": ["code-execution", "read-only"] },
+      "runtimeCompatibility": [
+        { "runtime": "claude-code", "status": "compatible", "notes": null },
+        { "runtime": "github-copilot", "status": "compatible", "notes": null },
+        { "runtime": "openai-codex", "status": "compatible", "notes": null }
+      ],
+      "relatedSkills": ["code-review", "verification-discipline"],
+      "conflictingSkills": [],
+      "examplePrompts": [
+        "Verify this fix is actually complete before reporting success.",
+        "Run the relevant checks and distinguish verified results from assumptions."
+      ]
+    },
+    "verification-discipline": {
+      "category": "quality",
+      "tags": ["ci", "invariants", "test-quality", "verification"],
+      "inputs": [
+        { "type": "test-suite", "description": "Tests or CI validation whose green result may be weak or misleading." }
+      ],
+      "outputs": [
+        { "type": "validation-report", "description": "A hardened validation design with credible assertions and enforced invariants." }
+      ],
+      "risk": { "level": "medium", "factors": ["code-execution", "file-write"] },
+      "runtimeCompatibility": [
+        { "runtime": "claude-code", "status": "compatible", "notes": null },
+        { "runtime": "github-copilot", "status": "compatible", "notes": null },
+        { "runtime": "openai-codex", "status": "compatible", "notes": null }
+      ],
+      "relatedSkills": ["test-driven-development", "verification-before-completion"],
+      "conflictingSkills": [],
+      "examplePrompts": [
+        "Audit these suspiciously green tests for vacuous assertions.",
+        "Harden this CI gate so it enforces the intended invariant."
+      ]
+    },
+    "web-research-and-verification": {
+      "category": "discovery",
+      "tags": ["citations", "current-information", "research", "web"],
+      "inputs": [
+        { "type": "research-question", "description": "A question that depends on current external APIs, releases, standards, or vulnerabilities." }
+      ],
+      "outputs": [
+        { "type": "research-report", "description": "A source-backed answer separating verified facts from inference." }
+      ],
+      "risk": { "level": "medium", "factors": ["network-access", "untrusted-content"] },
+      "runtimeCompatibility": [
+        { "runtime": "claude-code", "status": "compatible", "notes": null },
+        { "runtime": "github-copilot", "status": "compatible", "notes": null },
+        { "runtime": "openai-codex", "status": "compatible", "notes": null }
+      ],
+      "relatedSkills": ["codebase-exploration", "documentation-maintenance"],
+      "conflictingSkills": [],
+      "examplePrompts": [
+        "Research the current API behavior and cite primary sources.",
+        "Verify whether this dependency version is affected by the latest CVE."
+      ]
+    }
+  }
+}

@@ -46,6 +46,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Tier lifecycle policy, registry v2 maturity evidence and evaluation dates,
   one-step promotion and evidence-backed demotion enforcement, and pull-request
   comparison against the base registry.
+- Registry v3 discovery metadata for every skill, including category, tags,
+  typed inputs and outputs, risk, runtime compatibility, relationships, and
+  example prompts, plus deterministic command-line filters.
 
 ### Security
 

@@ -12,20 +12,28 @@ import { discoverSkills } from './lib/skills.mjs';
 import { parseFrontmatter } from './lib/frontmatter.mjs';
 import { assertNoSymlinks, sha256, sha256File, walkFiles } from './lib/paths.mjs';
 import { validateAgainstSchema } from './lib/jsonschema.mjs';
+import {
+  normalizeDiscovery,
+  placeholderDiscovery,
+  validateDiscoveryManifest,
+} from './lib/registry-discovery.mjs';
 import { validateMaturity, validateTierTransition } from './lib/tier-policy.mjs';
 
 const REPOSITORY_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const DEFAULT_SKILLS_ROOT = resolve(REPOSITORY_ROOT, 'skills');
 const DEFAULT_REGISTRY_PATH = resolve(REPOSITORY_ROOT, 'registry', 'skills.json');
 const DEFAULT_MATURITY_PATH = resolve(REPOSITORY_ROOT, 'registry', 'maturity.json');
+const DEFAULT_DISCOVERY_PATH = resolve(REPOSITORY_ROOT, 'registry', 'discovery.json');
 const SCHEMA_PATH = resolve(REPOSITORY_ROOT, 'schemas', 'registry.schema.json');
 const MATURITY_SCHEMA_PATH = resolve(REPOSITORY_ROOT, 'schemas', 'maturity-evidence.schema.json');
+const DISCOVERY_SCHEMA_PATH = resolve(REPOSITORY_ROOT, 'schemas', 'registry-discovery.schema.json');
 
 // Builds the registry object from a skills root. Pure and deterministic.
 export function buildRegistry(
   skillsRoot = DEFAULT_SKILLS_ROOT,
   maturityManifest = { schemaVersion: 1, skills: {} },
   artifactRoot = skillsRoot,
+  discoveryManifest = null,
 ) {
   const manifestErrors = validateMaturityManifest(maturityManifest, { artifactRoot });
   if (manifestErrors.length > 0) {
@@ -33,6 +41,16 @@ export function buildRegistry(
   }
   const skills = discoverSkills(skillsRoot);
   const skillNames = new Set(skills.map((skill) => skill.name));
+  if (discoveryManifest) {
+    const discoveryErrors = validateDiscoveryManifest(
+      loadDiscoverySchema(),
+      discoveryManifest,
+      [...skillNames],
+    );
+    if (discoveryErrors.length > 0) {
+      throw new Error(`Invalid registry discovery manifest:\n${discoveryErrors.join('\n')}`);
+    }
+  }
   for (const name of Object.keys(maturityManifest.skills)) {
     if (!skillNames.has(name)) {
       throw new Error(`maturity evidence references unknown skill ${name}.`);
@@ -57,6 +75,9 @@ export function buildRegistry(
         lastEvaluatedAt: null,
         evidence: [],
       },
+      discovery: normalizeDiscovery(
+        discoveryManifest?.skills[skill.name] ?? placeholderDiscovery(skill.name),
+      ),
       path: `skills/${skill.name}`,
       skillFile: `skills/${skill.name}/SKILL.md`,
       sha256: sha256(content),
@@ -64,7 +85,7 @@ export function buildRegistry(
     });
   }
   entries.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
-  return { schemaVersion: 2, skills: entries };
+  return { schemaVersion: 3, skills: entries };
 }
 
 export function serializeRegistry(registry) {
@@ -77,6 +98,10 @@ function loadSchema() {
 
 function loadMaturitySchema() {
   return JSON.parse(readFileSync(MATURITY_SCHEMA_PATH, 'utf8'));
+}
+
+function loadDiscoverySchema() {
+  return JSON.parse(readFileSync(DISCOVERY_SCHEMA_PATH, 'utf8'));
 }
 
 export function validateMaturityManifest(manifest, { artifactRoot } = {}) {
@@ -106,20 +131,35 @@ export function validateMaturityManifest(manifest, { artifactRoot } = {}) {
 
 export function validateRegistry(registry, previousRegistry = null) {
   const errors = validateAgainstSchema(loadSchema(), registry);
-  for (const [index, skill] of (registry.skills ?? []).entries()) {
+  const registrySkills = Array.isArray(registry.skills) ? registry.skills : [];
+  const skillNames = registrySkills
+    .filter((skill) => skill && typeof skill.name === 'string')
+    .map((skill) => skill.name);
+  if (new Set(skillNames).size !== skillNames.length) {
+    errors.push('$.skills: skill names must be unique.');
+  }
+  const discoveryManifest = {
+    schemaVersion: 1,
+    skills: Object.fromEntries(
+      registrySkills
+        .filter((skill) => skill && typeof skill.name === 'string' && skill.discovery)
+        .map((skill) => [skill.name, skill.discovery]),
+    ),
+  };
+  errors.push(...validateDiscoveryManifest(loadDiscoverySchema(), discoveryManifest, skillNames));
+  for (const [index, skill] of registrySkills.entries()) {
     errors.push(...validateMaturity(skill.tier, skill.maturity, `$.skills[${index}].maturity`));
   }
   if (previousRegistry) {
-    const previousErrors = previousRegistry.schemaVersion === 1
+    const previousErrors = previousRegistry.schemaVersion < 3
       ? validateLegacyRegistry(previousRegistry)
       : validateAgainstSchema(loadSchema(), previousRegistry);
     for (const error of previousErrors) {
       errors.push(`previous registry: ${error}`);
     }
-    const previousByName = new Map(
-      (previousRegistry.skills ?? []).map((skill) => [skill.name, skill]),
-    );
-    for (const skill of registry.skills ?? []) {
+    const previousSkills = Array.isArray(previousRegistry.skills) ? previousRegistry.skills : [];
+    const previousByName = new Map(previousSkills.map((skill) => [skill.name, skill]));
+    for (const skill of registrySkills) {
       errors.push(...validateTierTransition(previousByName.get(skill.name) ?? null, skill));
     }
   }
@@ -155,7 +195,13 @@ async function main() {
     throw new Error('--previous requires a registry path.');
   }
   const maturityManifest = JSON.parse(readFileSync(DEFAULT_MATURITY_PATH, 'utf8'));
-  const registry = buildRegistry(DEFAULT_SKILLS_ROOT, maturityManifest, REPOSITORY_ROOT);
+  const discoveryManifest = JSON.parse(readFileSync(DEFAULT_DISCOVERY_PATH, 'utf8'));
+  const registry = buildRegistry(
+    DEFAULT_SKILLS_ROOT,
+    maturityManifest,
+    REPOSITORY_ROOT,
+    discoveryManifest,
+  );
   const previousRegistry = previousPath
     ? JSON.parse(readFileSync(resolve(previousPath), 'utf8'))
     : null;

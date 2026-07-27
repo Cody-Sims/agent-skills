@@ -189,6 +189,16 @@ and require the gates in [`tier-lifecycle.md`](tier-lifecycle.md).
 Existing catalog entries that declared `core` before the policy are shown as
 `unverified` until fresh evidence supports the declaration.
 
+## Catalog discovery
+
+Portable frontmatter stays limited to runtime routing fields. Add catalog-only
+category, tags, typed inputs and outputs, risk, runtime compatibility,
+relationships, and example prompts to `registry/discovery.json`. The registry
+generator validates complete coverage and emits the normalized fields in
+`registry/skills.json` without increasing runtime startup context. See
+[`registry-discovery.md`](registry-discovery.md) for the field contract and
+query command.
+
 ## Validation checklist
 
 - [ ] Skill is at `skills/<name>/SKILL.md`; `name` equals the directory name and
@@ -210,3 +220,5 @@ Existing catalog entries that declared `core` before the policy are shown as
 - [ ] `README.md` skills table and `CHANGELOG.md` are updated.
 - [ ] New skills use `experimental`; tier changes include complete maturity
       evidence.
+- [ ] New skills have complete `registry/discovery.json` metadata and the
+      generated registry is current.

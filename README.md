@@ -130,6 +130,8 @@ Behavior evaluation setup and the adapter protocol are documented in
 [`docs/evaluations.md`](docs/evaluations.md).
 Tier entry, promotion, regression, deprecation, and removal policy is documented
 in [`docs/tier-lifecycle.md`](docs/tier-lifecycle.md).
+Registry discovery fields and query filters are documented in
+[`docs/registry-discovery.md`](docs/registry-discovery.md).
 
 ## Repository layout
 
@@ -146,10 +148,12 @@ agent-skills/
 │   └── lib/                    # Shared tooling modules
 ├── schemas/
 │   ├── skill.schema.json       # Frontmatter contract
+│   ├── registry-discovery.schema.json # Catalog discovery manifest contract
 │   └── registry.schema.json    # Generated registry contract
 ├── registry/
+│   ├── discovery.json          # Maintainer-authored discovery metadata
 │   ├── maturity.json           # Maintainer-authored tier evidence
-│   └── skills.json             # Generated catalog and maturity state
+│   └── skills.json             # Generated discovery and maturity catalog
 ├── tests/                      # Tooling tests (node --test)
 ├── docs/
 │   ├── authoring-guide.md      # How to write a good skill
@@ -183,8 +187,9 @@ agent-skills/
 | `npm run routing:smoke` | Synthetic routing smoke test | Exercise repeated trials and confusion reporting. |
 | `npm run routing -- --suite <suite> --adapter <command> --out <result>` | Routing evaluation runner | Measure activation, precision, recall, collisions, tokens, and duration. |
 | `npm run contributions:validate -- --changed-skill <name>` | Contribution evidence validator | Require expertise provenance and uplift or an approved safety exception. |
-| `npm run registry` | Registry generator | Generate registry v2 with maturity status, evidence, and evaluation dates. |
+| `npm run registry` | Registry generator | Generate registry v3 with discovery metadata and maturity evidence. |
 | `npm run registry:check -- --previous <registry.json>` | Registry validator | Check generated output and reject unsupported tier transitions against a base registry. |
+| `npm run registry:query -- [filters]` | Registry query | Filter skills by category, tags, risk, runtime, and input/output shape. |
 | `npm run install:agents` | `node scripts/manage-skills.mjs install` | Install skills into detected runtimes. |
 | `npm run check:agents` | `node scripts/manage-skills.mjs check` | Report what an install or uninstall would change, without writing. |
 | `npm run uninstall:agents` | `node scripts/manage-skills.mjs uninstall` | Remove installed skill copies. |
@@ -208,8 +213,24 @@ the overlap check, review checklist, and third-party contribution policy.
 
 In short: create `skills/<name>/SKILL.md` with valid frontmatter, keep the body
 under 500 lines and roughly 5,000 tokens, push large or conditional material
-into `references/`, run `npm run validate` and `npm test`, and update
+into `references/`, add its catalog-only metadata to `registry/discovery.json`,
+regenerate the registry, run `npm run validate` and `npm test`, and update
 `CHANGELOG.md`.
+
+Query the generated catalog without loading discovery metadata into runtime
+startup context:
+
+```bash
+npm run registry:query -- \
+  --category security \
+  --runtime github-copilot \
+  --runtime-status compatible \
+  --input component \
+  --output threat-report
+```
+
+Filters combine with AND semantics. Repeat `--tag` to require multiple tags;
+use `--risk`, `--format json`, or `--registry <path>` when needed.
 
 ## Versioning and releases
 

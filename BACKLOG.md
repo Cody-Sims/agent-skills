@@ -143,7 +143,7 @@ approval gates live outside the canonical skill format.
 
 ### AS-004: Define tier promotion and demotion policy
 
-- **Priority / status / scope:** P0 / in-progress / M
+- **Priority / status / scope:** P0 / done / M
 - **Purpose:** Make `experimental`, `extended`, and `core` meaningful maturity
   signals.
 - **Dependencies:** AS-001 and AS-002.
@@ -163,7 +163,7 @@ approval gates live outside the canonical skill format.
 
 ### AS-005: Enrich registry discovery metadata
 
-- **Priority / status / scope:** P0 / proposed / M
+- **Priority / status / scope:** P0 / done / M
 - **Purpose:** Make the catalog searchable by user intent, compatibility, risk,
   and composition needs.
 - **Dependencies:** AS-004 for maturity fields.
@@ -177,6 +177,10 @@ approval gates live outside the canonical skill format.
   - Provide filters without increasing every runtime's startup context.
 - **Verification:** Registry generation is deterministic and schema-valid, and a
   query can identify skills by category, runtime, and input/output shape.
+- **Result:** Added a complete companion discovery manifest, registry v3 schema
+  and normalized output, strict coverage and relationship validation, v1/v2
+  migration support, and deterministic CLI filters for category, tags, risk,
+  runtime status, and typed inputs and outputs.
 
 ### AS-006: Bundle deterministic helpers selectively
 
@@ -307,7 +311,7 @@ approval gates live outside the canonical skill format.
   out-of-scope proposals while accepting a grounded novel proposal.
 - **Result:** Added the read-only `.github/agents/skill-learning.agent.md`, the
   structured issue form, and static authority tests. Behavioral scenario
-  evaluation remains blocked on AS-001 and AS-005.
+  evaluation remains blocked on AS-001.
 
 ### SI-003: Create the skill improvement agent
 

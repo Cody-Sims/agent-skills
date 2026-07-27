@@ -13,6 +13,7 @@
     "validate:portable": "node scripts/validate-skills.mjs --profile portable",
     "registry": "node scripts/generate-registry.mjs",
     "registry:check": "node scripts/generate-registry.mjs --check",
+    "registry:query": "node scripts/query-registry.mjs",
     "eval": "node scripts/run-evaluations.mjs",
     "eval:validate": "node scripts/validate-evaluations.mjs",
     "eval:smoke": "node scripts/run-evaluations.mjs --suite evals/evals.json --adapter node --adapter-arg tests/fixtures/evaluation-adapter.mjs --out tmp/evaluations/verification-before-completion.json",

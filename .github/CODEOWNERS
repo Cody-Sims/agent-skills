@@ -12,6 +12,7 @@
 /schemas/ @Cody-Sims
 /evals/ @Cody-Sims
 /registry/maturity.json @Cody-Sims
+/registry/discovery.json @Cody-Sims
 /scripts/ @Cody-Sims
 /tests/ @Cody-Sims
 /scripts/continuous-improvement.mjs @Cody-Sims

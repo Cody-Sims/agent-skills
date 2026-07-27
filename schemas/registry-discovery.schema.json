@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cody-Sims/agent-skills/schemas/registry-discovery.schema.json",
+  "title": "Agent Skills Registry Discovery Metadata",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "skills"],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "skills": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/discovery"
+      }
+    }
+  },
+  "$defs": {
+    "typedArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "description"],
+      "properties": {
+        "type": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "description": { "type": "string", "minLength": 1, "maxLength": 200 }
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["runtime", "status", "notes"],
+      "properties": {
+        "runtime": {
+          "type": "string",
+          "enum": ["openai-codex", "claude-code", "github-copilot"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["compatible", "conditional", "unsupported", "untested"]
+        },
+        "notes": { "type": ["string", "null"], "maxLength": 200 }
+      }
+    },
+    "discovery": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "category",
+        "tags",
+        "inputs",
+        "outputs",
+        "risk",
+        "runtimeCompatibility",
+        "relatedSkills",
+        "conflictingSkills",
+        "examplePrompts"
+      ],
+      "properties": {
+        "category": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "tags": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 12,
+          "items": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" }
+        },
+        "inputs": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "items": { "$ref": "#/$defs/typedArtifact" }
+        },
+        "outputs": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "items": { "$ref": "#/$defs/typedArtifact" }
+        },
+        "risk": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["level", "factors"],
+          "properties": {
+            "level": { "type": "string", "enum": ["low", "medium", "high"] },
+            "factors": {
+              "type": "array",
+              "maxItems": 8,
+              "items": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" }
+            }
+          }
+        },
+        "runtimeCompatibility": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": { "$ref": "#/$defs/runtime" }
+        },
+        "relatedSkills": {
+          "type": "array",
+          "maxItems": 12,
+          "items": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" }
+        },
+        "conflictingSkills": {
+          "type": "array",
+          "maxItems": 12,
+          "items": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" }
+        },
+        "examplePrompts": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "items": { "type": "string", "minLength": 1, "maxLength": 300 }
+        }
+      }
+    }
+  }
+}

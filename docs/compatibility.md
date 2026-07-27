@@ -25,6 +25,11 @@ Sources: `docs/research/codex-portability.md` (runtime compatibility matrix),
 `docs/research/copilot-skills.md` (section 3), `docs/research/anthropic-spec.md`
 (section 11).
 
+Registry discovery metadata uses the canonical runtime IDs `openai-codex`,
+`claude-code`, and `github-copilot`. Compatibility status is `compatible`,
+`conditional`, `unsupported`, or `untested`; a conditional status requires a
+concrete note. See [`registry-discovery.md`](registry-discovery.md).
+
 ## Frontmatter field portability
 
 Fields fall into three classes for this repository. Only portable-core and the

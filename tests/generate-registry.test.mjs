@@ -1,9 +1,105 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
 import { buildRegistry, serializeRegistry, validateRegistry } from '../scripts/generate-registry.mjs';
 import { sha256 } from '../scripts/lib/paths.mjs';
 import { makeTempDir, removeDir, writeSkill, validFrontmatter } from './helpers.mjs';
+
+function discoveryManifest(names) {
+  return {
+    schemaVersion: 1,
+    skills: Object.fromEntries(names.map((name) => [name, {
+      category: 'quality',
+      tags: ['testing'],
+      inputs: [{ type: 'repository', description: 'A repository to inspect.' }],
+      outputs: [{ type: 'report', description: 'A structured report.' }],
+      risk: { level: 'low', factors: ['read-only'] },
+      runtimeCompatibility: [
+        { runtime: 'claude-code', status: 'compatible', notes: null },
+        { runtime: 'github-copilot', status: 'compatible', notes: null },
+        { runtime: 'openai-codex', status: 'compatible', notes: null },
+      ],
+      relatedSkills: [],
+      conflictingSkills: [],
+      examplePrompts: [`Run ${name} on this repository.`],
+    }])),
+  };
+}
+
+test('buildRegistry merges complete discovery metadata into registry v3', () => {
+  const root = makeTempDir('reg-');
+  try {
+    writeSkill(root, 'alpha', { frontmatter: validFrontmatter('alpha') });
+    const registry = buildRegistry(
+      root,
+      { schemaVersion: 1, skills: {} },
+      root,
+      discoveryManifest(['alpha']),
+    );
+    assert.equal(registry.schemaVersion, 3);
+    assert.deepEqual(registry.skills[0].discovery.tags, ['testing']);
+    assert.deepEqual(validateRegistry(registry), []);
+  } finally {
+    removeDir(root);
+  }
+});
+
+test('buildRegistry rejects incomplete and inconsistent discovery metadata', () => {
+  const root = makeTempDir('reg-');
+  try {
+    writeSkill(root, 'alpha', { frontmatter: validFrontmatter('alpha') });
+    writeSkill(root, 'beta', { frontmatter: validFrontmatter('beta') });
+    const manifest = discoveryManifest(['alpha']);
+    manifest.skills.alpha.relatedSkills = ['missing'];
+    manifest.skills.alpha.runtimeCompatibility.pop();
+    manifest.skills.alpha.runtimeCompatibility[0].status = 'conditional';
+    assert.throws(
+      () => buildRegistry(root, { schemaVersion: 1, skills: {} }, root, manifest),
+      /missing discovery metadata for beta[\s\S]*unknown skill missing[\s\S]*conditional status requires notes[\s\S]*missing runtime openai-codex/,
+    );
+  } finally {
+    removeDir(root);
+  }
+});
+
+test('buildRegistry reports malformed discovery records without crashing', () => {
+  const root = makeTempDir('reg-');
+  try {
+    writeSkill(root, 'alpha', { frontmatter: validFrontmatter('alpha') });
+    assert.throws(
+      () => buildRegistry(
+        root,
+        { schemaVersion: 1, skills: {} },
+        root,
+        { schemaVersion: 1, skills: { alpha: null } },
+      ),
+      /expected type object, got null/,
+    );
+    const manifest = discoveryManifest(['alpha']);
+    manifest.skills.alpha.runtimeCompatibility = {};
+    assert.throws(
+      () => buildRegistry(root, { schemaVersion: 1, skills: {} }, root, manifest),
+      /expected type array, got object/,
+    );
+  } finally {
+    removeDir(root);
+  }
+});
+
+test('registry and discovery schemas keep the same discovery definitions', () => {
+  const registrySchema = JSON.parse(readFileSync(resolve('schemas/registry.schema.json'), 'utf8'));
+  const discoverySchema = JSON.parse(
+    readFileSync(resolve('schemas/registry-discovery.schema.json'), 'utf8'),
+  );
+  const expected = structuredClone(discoverySchema.$defs);
+  const referenceRoot = '#/properties/skills/items/$defs';
+  expected.discovery.properties.inputs.items.$ref = `${referenceRoot}/typedArtifact`;
+  expected.discovery.properties.outputs.items.$ref = `${referenceRoot}/typedArtifact`;
+  expected.discovery.properties.runtimeCompatibility.items.$ref = `${referenceRoot}/runtime`;
+  assert.deepEqual(registrySchema.properties.skills.items.$defs, expected);
+});
 
 test('buildRegistry produces schema-valid, sorted output', () => {
   const root = makeTempDir('reg-');
@@ -56,6 +152,21 @@ test('registry validation rejects unsupported verified tiers', () => {
       validateRegistry(registry).join('\n'),
       /core tier requires evidence: structural-validation, behavior-evaluation, routing-evaluation, runtime-smoke-test, maintainer-approval/,
     );
+  } finally {
+    removeDir(root);
+  }
+});
+
+test('registry validation rejects duplicate names and invalid discovery relationships', () => {
+  const root = makeTempDir('reg-');
+  try {
+    writeSkill(root, 'alpha', { frontmatter: validFrontmatter('alpha') });
+    const registry = buildRegistry(root);
+    registry.skills.push(structuredClone(registry.skills[0]));
+    registry.skills[1].discovery.relatedSkills = ['missing'];
+    const errors = validateRegistry(registry).join('\n');
+    assert.match(errors, /skill names must be unique/);
+    assert.match(errors, /unknown skill missing/);
   } finally {
     removeDir(root);
   }
@@ -214,6 +325,20 @@ test('registry validation accepts the version 1 registry as migration baseline',
     const previous = structuredClone(candidate);
     previous.schemaVersion = 1;
     delete previous.skills[0].maturity;
+    assert.deepEqual(validateRegistry(candidate, previous), []);
+  } finally {
+    removeDir(root);
+  }
+});
+
+test('registry validation accepts the version 2 registry as migration baseline', () => {
+  const root = makeTempDir('reg-');
+  try {
+    writeSkill(root, 'alpha', { frontmatter: validFrontmatter('alpha') });
+    const candidate = buildRegistry(root);
+    const previous = structuredClone(candidate);
+    previous.schemaVersion = 2;
+    delete previous.skills[0].discovery;
     assert.deepEqual(validateRegistry(candidate, previous), []);
   } finally {
     removeDir(root);

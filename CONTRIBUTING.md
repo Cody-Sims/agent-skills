@@ -109,6 +109,21 @@ unverified entry as verified core. See
 [`docs/tier-lifecycle.md`](docs/tier-lifecycle.md) for entry, promotion,
 regression, demotion, deprecation, and removal criteria.
 
+## Discovery metadata
+
+Add a complete record for every new skill to `registry/discovery.json`.
+Category, tags, typed inputs and outputs, risk, compatibility for all supported
+runtimes, related and conflicting skills, and example prompts belong in this
+catalog-only manifest, not portable `SKILL.md` frontmatter. See
+[`docs/registry-discovery.md`](docs/registry-discovery.md).
+
+Regenerate and query the catalog after changing discovery or maturity metadata:
+
+```bash
+npm run registry
+npm run registry:query -- --category <category> --runtime <runtime>
+```
+
 Validate one or more manifests locally with:
 
 ```bash
@@ -128,6 +143,8 @@ npm run contributions:validate -- --changed-skill <skill-name>
 - [ ] Writing follows the house style: terse, third person, numbered steps, no
       emoji, no marketing language, repository-agnostic.
 - [ ] `README.md` skills table and `CHANGELOG.md` are updated.
+- [ ] `registry/discovery.json` has complete metadata and `npm run registry:check`
+      passes after regeneration.
 - [ ] `npm run validate` and `npm test` pass.
 - [ ] Applicable behavior evaluations compare the candidate with no skill or
    the previous release and include independent human review where needed.

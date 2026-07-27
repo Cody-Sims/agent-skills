@@ -139,8 +139,8 @@ When the catalog changes, update the following in the same change:
 
 | Change | Update |
 |---|---|
-| Skill added | `README.md` skills table; `CHANGELOG.md` (`Added`); regenerate the registry if present; run `npm run validate` and `npm test`. |
-| Skill renamed | Directory name and `name` frontmatter together; every internal reference and link; `README.md` skills table; `CHANGELOG.md` (`Changed`); regenerate the registry. |
-| Skill removed | Delete `skills/<name>/`; `README.md` skills table; `CHANGELOG.md` (`Removed`); regenerate the registry. |
+| Skill added | `README.md` skills table; `CHANGELOG.md` (`Added`); add `registry/discovery.json` metadata; regenerate the registry; run `npm run validate` and `npm test`. |
+| Skill renamed | Directory name and `name` frontmatter together; every internal reference and link; `registry/discovery.json`; `README.md` skills table; `CHANGELOG.md` (`Changed`); regenerate the registry. |
+| Skill removed | Delete `skills/<name>/` and its discovery record; `README.md` skills table; `CHANGELOG.md` (`Removed`); regenerate the registry. |
 | Frontmatter contract changed | `schemas/skill.schema.json`; the frontmatter table above; `docs/authoring-guide.md`; `docs/compatibility.md`; every affected `SKILL.md`. |
 | Tooling or npm script changed | `README.md` command reference; `package.json`; `docs/` as needed; add or update tests under `tests/`. |
