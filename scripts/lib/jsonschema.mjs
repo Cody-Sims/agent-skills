@@ -1,6 +1,6 @@
 // Minimal, dependency-free JSON Schema validator covering the subset used by
 // this repository's schemas: type, const, enum, required, additionalProperties,
-// properties, items, pattern, minLength, minimum, maximum, and integer. It is
+// properties, maxProperties, items, pattern, minLength, minimum, maximum, and integer. It is
 // not a general-purpose validator; it exists so generated artifacts can be
 // checked against a committed schema without adding npm dependencies.
 
@@ -74,6 +74,10 @@ export function validateAgainstSchema(schema, value, path = '$', errors = [], ro
   }
 
   if (typeOf(value) === 'object') {
+    if (typeof schema.maxProperties === 'number'
+        && Object.keys(value).length > schema.maxProperties) {
+      errors.push(`${path}: object has more than maxProperties ${schema.maxProperties}.`);
+    }
     for (const required of schema.required ?? []) {
       if (!(required in value)) {
         errors.push(`${path}: missing required property "${required}".`);

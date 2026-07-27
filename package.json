@@ -9,7 +9,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "validate": "node scripts/validate-skills.mjs && node scripts/continuous-improvement.mjs validate-policy && node scripts/validate-evaluations.mjs",
+    "validate": "node scripts/validate-skills.mjs && node scripts/continuous-improvement.mjs validate-policy && node scripts/validate-evaluations.mjs && node scripts/validate-pack-evaluations.mjs --structural",
     "validate:json": "node scripts/validate-skills.mjs --format json",
     "validate:portable": "node scripts/validate-skills.mjs --profile portable",
     "skill:create": "node scripts/create-skill.mjs",
@@ -21,6 +21,10 @@
     "eval:smoke": "node scripts/run-evaluations.mjs --suite evals/evals.json --adapter node --adapter-arg tests/fixtures/evaluation-adapter.mjs --out tmp/evaluations/verification-before-completion.json",
     "routing": "node scripts/run-routing-evaluations.mjs",
     "routing:smoke": "node scripts/run-routing-evaluations.mjs --suite evals/routing.json --adapter node --adapter-arg tests/fixtures/routing-adapter.mjs --out tmp/evaluations/routing.json",
+    "pack:validate": "node scripts/validate-pack-evaluations.mjs --structural",
+    "pack:validate:provenance": "node scripts/validate-pack-evaluations.mjs",
+    "pack:smoke": "node scripts/run-pack-evaluations.mjs --structural --adapter @node --adapter-entrypoint tests/fixtures/pack-adapter.mjs --adapter-arg tests/fixtures/pack-adapter.mjs --adapter-id deterministic-pack-fixture-v1 --adapter-kind fixture --out-dir tmp/pack-evaluations",
+    "pack:smoke:provenance": "node scripts/run-pack-evaluations.mjs --adapter @node --adapter-entrypoint tests/fixtures/pack-adapter.mjs --adapter-arg tests/fixtures/pack-adapter.mjs --adapter-id deterministic-pack-fixture-v1 --adapter-kind fixture --out-dir tmp/pack-evaluations",
     "runtime:smoke": "node scripts/run-runtime-smoke.mjs --suite tests/fixtures/runtime-smoke/suite.json --adapter claude-code=@node --adapter-entrypoint claude-code=tests/fixtures/runtime-smoke/adapter.mjs --adapter-arg claude-code=tests/fixtures/runtime-smoke/adapter.mjs --adapter github-copilot=@node --adapter-entrypoint github-copilot=tests/fixtures/runtime-smoke/adapter.mjs --adapter-arg github-copilot=tests/fixtures/runtime-smoke/adapter.mjs --adapter openai-codex=@node --adapter-entrypoint openai-codex=tests/fixtures/runtime-smoke/adapter.mjs --adapter-arg openai-codex=tests/fixtures/runtime-smoke/adapter.mjs --out tmp/runtime-smoke/public-result.json",
     "contributions:validate": "node scripts/validate-contributions.mjs",
     "improvement:validate": "node scripts/continuous-improvement.mjs validate-policy",

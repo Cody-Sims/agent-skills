@@ -156,3 +156,63 @@ npm run routing -- \
 The committed result schema leaves thresholds as `null`. Establish recall,
 precision, and collision thresholds only after repeated real-model baselines;
 the synthetic adapter cannot justify promotion criteria.
+
+## Pack Composition Evaluations
+
+Each active workflow pack has a versioned suite under `evals/packs/`. Suites
+bind registry v5, exact pack and member versions,
+ordered handoffs, and a reviewed adapter entrypoint and launch policy. Cases
+include training and held-out validation prompts, positive requests for every
+member and handoff, adjacent near misses, and out-of-pack negatives.
+
+```bash
+npm run pack:validate
+npm run pack:smoke
+npm run pack:validate -- --result tmp/pack-evaluations/feature-delivery.json
+```
+
+Those commands are explicitly structural precommit checks. Their artifacts
+carry no source commit and set `provenance.valid` to `false`. Once the suite is
+committed, use:
+
+```bash
+npm run pack:validate:provenance -- --source-commit "$GITHUB_SHA"
+npm run pack:smoke:provenance -- --source-commit "$GITHUB_SHA"
+```
+
+Provenance mode obtains the commit externally; suites do not embed a commit.
+The commit must be `HEAD`, or an ancestor accepted only with
+`--allow-ancestor`. Registry bytes, suite path and bytes, and every member blob
+must exist and match exactly at that commit.
+
+The adapter sees only the exact pack catalog. Expected routes, excluded routes,
+case type, and handoff labels are omitted. Results reject out-of-pack routes and
+record repeated-trial validation precision, recall, collisions, confusion, and
+handoff coverage without retaining prompts, raw model output, stderr,
+environment values, or secrets.
+
+The final status is derived from trial evidence. `pass` requires every trial to
+select exactly its expected routes and avoid every excluded route. Negative-case
+activation is the fraction of trials selecting any pack member; a correct
+negative selects none. Any incorrect trial produces `fail` and a nonzero runner
+exit. Artifact validation recomputes the status.
+
+Context accounting separates deterministic measurements from adapter claims:
+
+* member count;
+* serialized discovery metadata UTF-8 bytes;
+* combined member `SKILL.md` UTF-8 bytes;
+* on-demand resource UTF-8 bytes; and
+* adapter-reported input tokens.
+
+The suite and result also bind a deterministic complete member-tree digest over
+sorted repository-relative paths and the SHA-256 of every member `SKILL.md` and
+declared resource. Same-length content substitution therefore invalidates the
+artifact. Adapter execution uses the shared runtime-smoke safe-launch contract,
+isolated home/config/cache/temp directories, bounded output and time, and
+process-group cleanup with workspace preservation when cleanup is unverifiable.
+
+The public smoke uses `tests/fixtures/pack-adapter.mjs`. Every artifact labels
+itself fixture evidence with `vendorHostExecuted: false` and
+`promotionEligible: false`. Thresholds are `null`; real hosted runs and
+composition promotion thresholds require follow-up baseline evidence.

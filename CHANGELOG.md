@@ -62,8 +62,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   baseline checks, and semver-guarded pack lifecycle transitions.
 - Transactional exact-version workflow pack install, check, uninstall, and
   selection reporting with conflict preflight, shared-skill retention,
-  multi-target rollback, and recoverable target-local journals. Composition
-  evaluation remains deferred.
+  multi-target rollback, and recoverable target-local journals.
+- Versioned composition suites for all workflow packs with exact-member routing,
+  ordered-handoff and adjacent near-miss coverage, deterministic context byte
+  and complete member-tree accounting, correctness-bound status, shared hardened
+  adapter launch and cleanup, isolated trial homes, strict result artifacts, and
+  a fixture-only public smoke with separate structural precommit and exact-commit
+  provenance modes.
 - Install receipt v3 with catalog and pack selections, source identity, registry
   digest, exact selected skill versions, per-file ownership hashes, safe v1/v2
   migration, and receipt-last transaction commits.

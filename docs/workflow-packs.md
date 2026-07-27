@@ -7,8 +7,9 @@ generator validates and normalizes the manifest into `registry/skills.json`
 schema version 5.
 
 `manage-skills.mjs` installs, checks, and uninstalls exact-version pack
-selections transactionally. Composition routing and combined-context evaluation
-remain deferred to AS-009 slice 3.
+selections transactionally. Versioned suites under `evals/packs/` evaluate
+composition routing, ordered handoffs, adjacent-member near misses, out-of-pack
+requests, and combined context accounting.
 
 ## Install and selection behavior
 
@@ -97,6 +98,60 @@ The manifest also has a `removed` map for immutable pack tombstones. Unknown
 properties are rejected throughout the schema.
 
 ## Validation
+
+Validate all composition suites before committing, without launching an adapter:
+
+```bash
+npm run pack:validate
+```
+
+This command selects named `structural` mode. Structural artifacts have
+`sourceCommit: null`, `provenance.valid: false`, and are never promotion
+evidence. Run the public deterministic fixture smoke in the same precommit mode:
+
+```bash
+npm run pack:smoke
+```
+
+After the suites exist in an immutable commit, CI uses explicit provenance mode:
+
+```bash
+npm run pack:validate:provenance -- --source-commit "$GITHUB_SHA"
+npm run pack:smoke:provenance -- --source-commit "$GITHUB_SHA"
+```
+
+Omitting both mode flags resolves `HEAD` through argument-safe Git and selects
+provenance mode. `--source-commit` requires a full lowercase 40-character SHA.
+It must equal `HEAD` unless `--allow-ancestor` is supplied explicitly. The
+ancestor policy permits only an ancestor whose registry, suite, and every
+member blob are byte-identical to the current inputs.
+
+The smoke filters adapter-visible discovery metadata to the selected pack's
+exact member names and versions. Requests contain the prompt, opaque case ID,
+trial number, pack identity, and filtered catalog. They do not contain expected
+or excluded routes, case kind, handoff labels, or thresholds. Returned routes
+outside the pack fail closed.
+
+Artifacts bind the complete suite and registry v5 byte counts and SHA-256
+digests and path, source commit, exact pack definition and member versions,
+complete member-tree digest, reviewed adapter policy, actual normalized launch
+digest, every case and trial, summaries, confusion, and handoff coverage.
+Validation reproduces registry, suite, and member blobs from the full externally
+supplied source commit SHA. A missing historical suite is a hard failure. Suites
+never embed their own commit.
+Measured context fields report member count, serialized
+discovery-catalog UTF-8 bytes, combined `SKILL.md` UTF-8 bytes, and on-demand
+resource UTF-8 bytes separately from adapter-reported input tokens.
+
+`pack:smoke` is fixture evidence. It does not execute a vendor host and is not
+promotion evidence. Composition thresholds remain `null` until repeated real
+hosted baselines support a separately reviewed suite and adapter identity.
+A completed run passes only when every trial selects exactly the expected route
+set and no excluded route, including empty selections for negative cases.
+Incorrect trials write a `fail` artifact and make the CLI exit nonzero.
+Execution or integrity failures terminate without writing a passing artifact.
+Each trial receives isolated home, configuration, cache, and temporary
+directories. Cleanup uncertainty preserves the trial root for operator action.
 
 `npm run registry` and `npm run registry:check` reject:
 

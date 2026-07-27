@@ -17,3 +17,13 @@ test('enforces string and array size constraints', () => {
   assert.match(errors, /fewer than minItems 1/);
   assert.match(validateAgainstSchema(schema, { name: 'ok', values: [1, 2, 3] }).join('\n'), /more than maxItems 2/);
 });
+
+test('enforces bounded object property counts used by result maps', () => {
+  const schema = {
+    type: 'object',
+    maxProperties: 1,
+    additionalProperties: { type: 'integer' },
+  };
+  assert.deepEqual(validateAgainstSchema(schema, { one: 1 }), []);
+  assert.match(validateAgainstSchema(schema, { one: 1, two: 2 }).join('\n'), /more than maxProperties 1/);
+});

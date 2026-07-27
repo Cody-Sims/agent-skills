@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cody-Sims/agent-skills/schemas/pack-suite.schema.json",
+  "title": "Agent Skills Pack Composition Evaluation Suite",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "name", "version", "source", "pack", "adapter", "trials", "thresholds", "cases"],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "name": { "$ref": "#/$defs/name" },
+    "version": { "$ref": "#/$defs/version" },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["registrySha256", "memberTreeSha256", "suitePath"],
+      "properties": {
+        "registrySha256": { "$ref": "#/$defs/hash" },
+        "memberTreeSha256": { "$ref": "#/$defs/hash" },
+        "suitePath": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300,
+          "pattern": "^evals/packs/[a-z0-9]+(?:-[a-z0-9]+)*\\.json$"
+        }
+      }
+    },
+    "pack": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version", "members", "handoffs"],
+      "properties": {
+        "name": { "$ref": "#/$defs/name" },
+        "version": { "$ref": "#/$defs/version" },
+        "members": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 32,
+          "items": { "$ref": "#/$defs/member" }
+        },
+        "handoffs": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 31,
+          "items": { "$ref": "#/$defs/handoff" }
+        }
+      }
+    },
+    "adapter": { "$ref": "#/$defs/adapter" },
+    "trials": { "type": "integer", "minimum": 1, "maximum": 20 },
+    "thresholds": { "type": "null" },
+    "cases": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 256,
+      "items": { "$ref": "#/$defs/case" }
+    }
+  },
+  "$defs": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "version": {
+      "type": "string",
+      "maxLength": 32,
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "hash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "member": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version"],
+      "properties": {
+        "name": { "$ref": "#/$defs/name" },
+        "version": { "$ref": "#/$defs/version" }
+      }
+    },
+    "handoff": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from", "to"],
+      "properties": {
+        "from": { "$ref": "#/$defs/name" },
+        "to": { "$ref": "#/$defs/name" }
+      }
+    },
+    "adapter": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "entrypointSha256", "policySha256", "launchPolicySha256"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "kind": { "type": "string", "enum": ["fixture", "host"] },
+        "entrypointSha256": { "$ref": "#/$defs/hash" },
+        "policySha256": { "$ref": "#/$defs/hash" },
+        "launchPolicySha256": { "$ref": "#/$defs/hash" }
+      }
+    },
+    "case": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "split", "kind", "prompt", "expected", "excluded", "handoff"],
+      "properties": {
+        "id": { "$ref": "#/$defs/name" },
+        "split": { "type": "string", "enum": ["training", "validation"] },
+        "kind": { "type": "string", "enum": ["positive", "near-miss", "negative"] },
+        "prompt": { "type": "string", "minLength": 1, "maxLength": 4000 },
+        "expected": {
+          "type": "array",
+          "maxItems": 1,
+          "items": { "$ref": "#/$defs/name" }
+        },
+        "excluded": {
+          "type": "array",
+          "maxItems": 32,
+          "items": { "$ref": "#/$defs/name" }
+        },
+        "handoff": {
+          "type": ["object", "null"],
+          "additionalProperties": false,
+          "required": ["from", "to"],
+          "properties": {
+            "from": { "$ref": "#/$defs/name" },
+            "to": { "$ref": "#/$defs/name" }
+          }
+        }
+      }
+    }
+  }
+}

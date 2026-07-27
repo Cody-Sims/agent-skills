@@ -49,6 +49,11 @@ jobs:
       - name: Run deterministic cross-runtime smoke matrix
         run: npm run runtime:smoke
 
+      - name: Run deterministic pack composition smoke
+        run: |
+          npm run pack:validate:provenance -- --source-commit "$GITHUB_SHA"
+          npm run pack:smoke:provenance -- --source-commit "$GITHUB_SHA"
+
       - name: Require evidence for changed skills
         if: github.event_name == 'pull_request'
         run: node scripts/validate-contributions.mjs --base "${{ github.event.pull_request.base.sha }}"

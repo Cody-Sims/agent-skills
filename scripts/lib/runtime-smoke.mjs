@@ -1,5 +1,5 @@
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { dirname, isAbsolute, resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
 
 import { parseFrontmatter } from './frontmatter.mjs';
 import {
@@ -14,6 +14,10 @@ import {
   buildAdapterEnvironment,
   runJsonAdapterAsync,
 } from './process-adapter.mjs';
+import {
+  normalizeSafeAdapterLaunch,
+  portableAdapterLaunchPolicy,
+} from './safe-adapter-launch.mjs';
 
 export const RUNTIMES = ['claude-code', 'github-copilot', 'openai-codex'];
 export const CHECKS = ['install', 'discovery', 'invocation', 'resource-resolution', 'host-extensions'];
@@ -99,32 +103,16 @@ function adapterEntrypoint(adapter) {
 }
 
 function normalizedLaunch(adapter, entrypoint) {
-  const environment = [...adapter.environmentNames].sort();
-  if (new Set(environment).size !== environment.length) {
-    throw new Error('Configured adapter environment allowlist contains duplicates.');
-  }
-
-  if (!isAbsolute(adapter.command)) {
-    throw new Error('Adapter safe launch shape requires an explicitly resolved executable.');
-  }
-  if (adapter.command === entrypoint) {
-    if (readFileSync(entrypoint).subarray(0, 2).toString('utf8') === '#!') {
-      throw new Error('Adapter safe launch shape rejects direct shebang entrypoints.');
-    }
-    return { executable: 'entrypoint', arguments: [...adapter.args], environment };
-  }
-  if (adapter.command === process.execPath) {
-    if (adapter.args.length === 0 || resolve(adapter.args[0]) !== entrypoint) {
-      throw new Error('Node adapter safe launch shape requires the reviewed entrypoint as the fixed first script argument.');
-    }
-    return {
-      executable: 'process.execPath',
-      arguments: ['{entrypoint}', ...adapter.args.slice(1)],
-      environment,
-    };
-  }
-
-  throw new Error('Adapter safe launch shape requires the reviewed entrypoint executable or the current Node interpreter.');
+  const normalized = normalizeSafeAdapterLaunch({
+    ...adapter,
+    entrypoint,
+  });
+  const policy = portableAdapterLaunchPolicy(normalized);
+  return {
+    executable: policy.executable,
+    arguments: policy.arguments,
+    environment: policy.environment,
+  };
 }
 
 function actualLaunch(adapter, environment) {

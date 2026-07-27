@@ -274,9 +274,13 @@ approval gates live outside the canonical skill format.
     preflight, and rollback transactions.
   - [ ] Slice 3: Add composition routing and combined-context evaluation,
     reporting, and promotion gates.
-- **Current result:** Slices 1 and 2 publish validated metadata plus transactional
-  pack selection, receipt, install, check, uninstall, rollback, and recovery.
-  Composition evaluation remains unimplemented, so AS-009 remains in progress.
+- **Current result:** Implements strict versioned metadata, transactional pack lifecycle
+  operations, and composition suites for all three packs with exact-member
+  routing, ordered-handoff and adjacent near-miss coverage, deterministic
+  context accounting, bound sanitized artifacts, and fixture-only CI smoke.
+  Hosted composition baselines and non-null promotion thresholds remain
+  follow-up evidence and are not claimed. Suite-at-source-commit provenance
+  remains blocked until the new suites exist in an immutable commit.
 
 ### AS-010: Add provenance and lifecycle management
 

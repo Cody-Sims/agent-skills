@@ -218,6 +218,10 @@ agent-skills/
 | `npm run eval -- --suite <suite> --adapter <command> --out <result>` | Behavior evaluation runner | Compare baseline and candidate outputs through a model adapter. |
 | `npm run routing:smoke` | Synthetic routing smoke test | Exercise repeated trials and confusion reporting. |
 | `npm run routing -- --suite <suite> --adapter <command> --out <result>` | Routing evaluation runner | Measure activation, precision, recall, collisions, tokens, and duration. |
+| `npm run pack:validate [-- --result <artifact>]` | Structural pack validator | Run precommit structural validation without claiming source provenance. |
+| `npm run pack:validate:provenance -- --source-commit <40-hex>` | Provenance pack validator | Require exact committed registry, suite, and member bytes at HEAD or an explicitly allowed ancestor. |
+| `npm run pack:smoke` | Structural fixture pack smoke | Exercise every pack while labeling artifacts non-provenance precommit evidence. |
+| `npm run pack:smoke:provenance -- --source-commit <40-hex>` | Provenance fixture pack smoke | Run the deterministic smoke against exact committed bytes. |
 | `npm run runtime:smoke` | Deterministic fixture adapters | Exercise install, discovery, invocation, resources, and host extensions for Claude Code, Copilot, and Codex. |
 | `node scripts/run-runtime-smoke.mjs --suite <suite> --out <result> [--adapter <runtime=command> --adapter-entrypoint <runtime=path>]` | Runtime smoke runner | Run reviewed host adapters; record unavailable hosts as structured skips. |
 | `npm run contributions:validate -- --changed-skill <name>` | Contribution evidence validator | Require expertise provenance and uplift or an approved safety exception. |
