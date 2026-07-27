@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 
-// Generates registry/skills.json from skills/*/SKILL.md. Deterministic output
-// (no timestamps) so `--check` can enforce that the committed file is current
-// in CI. Validates the generated registry against schemas/registry.schema.json.
+// Generates registry/skills.json from canonical skills and maintainer-authored
+// registry manifests. Deterministic output (no timestamps) lets `--check`
+// enforce that the committed file is current in CI. Validates the generated
+// registry against schemas/registry.schema.json.
 
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, relative, resolve, sep } from 'node:path';
@@ -26,6 +27,11 @@ import {
   validateOriginTransitions,
 } from './lib/lifecycle.mjs';
 import { validateMaturity, validateTierTransition } from './lib/tier-policy.mjs';
+import {
+  normalizePacks,
+  validatePackManifest,
+  validatePackTransitions,
+} from './lib/packs.mjs';
 
 const REPOSITORY_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const DEFAULT_SKILLS_ROOT = resolve(REPOSITORY_ROOT, 'skills');
@@ -33,10 +39,12 @@ const DEFAULT_REGISTRY_PATH = resolve(REPOSITORY_ROOT, 'registry', 'skills.json'
 const DEFAULT_MATURITY_PATH = resolve(REPOSITORY_ROOT, 'registry', 'maturity.json');
 const DEFAULT_DISCOVERY_PATH = resolve(REPOSITORY_ROOT, 'registry', 'discovery.json');
 const DEFAULT_LIFECYCLE_PATH = resolve(REPOSITORY_ROOT, 'registry', 'lifecycle.json');
+const DEFAULT_PACKS_PATH = resolve(REPOSITORY_ROOT, 'registry', 'packs.json');
 const SCHEMA_PATH = resolve(REPOSITORY_ROOT, 'schemas', 'registry.schema.json');
 const MATURITY_SCHEMA_PATH = resolve(REPOSITORY_ROOT, 'schemas', 'maturity-evidence.schema.json');
 const DISCOVERY_SCHEMA_PATH = resolve(REPOSITORY_ROOT, 'schemas', 'registry-discovery.schema.json');
 const LIFECYCLE_SCHEMA_PATH = resolve(REPOSITORY_ROOT, 'schemas', 'lifecycle.schema.json');
+const PACKS_SCHEMA_PATH = resolve(REPOSITORY_ROOT, 'schemas', 'packs.schema.json');
 
 // Builds the registry object from a skills root. Pure and deterministic.
 export function buildRegistry(
@@ -46,6 +54,7 @@ export function buildRegistry(
   discoveryManifest = null,
   lifecycleManifest = null,
   asOf = new Date().toISOString().slice(0, 10),
+  packsManifest = { schemaVersion: 1, packs: [], removed: {} },
 ) {
   const manifestErrors = validateMaturityManifest(maturityManifest, { artifactRoot });
   if (manifestErrors.length > 0) {
@@ -126,7 +135,18 @@ export function buildRegistry(
     });
   }
   entries.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
-  return { schemaVersion: 4, skills: entries, removed: normalizedLifecycle.removed };
+  const packErrors = validatePackManifest(loadPacksSchema(), packsManifest, entries);
+  if (packErrors.length > 0) {
+    throw new Error(`Invalid pack manifest:\n${packErrors.join('\n')}`);
+  }
+  const normalizedPacks = normalizePacks(packsManifest);
+  return {
+    schemaVersion: 5,
+    skills: entries,
+    removed: normalizedLifecycle.removed,
+    packs: normalizedPacks.packs,
+    removedPacks: normalizedPacks.removed,
+  };
 }
 
 export function serializeRegistry(registry) {
@@ -147,6 +167,10 @@ function loadDiscoverySchema() {
 
 function loadLifecycleSchema() {
   return JSON.parse(readFileSync(LIFECYCLE_SCHEMA_PATH, 'utf8'));
+}
+
+function loadPacksSchema() {
+  return JSON.parse(readFileSync(PACKS_SCHEMA_PATH, 'utf8'));
 }
 
 export function validateLifecycleManifest(
@@ -199,9 +223,7 @@ export function validateRegistry(
   const skillNames = registrySkills
     .filter((skill) => skill && typeof skill.name === 'string')
     .map((skill) => skill.name);
-  if (new Set(skillNames).size !== skillNames.length) {
-    errors.push('$.skills: skill names must be unique.');
-  }
+  errors.push(...validateUniqueRegistrySkillNames(registry));
   const discoveryManifest = {
     schemaVersion: 1,
     skills: Object.fromEntries(
@@ -215,19 +237,47 @@ export function validateRegistry(
     errors.push(...validateMaturity(skill.tier, skill.maturity, `$.skills[${index}].maturity`));
   }
   errors.push(...validateRegistryLifecycle(registry, asOf));
+  const packManifest = {
+    schemaVersion: 1,
+    packs: Array.isArray(registry.packs) ? registry.packs : [],
+    removed: registry.removedPacks && typeof registry.removedPacks === 'object'
+      ? registry.removedPacks
+      : {},
+  };
+  errors.push(...validatePackManifest(loadPacksSchema(), packManifest, registrySkills));
   if (previousRegistry) {
-    const previousErrors = previousRegistry.schemaVersion <= 3
+    const previousVersion = previousRegistry.schemaVersion;
+    const previousErrors = Number.isInteger(previousVersion)
+      && previousVersion >= 1
+      && previousVersion <= 4
       ? validateLegacyRegistry(previousRegistry)
-      : validateAgainstSchema(loadSchema(), previousRegistry);
+      : previousVersion === 5
+        ? [
+          ...validateAgainstSchema(loadSchema(), previousRegistry),
+          ...validateUniqueRegistrySkillNames(previousRegistry),
+        ]
+        : ['schemaVersion must be an integer from 1 through 5.'];
     for (const error of previousErrors) {
       errors.push(`previous registry: ${error}`);
     }
-    const previousSkills = Array.isArray(previousRegistry.skills) ? previousRegistry.skills : [];
-    const previousByName = new Map(previousSkills.map((skill) => [skill.name, skill]));
-    for (const skill of registrySkills) {
-      errors.push(...validateTierTransition(previousByName.get(skill.name) ?? null, skill));
+    if (previousErrors.length === 0) {
+      const previousSkills = previousRegistry.skills;
+      const previousByName = new Map(previousSkills.map((skill) => [skill.name, skill]));
+      for (const skill of registrySkills) {
+        errors.push(...validateTierTransition(previousByName.get(skill.name) ?? null, skill));
+      }
+      errors.push(...validateOriginTransitions(previousRegistry, registry));
+      const previousPackManifest = previousVersion === 5 ? {
+        schemaVersion: 1,
+        packs: previousRegistry.packs,
+        removed: previousRegistry.removedPacks,
+      } : {
+        schemaVersion: 1,
+        packs: [],
+        removed: {},
+      };
+      errors.push(...validatePackTransitions(previousPackManifest, packManifest));
     }
-    errors.push(...validateOriginTransitions(previousRegistry, registry));
   }
   return errors;
 }
@@ -295,22 +345,82 @@ function validateRegistryLifecycle(registry, asOf) {
 
 function validateLegacyRegistry(registry) {
   const errors = [];
+  if (!Number.isInteger(registry?.schemaVersion)
+    || registry.schemaVersion < 1
+    || registry.schemaVersion > 4) {
+    return ['schemaVersion must be an integer from 1 through 4 for a legacy registry.'];
+  }
   if (!Array.isArray(registry.skills)) {
     return ['$.skills: expected type array.'];
   }
+  errors.push(...validateUniqueRegistrySkillNames(registry));
+  const registrySchema = loadSchema();
+  const skillSchema = registrySchema.properties.skills.items;
+  const requiredFields = [
+    'name',
+    'description',
+    'path',
+    'skillFile',
+    'sha256',
+    'resources',
+  ];
+  if (registry.schemaVersion >= 2) requiredFields.push('maturity');
+  if (registry.schemaVersion >= 3) requiredFields.push('discovery');
+  if (registry.schemaVersion >= 4) requiredFields.push('lifecycle');
   for (const [index, skill] of registry.skills.entries()) {
     if (!skill || typeof skill !== 'object' || Array.isArray(skill)) {
       errors.push(`$.skills[${index}]: expected type object.`);
       continue;
     }
-    if (typeof skill.name !== 'string') {
-      errors.push(`$.skills[${index}].name: expected type string.`);
+    for (const field of requiredFields) {
+      if (!(field in skill)) {
+        errors.push(`$.skills[${index}]: missing required property "${field}".`);
+        continue;
+      }
+      validateAgainstSchema(
+        skillSchema.properties[field],
+        skill[field],
+        `$.skills[${index}].${field}`,
+        errors,
+        registrySchema,
+      );
     }
-    if (!['experimental', 'extended', 'core'].includes(skill.tier)) {
-      errors.push(`$.skills[${index}].tier: value ${JSON.stringify(skill.tier)} is not a supported tier.`);
+    for (const field of ['version', 'license', 'tier']) {
+      if (field in skill) {
+        validateAgainstSchema(
+          skillSchema.properties[field],
+          skill[field],
+          `$.skills[${index}].${field}`,
+          errors,
+          registrySchema,
+        );
+      }
+    }
+  }
+  if (registry.schemaVersion >= 4) {
+    if (!registry.removed || typeof registry.removed !== 'object' || Array.isArray(registry.removed)) {
+      errors.push('$: missing required property "removed".');
+    } else {
+      validateAgainstSchema(
+        registrySchema.properties.removed,
+        registry.removed,
+        '$.removed',
+        errors,
+        registrySchema,
+      );
     }
   }
   return errors;
+}
+
+function validateUniqueRegistrySkillNames(registry) {
+  if (!Array.isArray(registry?.skills)) return [];
+  const names = registry.skills
+    .filter((skill) => skill && typeof skill.name === 'string')
+    .map((skill) => skill.name);
+  return new Set(names).size === names.length
+    ? []
+    : ['$.skills: skill names must be unique.'];
 }
 
 async function main() {
@@ -327,6 +437,7 @@ async function main() {
   const maturityManifest = JSON.parse(readFileSync(DEFAULT_MATURITY_PATH, 'utf8'));
   const discoveryManifest = JSON.parse(readFileSync(DEFAULT_DISCOVERY_PATH, 'utf8'));
   const lifecycleManifest = JSON.parse(readFileSync(DEFAULT_LIFECYCLE_PATH, 'utf8'));
+  const packsManifest = JSON.parse(readFileSync(DEFAULT_PACKS_PATH, 'utf8'));
   const registry = buildRegistry(
     DEFAULT_SKILLS_ROOT,
     maturityManifest,
@@ -334,6 +445,7 @@ async function main() {
     discoveryManifest,
     lifecycleManifest,
     asOf,
+    packsManifest,
   );
   const previousRegistry = previousPath
     ? JSON.parse(readFileSync(resolve(previousPath), 'utf8'))

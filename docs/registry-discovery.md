@@ -45,7 +45,8 @@ relationships, or schema violations. Output arrays are sorted so generation is
 deterministic.
 
 Registry v3 adds `discovery` while preserving v2 `maturity` records. Pull-request
-comparison accepts registry v1 and v2 as migration baselines.
+comparison accepts registry v1 through v4 as migration baselines. Current
+generated output is registry v5.
 
 ## Query
 
@@ -62,4 +63,4 @@ Available filters are `--category`, repeatable `--tag`, `--risk`, `--runtime`,
 `--runtime-status`, `--input`, and `--output`. Filters use AND semantics.
 `--runtime-status` requires `--runtime`. Output is one skill name per line by
 default; use `--format json` for complete matching records or
-`--registry <path>` to query another registry v4 file.
+`--registry <path>` to query another registry v5 file.

@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "packs": [
+    {
+      "name": "feature-delivery",
+      "version": "1.0.0",
+      "description": "Carries an agreed feature from requirements through implementation review, documentation, and completion verification.",
+      "skills": [
+        { "name": "requirements-and-spec-writing", "version": "1.0.0" },
+        { "name": "planning-and-task-breakdown", "version": "1.0.0" },
+        { "name": "test-driven-development", "version": "1.0.0" },
+        { "name": "code-review", "version": "1.0.0" },
+        { "name": "documentation-maintenance", "version": "1.0.0" },
+        { "name": "verification-before-completion", "version": "1.0.1" }
+      ],
+      "handoffs": [
+        { "from": "requirements-and-spec-writing", "to": "planning-and-task-breakdown", "when": "An agreed implementation-ready specification exists." },
+        { "from": "planning-and-task-breakdown", "to": "test-driven-development", "when": "The approved work is decomposed into ordered tasks with acceptance criteria." },
+        { "from": "test-driven-development", "to": "code-review", "when": "The implementation has completed its red-green-refactor cycle." },
+        { "from": "code-review", "to": "documentation-maintenance", "when": "The implementation review has no unresolved required findings." },
+        { "from": "documentation-maintenance", "to": "verification-before-completion", "when": "Directly affected documentation and changelog entries are current." }
+      ],
+      "conflicts": [],
+      "installPolicy": {
+        "versionMatch": "exact",
+        "conflictAction": "reject",
+        "requiredRuntimes": ["claude-code", "github-copilot", "openai-codex"]
+      }
+    },
+    {
+      "name": "safe-refactor",
+      "version": "1.0.0",
+      "description": "Guides a behavior-preserving refactor from codebase mapping and tests through review and completion verification.",
+      "skills": [
+        { "name": "codebase-exploration", "version": "1.0.1" },
+        { "name": "test-driven-development", "version": "1.0.0" },
+        { "name": "refactoring-and-dead-code-removal", "version": "1.0.0" },
+        { "name": "code-review", "version": "1.0.0" },
+        { "name": "verification-before-completion", "version": "1.0.1" }
+      ],
+      "handoffs": [
+        { "from": "codebase-exploration", "to": "test-driven-development", "when": "The controlling code path, conventions, and validation commands are known." },
+        { "from": "test-driven-development", "to": "refactoring-and-dead-code-removal", "when": "A failing behavior test establishes the preservation boundary." },
+        { "from": "refactoring-and-dead-code-removal", "to": "code-review", "when": "The mechanical refactor is complete with behavior tests passing." },
+        { "from": "code-review", "to": "verification-before-completion", "when": "The refactor review has no unresolved required findings." }
+      ],
+      "conflicts": [],
+      "installPolicy": {
+        "versionMatch": "exact",
+        "conflictAction": "reject",
+        "requiredRuntimes": ["claude-code", "github-copilot", "openai-codex"]
+      }
+    },
+    {
+      "name": "release-readiness",
+      "version": "1.0.0",
+      "description": "Coordinates correctness, security, documentation, and final evidence checks before release-related Git work.",
+      "skills": [
+        { "name": "code-review", "version": "1.0.0" },
+        { "name": "security-review", "version": "1.0.0" },
+        { "name": "documentation-maintenance", "version": "1.0.0" },
+        { "name": "verification-before-completion", "version": "1.0.1" },
+        { "name": "git-and-pr-workflow", "version": "1.0.0" }
+      ],
+      "handoffs": [
+        { "from": "code-review", "to": "security-review", "when": "Functional review has no unresolved required findings." },
+        { "from": "security-review", "to": "documentation-maintenance", "when": "Security review has no unresolved required findings." },
+        { "from": "documentation-maintenance", "to": "verification-before-completion", "when": "Release-facing documentation and changelog entries are current." },
+        { "from": "verification-before-completion", "to": "git-and-pr-workflow", "when": "Fresh validation evidence supports release readiness." }
+      ],
+      "conflicts": [],
+      "installPolicy": {
+        "versionMatch": "exact",
+        "conflictAction": "reject",
+        "requiredRuntimes": ["claude-code", "github-copilot", "openai-codex"]
+      }
+    }
+  ],
+  "removed": {}
+}

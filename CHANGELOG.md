@@ -56,6 +56,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Registry v4 lifecycle and provenance metadata for every skill, including
   immutable origins, matching licenses, scheduled review, replacement
   validation, removed tombstones, and guarded external identity changes.
+- Registry v5 workflow pack metadata with strict schemas, three version-pinned
+  initial packs, continuous ordered handoff validation, deterministic
+  normalization, compatibility and conflict validation, strict historical
+  baseline checks, and semver-guarded pack lifecycle transitions. This does not
+  yet add pack installation or composition evaluation.
 - Install receipt v2 with source identity, registry digest, skill versions,
   per-file ownership and hashes, strict path validation, and safe v1 migration.
 - Versioned cross-runtime smoke schemas and a bounded non-interactive runner for

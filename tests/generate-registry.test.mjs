@@ -55,7 +55,7 @@ function lifecycleManifest(names, overrides = {}) {
   };
 }
 
-test('buildRegistry merges lifecycle metadata and deterministic tombstones into registry v4', () => {
+test('buildRegistry merges lifecycle metadata and deterministic tombstones into registry v5', () => {
   const root = makeTempDir('reg-');
   try {
     writeSkill(root, 'alpha', { frontmatter: validFrontmatter('alpha') });
@@ -83,7 +83,7 @@ test('buildRegistry merges lifecycle metadata and deterministic tombstones into 
       lifecycle,
       '2026-07-27',
     );
-    assert.equal(first.schemaVersion, 4);
+    assert.equal(first.schemaVersion, 5);
     assert.equal(first.skills[0].lifecycle.status, 'active');
     assert.deepEqual(Object.keys(first.removed), ['zeta']);
     assert.equal(serializeRegistry(first), serializeRegistry(second));
@@ -295,7 +295,7 @@ test('lifecycle normalization uses code-point ordering and canonical repository 
   }
 });
 
-test('buildRegistry merges complete discovery metadata into registry v4', () => {
+test('buildRegistry merges complete discovery metadata into registry v5', () => {
   const root = makeTempDir('reg-');
   try {
     writeSkill(root, 'alpha', { frontmatter: validFrontmatter('alpha') });
@@ -305,7 +305,7 @@ test('buildRegistry merges complete discovery metadata into registry v4', () => 
       root,
       discoveryManifest(['alpha']),
     );
-    assert.equal(registry.schemaVersion, 4);
+    assert.equal(registry.schemaVersion, 5);
     assert.deepEqual(registry.skills[0].discovery.tags, ['testing']);
     assert.deepEqual(validateRegistry(registry), []);
   } finally {
@@ -612,6 +612,182 @@ test('registry validation accepts the version 2 registry as migration baseline',
     previous.schemaVersion = 2;
     delete previous.skills[0].discovery;
     assert.deepEqual(validateRegistry(candidate, previous), []);
+  } finally {
+    removeDir(root);
+  }
+});
+
+test('buildRegistry integrates validated normalized packs into registry v5', () => {
+  const root = makeTempDir('reg-');
+  try {
+    for (const name of ['alpha', 'beta']) {
+      writeSkill(root, name, { frontmatter: validFrontmatter(name) });
+    }
+    const packs = {
+      schemaVersion: 1,
+      packs: [{
+        name: 'delivery',
+        version: '1.0.0',
+        description: 'Delivers a tested change through final verification.',
+        skills: [
+          { name: 'beta', version: '1.0.0' },
+          { name: 'alpha', version: '1.0.0' },
+        ],
+        handoffs: [{
+          from: 'alpha',
+          to: 'beta',
+          when: 'Alpha has produced its completed artifact.',
+        }],
+        conflicts: [],
+        installPolicy: {
+          versionMatch: 'exact',
+          conflictAction: 'reject',
+          requiredRuntimes: ['openai-codex', 'claude-code', 'github-copilot'],
+        },
+      }],
+      removed: {},
+    };
+    const registry = buildRegistry(
+      root,
+      { schemaVersion: 1, skills: {} },
+      root,
+      discoveryManifest(['alpha', 'beta']),
+      lifecycleManifest(['alpha', 'beta']),
+      '2026-07-27',
+      packs,
+    );
+    assert.equal(registry.schemaVersion, 5);
+    assert.deepEqual(registry.packs[0].skills.map((member) => member.name), ['alpha', 'beta']);
+    assert.deepEqual(registry.removedPacks, {});
+    assert.deepEqual(validateRegistry(registry, null, '2026-07-27'), []);
+  } finally {
+    removeDir(root);
+  }
+});
+
+test('registry validation accepts version 3 and 4 registries as migration baselines', () => {
+  const root = makeTempDir('reg-');
+  try {
+    writeSkill(root, 'alpha', { frontmatter: validFrontmatter('alpha') });
+    const candidate = buildRegistry(root);
+    for (const version of [3, 4]) {
+      const previous = structuredClone(candidate);
+      previous.schemaVersion = version;
+      delete previous.packs;
+      delete previous.removedPacks;
+      assert.deepEqual(validateRegistry(candidate, previous), []);
+    }
+  } finally {
+    removeDir(root);
+  }
+});
+
+test('registry validation rejects unsupported legacy schema versions', () => {
+  const root = makeTempDir('reg-');
+  try {
+    writeSkill(root, 'alpha', { frontmatter: validFrontmatter('alpha') });
+    const candidate = buildRegistry(root);
+    for (const version of [0, -1]) {
+      const previous = structuredClone(candidate);
+      previous.schemaVersion = version;
+      assert.match(
+        validateRegistry(candidate, previous).join('\n'),
+        /previous registry: schemaVersion must be an integer from 1 through 5/,
+      );
+    }
+  } finally {
+    removeDir(root);
+  }
+});
+
+test('registry validation rejects malformed v4 lifecycle contracts', () => {
+  const root = makeTempDir('reg-');
+  try {
+    writeSkill(root, 'alpha', { frontmatter: validFrontmatter('alpha') });
+    const candidate = buildRegistry(root);
+    const previous = structuredClone(candidate);
+    previous.schemaVersion = 4;
+    delete previous.packs;
+    delete previous.removedPacks;
+    delete previous.skills[0].lifecycle.origin.commit;
+    assert.match(
+      validateRegistry(candidate, previous).join('\n'),
+      /previous registry: \$\.skills\[0\]\.lifecycle\.origin: missing required property "commit"/,
+    );
+  } finally {
+    removeDir(root);
+  }
+});
+
+test('malformed v4 origins cannot bypass origin transition protection', () => {
+  const root = makeTempDir('reg-');
+  try {
+    writeSkill(root, 'alpha', { frontmatter: validFrontmatter('alpha') });
+    const candidate = buildRegistry(root);
+    const previous = structuredClone(candidate);
+    previous.schemaVersion = 4;
+    delete previous.packs;
+    delete previous.removedPacks;
+    previous.skills[0].lifecycle.origin = {
+      type: 'external',
+      repository: 'https://github.com/example/upstream',
+    };
+    const errors = validateRegistry(candidate, previous).join('\n');
+    assert.match(errors, /previous registry: .*missing required property "ref"/);
+    assert.match(errors, /previous registry: .*missing required property "commit"/);
+    assert.doesNotMatch(errors, /origin kind changed/);
+  } finally {
+    removeDir(root);
+  }
+});
+
+test('duplicate v4 skill names cannot conceal an origin transition', () => {
+  const root = makeTempDir('reg-');
+  try {
+    writeSkill(root, 'alpha', { frontmatter: validFrontmatter('alpha') });
+    const candidate = buildRegistry(root);
+    const previous = structuredClone(candidate);
+    previous.schemaVersion = 4;
+    delete previous.packs;
+    delete previous.removedPacks;
+    const concealedOrigin = structuredClone(previous.skills[0]);
+    concealedOrigin.lifecycle.origin = {
+      type: 'external',
+      repository: 'https://github.com/example/upstream',
+      ref: 'b'.repeat(40),
+      commit: 'b'.repeat(40),
+    };
+    previous.skills = [concealedOrigin, previous.skills[0]];
+
+    const errors = validateRegistry(candidate, previous).filter(
+      (error) => error.startsWith('previous registry:'),
+    );
+    assert.equal(
+      errors[0],
+      'previous registry: $.skills: skill names must be unique.',
+    );
+  } finally {
+    removeDir(root);
+  }
+});
+
+test('legacy baselines cannot introduce never-active pack tombstones', () => {
+  const root = makeTempDir('reg-');
+  try {
+    writeSkill(root, 'alpha', { frontmatter: validFrontmatter('alpha') });
+    const candidate = buildRegistry(root);
+    candidate.removedPacks['never-active'] = {
+      status: 'removed',
+      version: '1.0.0',
+    };
+    const previous = structuredClone(candidate);
+    previous.schemaVersion = 4;
+    delete previous.packs;
+    delete previous.removedPacks;
+    assert.match(
+      validateRegistry(candidate, previous).join('\n'),
+      /pack never-active: new tombstone requires an active pack in the immediate previous registry/,
+    );
   } finally {
     removeDir(root);
   }

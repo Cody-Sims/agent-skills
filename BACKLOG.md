@@ -251,7 +251,7 @@ approval gates live outside the canonical skill format.
 
 ### AS-009: Publish composable workflow packs
 
-- **Priority / status / scope:** P2 / proposed / L
+- **Priority / status / scope:** P2 / in-progress / L
 - **Purpose:** Install complementary skills together without merging their
   instructions or creating routing collisions.
 - **Dependencies:** AS-005 and AS-007.
@@ -266,6 +266,17 @@ approval gates live outside the canonical skill format.
     context cost.
 - **Verification:** A pilot pack installs and uninstalls atomically and passes
   composition evals.
+- **Decomposition:**
+  - [x] Slice 1: Add the strict pack manifest, three initial versioned pack
+    definitions, semantic validation, lifecycle-safe transitions, and generated
+    registry v5 integration.
+  - [ ] Slice 2: Add atomic pack installation, uninstall, receipt, conflict
+    preflight, and rollback transactions.
+  - [ ] Slice 3: Add composition routing and combined-context evaluation,
+    reporting, and promotion gates.
+- **Current result:** Slice 1 publishes metadata and validation only. Pack
+  installation transactions and composition evaluation remain unimplemented, so
+  AS-009 remains in progress.
 
 ### AS-010: Add provenance and lifecycle management
 

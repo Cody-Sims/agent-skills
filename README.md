@@ -142,6 +142,9 @@ Registry discovery fields and query filters are documented in
 Lifecycle, immutable origin, scheduled review, tombstones, and receipt v2 are
 documented in
 [`docs/lifecycle-and-provenance.md`](docs/lifecycle-and-provenance.md).
+Versioned workflow pack manifests and registry validation are documented in
+[`docs/workflow-packs.md`](docs/workflow-packs.md). Pack installation and
+composition evaluation are not implemented yet.
 
 ## Repository layout
 
@@ -160,13 +163,15 @@ agent-skills/
 │   ├── skill.schema.json       # Frontmatter contract
 │   ├── registry-discovery.schema.json # Catalog discovery manifest contract
 │   ├── lifecycle.schema.json   # Lifecycle and immutable origin contract
+│   ├── packs.schema.json       # Workflow pack manifest contract
 │   ├── runtime-smoke-*.schema.json # Runtime smoke suite and result contracts
 │   └── registry.schema.json    # Generated registry contract
 ├── registry/
 │   ├── discovery.json          # Maintainer-authored discovery metadata
 │   ├── lifecycle.json          # Maintainer-authored lifecycle and provenance
 │   ├── maturity.json           # Maintainer-authored tier evidence
-│   └── skills.json             # Generated discovery and maturity catalog
+│   ├── packs.json              # Maintainer-authored workflow pack definitions
+│   └── skills.json             # Generated registry v5 catalog and packs
 ├── tests/                      # Tooling tests (node --test)
 ├── docs/
 │   ├── authoring-guide.md      # How to write a good skill
@@ -203,8 +208,8 @@ agent-skills/
 | `npm run runtime:smoke` | Deterministic fixture adapters | Exercise install, discovery, invocation, resources, and host extensions for Claude Code, Copilot, and Codex. |
 | `node scripts/run-runtime-smoke.mjs --suite <suite> --out <result> [--adapter <runtime=command> --adapter-entrypoint <runtime=path>]` | Runtime smoke runner | Run reviewed host adapters; record unavailable hosts as structured skips. |
 | `npm run contributions:validate -- --changed-skill <name>` | Contribution evidence validator | Require expertise provenance and uplift or an approved safety exception. |
-| `npm run registry -- --as-of YYYY-MM-DD` | Registry generator | Generate registry v4 with discovery, maturity, lifecycle, provenance, and tombstones. |
-| `npm run registry:check -- --previous <registry.json> --as-of YYYY-MM-DD` | Registry validator | Check generated output, review expiry, tier transitions, and external identity changes against a v1-v3 or v4 baseline. |
+| `npm run registry -- --as-of YYYY-MM-DD` | Registry generator | Generate registry v5 with discovery, maturity, lifecycle, provenance, tombstones, and validated pack definitions. |
+| `npm run registry:check -- --previous <registry.json> --as-of YYYY-MM-DD` | Registry validator | Check generated output, review expiry, tier and pack transitions, and external identity changes. Registry v1-v4 files remain accepted comparison baselines. |
 | `npm run registry:query -- [filters]` | Registry query | Filter skills by category, tags, risk, runtime, and input/output shape. |
 | `npm run install:agents` | `node scripts/manage-skills.mjs install` | Install skills into detected runtimes. |
 | `npm run check:agents` | `node scripts/manage-skills.mjs check` | Report what an install or uninstall would change, without writing. |

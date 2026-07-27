@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cody-Sims/agent-skills/schemas/packs.schema.json",
+  "title": "Agent Skills Pack Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "packs", "removed"],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "packs": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/pack" }
+    },
+    "removed": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/removedPack" }
+    }
+  },
+  "$defs": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "member": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version"],
+      "properties": {
+        "name": { "$ref": "#/$defs/name" },
+        "version": { "$ref": "#/$defs/version" }
+      }
+    },
+    "handoff": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from", "to", "when"],
+      "properties": {
+        "from": { "$ref": "#/$defs/name" },
+        "to": { "$ref": "#/$defs/name" },
+        "when": { "type": "string", "minLength": 1, "maxLength": 200 }
+      }
+    },
+    "installPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["versionMatch", "conflictAction", "requiredRuntimes"],
+      "properties": {
+        "versionMatch": { "type": "string", "const": "exact" },
+        "conflictAction": { "type": "string", "const": "reject" },
+        "requiredRuntimes": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "items": {
+            "type": "string",
+            "enum": ["claude-code", "github-copilot", "openai-codex"]
+          }
+        }
+      }
+    },
+    "pack": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version",
+        "description",
+        "skills",
+        "handoffs",
+        "conflicts",
+        "installPolicy"
+      ],
+      "properties": {
+        "name": { "$ref": "#/$defs/name" },
+        "version": { "$ref": "#/$defs/version" },
+        "description": { "type": "string", "minLength": 1, "maxLength": 300 },
+        "skills": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "$ref": "#/$defs/member" }
+        },
+        "handoffs": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/handoff" }
+        },
+        "conflicts": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/name" }
+        },
+        "installPolicy": { "$ref": "#/$defs/installPolicy" }
+      }
+    },
+    "removedPack": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "version"],
+      "properties": {
+        "status": { "type": "string", "const": "removed" },
+        "version": { "$ref": "#/$defs/version" },
+        "replacement": { "$ref": "#/$defs/name" }
+      }
+    }
+  }
+}

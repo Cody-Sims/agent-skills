@@ -2,7 +2,8 @@
 
 `registry/lifecycle.json` is the maintainer-authored source for catalog lifecycle,
 license, review, and origin data. `npm run registry` validates and merges it into
-registry v4. Portable `SKILL.md` frontmatter remains unchanged.
+the current registry v5 output. Lifecycle and provenance fields were introduced
+in registry v4. Portable `SKILL.md` frontmatter remains unchanged.
 
 ## Record contract
 
@@ -63,8 +64,9 @@ before removal. When removing it, delete the skill and discovery record, move
 its lifecycle record to `removed`, retain its immutable origin, and regenerate
 the registry.
 
-Registry v1 through v3 are accepted only as comparison baselines. New output is
-always v4.
+Registry v1 through v4 are accepted only as comparison baselines, with each
+historical version's required contracts validated before transition checks. New
+output is always v5.
 
 ## Install receipts and rollback
 
