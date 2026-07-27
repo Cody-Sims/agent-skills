@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 1,
+  "skills": {
+    "code-review": {
+      "status": "active",
+      "license": "MIT",
+      "lastReviewedAt": "2026-07-27",
+      "reviewDueAt": "2027-07-27",
+      "origin": { "type": "first-party", "repository": "https://github.com/Cody-Sims/agent-skills", "ref": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2", "commit": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2" }
+    },
+    "codebase-exploration": {
+      "status": "active",
+      "license": "MIT",
+      "lastReviewedAt": "2026-07-27",
+      "reviewDueAt": "2027-07-27",
+      "origin": { "type": "first-party", "repository": "https://github.com/Cody-Sims/agent-skills", "ref": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2", "commit": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2" }
+    },
+    "documentation-maintenance": {
+      "status": "active",
+      "license": "MIT",
+      "lastReviewedAt": "2026-07-27",
+      "reviewDueAt": "2027-07-27",
+      "origin": { "type": "first-party", "repository": "https://github.com/Cody-Sims/agent-skills", "ref": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2", "commit": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2" }
+    },
+    "external-skill-review": {
+      "status": "active",
+      "license": "MIT",
+      "lastReviewedAt": "2026-07-27",
+      "reviewDueAt": "2027-07-27",
+      "origin": { "type": "first-party", "repository": "https://github.com/Cody-Sims/agent-skills", "ref": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2", "commit": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2" }
+    },
+    "git-and-pr-workflow": {
+      "status": "active",
+      "license": "MIT",
+      "lastReviewedAt": "2026-07-27",
+      "reviewDueAt": "2027-07-27",
+      "origin": { "type": "first-party", "repository": "https://github.com/Cody-Sims/agent-skills", "ref": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2", "commit": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2" }
+    },
+    "parallel-worktree-delivery": {
+      "status": "active",
+      "license": "MIT",
+      "lastReviewedAt": "2026-07-27",
+      "reviewDueAt": "2027-07-27",
+      "origin": { "type": "external", "repository": "https://github.com/Cody-Sims/Pokemon-Web", "ref": "b1d5a0f395955450b984420622c235065ed59282", "commit": "b1d5a0f395955450b984420622c235065ed59282" }
+    },
+    "planning-and-task-breakdown": {
+      "status": "active",
+      "license": "MIT",
+      "lastReviewedAt": "2026-07-27",
+      "reviewDueAt": "2027-07-27",
+      "origin": { "type": "first-party", "repository": "https://github.com/Cody-Sims/agent-skills", "ref": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2", "commit": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2" }
+    },
+    "refactoring-and-dead-code-removal": {
+      "status": "active",
+      "license": "MIT",
+      "lastReviewedAt": "2026-07-27",
+      "reviewDueAt": "2027-07-27",
+      "origin": { "type": "first-party", "repository": "https://github.com/Cody-Sims/agent-skills", "ref": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2", "commit": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2" }
+    },
+    "repository-agent-bootstrap": {
+      "status": "active",
+      "license": "MIT",
+      "lastReviewedAt": "2026-07-27",
+      "reviewDueAt": "2027-07-27",
+      "origin": { "type": "first-party", "repository": "https://github.com/Cody-Sims/agent-skills", "ref": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2", "commit": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2" }
+    },
+    "requirements-and-spec-writing": {
+      "status": "active",
+      "license": "MIT",
+      "lastReviewedAt": "2026-07-27",
+      "reviewDueAt": "2027-07-27",
+      "origin": { "type": "first-party", "repository": "https://github.com/Cody-Sims/agent-skills", "ref": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2", "commit": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2" }
+    },
+    "security-review": {
+      "status": "active",
+      "license": "MIT",
+      "lastReviewedAt": "2026-07-27",
+      "reviewDueAt": "2027-07-27",
+      "origin": { "type": "first-party", "repository": "https://github.com/Cody-Sims/agent-skills", "ref": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2", "commit": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2" }
+    },
+    "shadow-architecture": {
+      "status": "active",
+      "license": "MIT",
+      "lastReviewedAt": "2026-07-27",
+      "reviewDueAt": "2027-07-27",
+      "origin": { "type": "first-party", "repository": "https://github.com/Cody-Sims/agent-skills", "ref": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2", "commit": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2" }
+    },
+    "skill-creator": {
+      "status": "active",
+      "license": "MIT",
+      "lastReviewedAt": "2026-07-27",
+      "reviewDueAt": "2027-07-27",
+      "origin": { "type": "first-party", "repository": "https://github.com/Cody-Sims/agent-skills", "ref": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2", "commit": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2" }
+    },
+    "systematic-debugging": {
+      "status": "active",
+      "license": "MIT",
+      "lastReviewedAt": "2026-07-27",
+      "reviewDueAt": "2027-07-27",
+      "origin": { "type": "first-party", "repository": "https://github.com/Cody-Sims/agent-skills", "ref": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2", "commit": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2" }
+    },
+    "test-driven-development": {
+      "status": "active",
+      "license": "MIT",
+      "lastReviewedAt": "2026-07-27",
+      "reviewDueAt": "2027-07-27",
+      "origin": { "type": "first-party", "repository": "https://github.com/Cody-Sims/agent-skills", "ref": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2", "commit": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2" }
+    },
+    "verification-before-completion": {
+      "status": "active",
+      "license": "MIT",
+      "lastReviewedAt": "2026-07-27",
+      "reviewDueAt": "2027-07-27",
+      "origin": { "type": "first-party", "repository": "https://github.com/Cody-Sims/agent-skills", "ref": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2", "commit": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2" }
+    },
+    "verification-discipline": {
+      "status": "active",
+      "license": "MIT",
+      "lastReviewedAt": "2026-07-27",
+      "reviewDueAt": "2027-07-27",
+      "origin": { "type": "external", "repository": "https://github.com/Cody-Sims/Pokemon-Web", "ref": "b1d5a0f395955450b984420622c235065ed59282", "commit": "b1d5a0f395955450b984420622c235065ed59282" }
+    },
+    "web-research-and-verification": {
+      "status": "active",
+      "license": "MIT",
+      "lastReviewedAt": "2026-07-27",
+      "reviewDueAt": "2027-07-27",
+      "origin": { "type": "first-party", "repository": "https://github.com/Cody-Sims/agent-skills", "ref": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2", "commit": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2" }
+    }
+  },
+  "removed": {}
+}

@@ -49,6 +49,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Registry v3 discovery metadata for every skill, including category, tags,
   typed inputs and outputs, risk, runtime compatibility, relationships, and
   example prompts, plus deterministic command-line filters.
+- Registry v4 lifecycle and provenance metadata for every skill, including
+  immutable origins, matching licenses, scheduled review, replacement
+  validation, removed tombstones, and guarded external identity changes.
+- Install receipt v2 with source identity, registry digest, skill versions,
+  per-file ownership and hashes, strict path validation, and safe v1 migration.
 
 ### Security
 
@@ -59,6 +64,23 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Evaluation and routing artifacts now reject unsafe counters and inconsistent
   metrics, bind contribution evidence to committed suite and skill hashes, and
   require local expertise sources and completed human review.
+- Installer checks now detect receipt tampering, source and catalog drift,
+  duplicate or escaping destinations, and modified or unmanaged files before
+  mutation.
+- Default-source receipts now reject dirty tracked or untracked catalog bytes
+  and registry/resource mismatches before claiming `HEAD`; custom sources use a
+  non-immutable `local-unverified` identity, and foreign v1 receipts cannot
+  establish ownership.
+- Lifecycle comparisons now normalize repository URLs and protect first-party,
+  external, kind-change, removal, and tombstone transitions. Review validation
+  rejects future dates, intervals over one year, and unscheduled external or
+  compatibility-sensitive skills.
+- Removed tombstones cannot silently reactivate. Default receipt verification
+  records the exact verified commit without a second `HEAD` lookup and uses
+  NUL-delimited Git tree paths so non-ASCII names remain exact.
+- Default installs cryptographically bind the buffered resource set, file
+  contents, skill versions, and registry digest to the verified commit, closing
+  mutate-collect-restore attribution races.
 
 ### Changed
 

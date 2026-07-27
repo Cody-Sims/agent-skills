@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "skills": [
     {
       "name": "code-review",
@@ -64,6 +64,18 @@
           "Review this pull request for correctness and regressions.",
           "Inspect my staged changes and report only actionable findings."
         ]
+      },
+      "lifecycle": {
+        "status": "active",
+        "license": "MIT",
+        "lastReviewedAt": "2026-07-27",
+        "reviewDueAt": "2027-07-27",
+        "origin": {
+          "type": "first-party",
+          "repository": "https://github.com/Cody-Sims/agent-skills",
+          "ref": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2",
+          "commit": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2"
+        }
       },
       "path": "skills/code-review",
       "skillFile": "skills/code-review/SKILL.md",
@@ -135,6 +147,18 @@
           "Map this repository before we change the authentication flow.",
           "Find the entry points, test commands, and smallest correct edit location."
         ]
+      },
+      "lifecycle": {
+        "status": "active",
+        "license": "MIT",
+        "lastReviewedAt": "2026-07-27",
+        "reviewDueAt": "2027-07-27",
+        "origin": {
+          "type": "first-party",
+          "repository": "https://github.com/Cody-Sims/agent-skills",
+          "ref": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2",
+          "commit": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2"
+        }
       },
       "path": "skills/codebase-exploration",
       "skillFile": "skills/codebase-exploration/SKILL.md",
@@ -211,6 +235,18 @@
           "Write an ADR for the new persistence boundary."
         ]
       },
+      "lifecycle": {
+        "status": "active",
+        "license": "MIT",
+        "lastReviewedAt": "2026-07-27",
+        "reviewDueAt": "2027-07-27",
+        "origin": {
+          "type": "first-party",
+          "repository": "https://github.com/Cody-Sims/agent-skills",
+          "ref": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2",
+          "commit": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2"
+        }
+      },
       "path": "skills/documentation-maintenance",
       "skillFile": "skills/documentation-maintenance/SKILL.md",
       "sha256": "d0edc5ca357eae0fb7f288f56e20ddbcc63b1aef59799288d2a22a5764dd6144",
@@ -284,6 +320,18 @@
           "Review this gh skill install candidate for supply-chain risk."
         ]
       },
+      "lifecycle": {
+        "status": "active",
+        "license": "MIT",
+        "lastReviewedAt": "2026-07-27",
+        "reviewDueAt": "2027-07-27",
+        "origin": {
+          "type": "first-party",
+          "repository": "https://github.com/Cody-Sims/agent-skills",
+          "ref": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2",
+          "commit": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2"
+        }
+      },
       "path": "skills/external-skill-review",
       "skillFile": "skills/external-skill-review/SKILL.md",
       "sha256": "0879292f06d4c35c1c505b8320486120af7d129db6c94d08a0b309939178e104",
@@ -356,6 +404,18 @@
           "Create an atomic commit and open a pull request for these changes.",
           "Safely rebase my unshared branch and resolve its conflicts."
         ]
+      },
+      "lifecycle": {
+        "status": "active",
+        "license": "MIT",
+        "lastReviewedAt": "2026-07-27",
+        "reviewDueAt": "2027-07-27",
+        "origin": {
+          "type": "first-party",
+          "repository": "https://github.com/Cody-Sims/agent-skills",
+          "ref": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2",
+          "commit": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2"
+        }
       },
       "path": "skills/git-and-pr-workflow",
       "skillFile": "skills/git-and-pr-workflow/SKILL.md",
@@ -445,6 +505,18 @@
           "Coordinate dependency waves and integrate each branch safely."
         ]
       },
+      "lifecycle": {
+        "status": "active",
+        "license": "MIT",
+        "lastReviewedAt": "2026-07-27",
+        "reviewDueAt": "2027-07-27",
+        "origin": {
+          "type": "external",
+          "repository": "https://github.com/Cody-Sims/Pokemon-Web",
+          "ref": "b1d5a0f395955450b984420622c235065ed59282",
+          "commit": "b1d5a0f395955450b984420622c235065ed59282"
+        }
+      },
       "path": "skills/parallel-worktree-delivery",
       "skillFile": "skills/parallel-worktree-delivery/SKILL.md",
       "sha256": "2f8477db9268f9452a1f09786ebc3021ceb17a6306ef49c53b64ec0a84657e2d",
@@ -516,6 +588,18 @@
           "Break this approved specification into implementation tasks.",
           "Sequence this migration and identify safely parallel work."
         ]
+      },
+      "lifecycle": {
+        "status": "active",
+        "license": "MIT",
+        "lastReviewedAt": "2026-07-27",
+        "reviewDueAt": "2027-07-27",
+        "origin": {
+          "type": "first-party",
+          "repository": "https://github.com/Cody-Sims/agent-skills",
+          "ref": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2",
+          "commit": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2"
+        }
       },
       "path": "skills/planning-and-task-breakdown",
       "skillFile": "skills/planning-and-task-breakdown/SKILL.md",
@@ -589,6 +673,18 @@
           "Prove this helper is unused and remove it safely."
         ]
       },
+      "lifecycle": {
+        "status": "active",
+        "license": "MIT",
+        "lastReviewedAt": "2026-07-27",
+        "reviewDueAt": "2027-07-27",
+        "origin": {
+          "type": "first-party",
+          "repository": "https://github.com/Cody-Sims/agent-skills",
+          "ref": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2",
+          "commit": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2"
+        }
+      },
       "path": "skills/refactoring-and-dead-code-removal",
       "skillFile": "skills/refactoring-and-dead-code-removal/SKILL.md",
       "sha256": "b3e0e013c1b31954f5caaadb21459a27818eef555b6d900c1417fe69f8d7238a",
@@ -661,6 +757,18 @@
           "Audit our agent customization and fill the smallest useful gaps."
         ]
       },
+      "lifecycle": {
+        "status": "active",
+        "license": "MIT",
+        "lastReviewedAt": "2026-07-27",
+        "reviewDueAt": "2027-07-27",
+        "origin": {
+          "type": "first-party",
+          "repository": "https://github.com/Cody-Sims/agent-skills",
+          "ref": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2",
+          "commit": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2"
+        }
+      },
       "path": "skills/repository-agent-bootstrap",
       "skillFile": "skills/repository-agent-bootstrap/SKILL.md",
       "sha256": "136dd9aa26a6449f0b9383fcaf280e4f90075cb296a35fa51f457ea53764afe2",
@@ -731,6 +839,18 @@
           "Turn this feature idea into an implementation-ready specification.",
           "Define requirements, non-goals, edge cases, and acceptance criteria."
         ]
+      },
+      "lifecycle": {
+        "status": "active",
+        "license": "MIT",
+        "lastReviewedAt": "2026-07-27",
+        "reviewDueAt": "2027-07-27",
+        "origin": {
+          "type": "first-party",
+          "repository": "https://github.com/Cody-Sims/agent-skills",
+          "ref": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2",
+          "commit": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2"
+        }
       },
       "path": "skills/requirements-and-spec-writing",
       "skillFile": "skills/requirements-and-spec-writing/SKILL.md",
@@ -803,6 +923,18 @@
           "Threat-model this new webhook endpoint.",
           "Review this authentication change for exploitable vulnerabilities."
         ]
+      },
+      "lifecycle": {
+        "status": "active",
+        "license": "MIT",
+        "lastReviewedAt": "2026-07-27",
+        "reviewDueAt": "2027-07-27",
+        "origin": {
+          "type": "first-party",
+          "repository": "https://github.com/Cody-Sims/agent-skills",
+          "ref": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2",
+          "commit": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2"
+        }
       },
       "path": "skills/security-review",
       "skillFile": "skills/security-review/SKILL.md",
@@ -877,6 +1009,18 @@
           "Check whether the implementation has drifted from recorded decisions."
         ]
       },
+      "lifecycle": {
+        "status": "active",
+        "license": "MIT",
+        "lastReviewedAt": "2026-07-27",
+        "reviewDueAt": "2027-07-27",
+        "origin": {
+          "type": "first-party",
+          "repository": "https://github.com/Cody-Sims/agent-skills",
+          "ref": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2",
+          "commit": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2"
+        }
+      },
       "path": "skills/shadow-architecture",
       "skillFile": "skills/shadow-architecture/SKILL.md",
       "sha256": "5e359b152381b2a713f0b5b3ba7498a12f051f0486130819685c3c1db99f9584",
@@ -948,6 +1092,18 @@
           "Create a portable skill for database migration reviews.",
           "Audit this SKILL.md and improve its routing description."
         ]
+      },
+      "lifecycle": {
+        "status": "active",
+        "license": "MIT",
+        "lastReviewedAt": "2026-07-27",
+        "reviewDueAt": "2027-07-27",
+        "origin": {
+          "type": "first-party",
+          "repository": "https://github.com/Cody-Sims/agent-skills",
+          "ref": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2",
+          "commit": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2"
+        }
       },
       "path": "skills/skill-creator",
       "skillFile": "skills/skill-creator/SKILL.md",
@@ -1023,6 +1179,18 @@
           "Trace this exception to its root cause instead of patching the symptom."
         ]
       },
+      "lifecycle": {
+        "status": "active",
+        "license": "MIT",
+        "lastReviewedAt": "2026-07-27",
+        "reviewDueAt": "2027-07-27",
+        "origin": {
+          "type": "first-party",
+          "repository": "https://github.com/Cody-Sims/agent-skills",
+          "ref": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2",
+          "commit": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2"
+        }
+      },
       "path": "skills/systematic-debugging",
       "skillFile": "skills/systematic-debugging/SKILL.md",
       "sha256": "bcb845888072accf79b00173628fa427d6013dbb3b59acd9677698d652debf7d",
@@ -1096,6 +1264,18 @@
           "Write a failing regression test before fixing this bug."
         ]
       },
+      "lifecycle": {
+        "status": "active",
+        "license": "MIT",
+        "lastReviewedAt": "2026-07-27",
+        "reviewDueAt": "2027-07-27",
+        "origin": {
+          "type": "first-party",
+          "repository": "https://github.com/Cody-Sims/agent-skills",
+          "ref": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2",
+          "commit": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2"
+        }
+      },
       "path": "skills/test-driven-development",
       "skillFile": "skills/test-driven-development/SKILL.md",
       "sha256": "76048b40deb1229b2bb795958cf8fe120d5542543fb43159691d13c874967d59",
@@ -1167,6 +1347,18 @@
           "Verify this fix is actually complete before reporting success.",
           "Run the relevant checks and distinguish verified results from assumptions."
         ]
+      },
+      "lifecycle": {
+        "status": "active",
+        "license": "MIT",
+        "lastReviewedAt": "2026-07-27",
+        "reviewDueAt": "2027-07-27",
+        "origin": {
+          "type": "first-party",
+          "repository": "https://github.com/Cody-Sims/agent-skills",
+          "ref": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2",
+          "commit": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2"
+        }
       },
       "path": "skills/verification-before-completion",
       "skillFile": "skills/verification-before-completion/SKILL.md",
@@ -1251,6 +1443,18 @@
           "Harden this CI gate so it enforces the intended invariant."
         ]
       },
+      "lifecycle": {
+        "status": "active",
+        "license": "MIT",
+        "lastReviewedAt": "2026-07-27",
+        "reviewDueAt": "2027-07-27",
+        "origin": {
+          "type": "external",
+          "repository": "https://github.com/Cody-Sims/Pokemon-Web",
+          "ref": "b1d5a0f395955450b984420622c235065ed59282",
+          "commit": "b1d5a0f395955450b984420622c235065ed59282"
+        }
+      },
       "path": "skills/verification-discipline",
       "skillFile": "skills/verification-discipline/SKILL.md",
       "sha256": "44658725e815c8aac548151882d851edbd2f4de6fcbbbd1ae0c7c2564f600970",
@@ -1324,6 +1528,18 @@
           "Verify whether this dependency version is affected by the latest CVE."
         ]
       },
+      "lifecycle": {
+        "status": "active",
+        "license": "MIT",
+        "lastReviewedAt": "2026-07-27",
+        "reviewDueAt": "2027-07-27",
+        "origin": {
+          "type": "first-party",
+          "repository": "https://github.com/Cody-Sims/agent-skills",
+          "ref": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2",
+          "commit": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2"
+        }
+      },
       "path": "skills/web-research-and-verification",
       "skillFile": "skills/web-research-and-verification/SKILL.md",
       "sha256": "23f5ba5c4172249d92de4fcace76a5b2e2cdc09f9ae531f9e28b8d0de2e031d1",
@@ -1331,5 +1547,6 @@
         "references/source-hierarchy.md"
       ]
     }
-  ]
+  ],
+  "removed": {}
 }

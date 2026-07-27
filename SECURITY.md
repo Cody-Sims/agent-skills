@@ -55,6 +55,19 @@ review and by the validator:
   `external-skill-review` workflow before inclusion.
 - **Immutable pinning.** Installed third-party skills are pinned to an immutable
   commit or tag with recorded provenance, never a moving branch.
+- **Lifecycle validation.** Every catalog skill has a maintainer-authored
+  lifecycle record. External origins use an HTTPS GitHub repository and a full
+  commit SHA, expired reviews fail, and upstream identity changes require both a
+  version increase and a new review.
+- **Strict install receipts.** Receipt v2 binds an install to its repository,
+  commit, registry digest, skill versions, destinations, and file hashes.
+  Escaping or duplicate paths are rejected before mutation; updates and
+  rollbacks replace only unchanged receipt-owned files.
+- **Honest checkout identity.** Default-source install and check operations
+  reject tracked, untracked, or ignored catalog changes and verify registry entries
+  against copied resources before attributing bytes to `HEAD`. Custom source
+  trees are labeled `local-unverified`, and foreign v1 receipts cannot establish
+  file ownership.
 - **Separated agent authority.** The learning agent has read, search, and web
   tools only. The improvement agent cannot approve, merge, or select work.
 - **Approval-bound leases.** Queue transitions serialize through a workflow.
@@ -110,3 +123,5 @@ Before installing any skill from this or any repository:
 
 7. When installing an external skill, run the `external-skill-review` workflow
    first and do not let the review step execute the skill's scripts.
+8. Run `npm run check:agents` after installation and treat identity, catalog,
+   receipt, missing-file, or modified-file drift as a failed verification.

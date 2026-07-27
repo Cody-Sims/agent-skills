@@ -254,7 +254,7 @@ approval gates live outside the canonical skill format.
 
 ### AS-010: Add provenance and lifecycle management
 
-- **Priority / status / scope:** P1 / proposed / M
+- **Priority / status / scope:** P1 / done / M
 - **Purpose:** Prevent silent drift and make stale or superseded skills visible.
 - **Dependencies:** AS-005.
 - **Files likely touched:** Registry schema and generator, receipts, validation,
@@ -268,6 +268,10 @@ approval gates live outside the canonical skill format.
     rollback path.
 - **Verification:** Tests detect changed upstream identity, expired review dates,
   invalid replacement links, and receipt hash mismatches.
+- **Result:** Added the complete lifecycle manifest and schema, deterministic
+  registry v4 lifecycle and tombstones, guarded upstream changes, annual review
+  scheduling, and strict receipt v2 installs with safe v1 migration and
+  ownership-preserving rollback.
 
 ## Continuous learning and improvement infrastructure
 

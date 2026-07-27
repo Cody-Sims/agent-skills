@@ -62,4 +62,4 @@ Available filters are `--category`, repeatable `--tag`, `--risk`, `--runtime`,
 `--runtime-status`, `--input`, and `--output`. Filters use AND semantics.
 `--runtime-status` requires `--runtime`. Output is one skill name per line by
 default; use `--format json` for complete matching records or
-`--registry <path>` to query another registry v3 file.
+`--registry <path>` to query another registry v4 file.

@@ -13,6 +13,8 @@
 /evals/ @Cody-Sims
 /registry/maturity.json @Cody-Sims
 /registry/discovery.json @Cody-Sims
+/registry/lifecycle.json @Cody-Sims
+/schemas/lifecycle.schema.json @Cody-Sims
 /scripts/ @Cody-Sims
 /tests/ @Cody-Sims
 /scripts/continuous-improvement.mjs @Cody-Sims

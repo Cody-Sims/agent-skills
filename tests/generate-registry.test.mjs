@@ -3,8 +3,14 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-import { buildRegistry, serializeRegistry, validateRegistry } from '../scripts/generate-registry.mjs';
+import {
+  buildRegistry,
+  serializeRegistry,
+  validateLifecycleManifest,
+  validateRegistry,
+} from '../scripts/generate-registry.mjs';
 import { sha256 } from '../scripts/lib/paths.mjs';
+import { normalizeLifecycle } from '../scripts/lib/lifecycle.mjs';
 import { makeTempDir, removeDir, writeSkill, validFrontmatter } from './helpers.mjs';
 
 function discoveryManifest(names) {
@@ -28,7 +34,268 @@ function discoveryManifest(names) {
   };
 }
 
-test('buildRegistry merges complete discovery metadata into registry v3', () => {
+function lifecycleManifest(names, overrides = {}) {
+  const commit = 'a'.repeat(40);
+  return {
+    schemaVersion: 1,
+    skills: Object.fromEntries(names.map((name) => [name, {
+      status: 'active',
+      license: 'MIT',
+      lastReviewedAt: '2026-07-27',
+      reviewDueAt: '2027-07-27',
+      origin: {
+        type: 'first-party',
+        repository: 'https://github.com/Cody-Sims/agent-skills',
+        ref: commit,
+        commit,
+      },
+      ...overrides[name],
+    }])),
+    removed: {},
+  };
+}
+
+test('buildRegistry merges lifecycle metadata and deterministic tombstones into registry v4', () => {
+  const root = makeTempDir('reg-');
+  try {
+    writeSkill(root, 'alpha', { frontmatter: validFrontmatter('alpha') });
+    const lifecycle = lifecycleManifest(['alpha']);
+    lifecycle.removed.zeta = {
+      status: 'removed',
+      license: 'MIT',
+      lastReviewedAt: '2026-07-27',
+      replacement: 'alpha',
+      origin: lifecycle.skills.alpha.origin,
+    };
+    const first = buildRegistry(
+      root,
+      { schemaVersion: 1, skills: {} },
+      root,
+      discoveryManifest(['alpha']),
+      lifecycle,
+      '2026-07-27',
+    );
+    const second = buildRegistry(
+      root,
+      { schemaVersion: 1, skills: {} },
+      root,
+      discoveryManifest(['alpha']),
+      lifecycle,
+      '2026-07-27',
+    );
+    assert.equal(first.schemaVersion, 4);
+    assert.equal(first.skills[0].lifecycle.status, 'active');
+    assert.deepEqual(Object.keys(first.removed), ['zeta']);
+    assert.equal(serializeRegistry(first), serializeRegistry(second));
+    assert.deepEqual(validateRegistry(first, null, '2026-07-27'), []);
+  } finally {
+    removeDir(root);
+  }
+});
+
+test('lifecycle validation rejects expired reviews, license mismatch, and invalid dates', () => {
+  const root = makeTempDir('reg-');
+  try {
+    writeSkill(root, 'alpha', { frontmatter: validFrontmatter('alpha') });
+    const manifest = lifecycleManifest(['alpha']);
+    manifest.skills.alpha.license = 'Apache-2.0';
+    manifest.skills.alpha.lastReviewedAt = '2026-07-27';
+    manifest.skills.alpha.reviewDueAt = '2026-07-26';
+    manifest.removed.retired = {
+      status: 'removed',
+      license: 'MIT',
+      lastReviewedAt: '2026-02-31',
+      origin: manifest.skills.alpha.origin,
+    };
+    const errors = validateLifecycleManifest(manifest, root, '2026-07-27').join('\n');
+    assert.match(errors, /valid calendar date/);
+    assert.match(errors, /reviewDueAt must be after lastReviewedAt/);
+    assert.match(errors, /review expired/);
+    assert.match(errors, /license does not match SKILL.md/);
+  } finally {
+    removeDir(root);
+  }
+});
+
+test('lifecycle validation rejects future reviews, intervals over one year, and unscheduled sensitive skills', () => {
+  const root = makeTempDir('reg-');
+  try {
+    writeSkill(root, 'alpha', { frontmatter: validFrontmatter('alpha') });
+    const manifest = lifecycleManifest(['alpha']);
+    manifest.skills.alpha.lastReviewedAt = '2026-07-28';
+    manifest.skills.alpha.reviewDueAt = '2027-07-29';
+    const discovery = discoveryManifest(['alpha']);
+    discovery.skills.alpha.runtimeCompatibility[0] = {
+      runtime: 'claude-code',
+      status: 'conditional',
+      notes: 'Requires a compatible host version.',
+    };
+    let errors = validateLifecycleManifest(
+      manifest, root, '2026-07-27', discovery,
+    ).join('\n');
+    assert.match(errors, /lastReviewedAt must not be after --as-of/);
+    assert.match(errors, /review interval must not exceed one calendar year/);
+    delete manifest.skills.alpha.reviewDueAt;
+    errors = validateLifecycleManifest(manifest, root, '2026-07-27', discovery).join('\n');
+    assert.match(errors, /compatibility-sensitive skills require a scheduled review/);
+  } finally {
+    removeDir(root);
+  }
+});
+
+test('lifecycle validation rejects missing, self, removed, and cyclic replacements', () => {
+  const root = makeTempDir('reg-');
+  try {
+    for (const name of ['alpha', 'beta', 'gamma']) {
+      writeSkill(root, name, { frontmatter: validFrontmatter(name) });
+    }
+    const manifest = lifecycleManifest(['alpha', 'beta', 'gamma']);
+    manifest.skills.alpha = { ...manifest.skills.alpha, status: 'superseded', replacement: 'beta' };
+    manifest.skills.beta = { ...manifest.skills.beta, status: 'superseded', replacement: 'alpha' };
+    manifest.skills.gamma = { ...manifest.skills.gamma, status: 'deprecated', replacement: 'gamma' };
+    manifest.removed.retired = {
+      status: 'removed',
+      license: 'MIT',
+      lastReviewedAt: '2026-07-27',
+      origin: manifest.skills.alpha.origin,
+    };
+    const errors = validateLifecycleManifest(manifest, root, '2026-07-27').join('\n');
+    assert.match(errors, /replacement cycle/);
+    assert.match(errors, /must not reference itself/);
+    manifest.skills.gamma.replacement = 'retired';
+    assert.match(
+      validateLifecycleManifest(manifest, root, '2026-07-27').join('\n'),
+      /replacement must not be removed/,
+    );
+  } finally {
+    removeDir(root);
+  }
+});
+
+test('registry comparison rejects silent external upstream identity changes', () => {
+  const root = makeTempDir('reg-');
+  try {
+    writeSkill(root, 'alpha', { frontmatter: validFrontmatter('alpha') });
+    const lifecycle = lifecycleManifest(['alpha'], {
+      alpha: {
+        origin: {
+          type: 'external',
+          repository: 'https://github.com/example/upstream',
+          ref: 'b'.repeat(40),
+          commit: 'b'.repeat(40),
+        },
+      },
+    });
+    const previous = buildRegistry(
+      root, { schemaVersion: 1, skills: {} }, root, discoveryManifest(['alpha']),
+      lifecycle, '2026-07-27',
+    );
+    const candidate = structuredClone(previous);
+    candidate.skills[0].lifecycle.origin.ref = 'c'.repeat(40);
+    candidate.skills[0].lifecycle.origin.commit = 'c'.repeat(40);
+    assert.match(
+      validateRegistry(candidate, previous, '2026-07-27').join('\n'),
+      /external upstream identity changed without both a version increase and an advanced lastReviewedAt/,
+    );
+    candidate.skills[0].version = '1.0.1';
+    candidate.skills[0].lifecycle.lastReviewedAt = '2026-07-28';
+    candidate.skills[0].lifecycle.reviewDueAt = '2027-07-28';
+    assert.deepEqual(validateRegistry(candidate, previous, '2026-07-28'), []);
+  } finally {
+    removeDir(root);
+  }
+});
+
+test('registry comparison protects normalized origins across kinds and tombstone transitions', () => {
+  const root = makeTempDir('reg-');
+  try {
+    writeSkill(root, 'alpha', { frontmatter: validFrontmatter('alpha') });
+    const previous = buildRegistry(
+      root, { schemaVersion: 1, skills: {} }, root, discoveryManifest(['alpha']),
+      lifecycleManifest(['alpha']), '2026-07-27',
+    );
+    const equivalent = structuredClone(previous);
+    equivalent.skills[0].lifecycle.origin.repository =
+      'https://github.com/Cody-Sims/agent-skills.git/';
+    assert.deepEqual(validateRegistry(previous, equivalent, '2026-07-27'), []);
+
+    const changedFirstParty = structuredClone(previous);
+    changedFirstParty.skills[0].lifecycle.origin.ref = 'b'.repeat(40);
+    changedFirstParty.skills[0].lifecycle.origin.commit = 'b'.repeat(40);
+    assert.match(
+      validateRegistry(changedFirstParty, previous, '2026-07-27').join('\n'),
+      /first-party origin identity changed/,
+    );
+
+    const kindChange = structuredClone(previous);
+    kindChange.skills[0].lifecycle.origin.type = 'external';
+    assert.match(
+      validateRegistry(kindChange, previous, '2026-07-27').join('\n'),
+      /origin kind changed/,
+    );
+
+    const removed = structuredClone(previous);
+    const [entry] = removed.skills.splice(0, 1);
+    removed.removed.alpha = { ...entry.lifecycle, status: 'removed' };
+    removed.removed.alpha.origin = {
+      ...removed.removed.alpha.origin,
+      ref: 'c'.repeat(40),
+      commit: 'c'.repeat(40),
+    };
+    assert.match(
+      validateRegistry(removed, previous, '2026-07-27').join('\n'),
+      /active-to-removed origin identity changed/,
+    );
+
+    const changedTombstone = structuredClone(removed);
+    changedTombstone.removed.alpha.origin.ref = 'd'.repeat(40);
+    changedTombstone.removed.alpha.origin.commit = 'd'.repeat(40);
+    assert.match(
+      validateRegistry(changedTombstone, removed, '2026-07-27').join('\n'),
+      /tombstone origin identity changed/,
+    );
+
+    const removedSameOrigin = structuredClone(previous);
+    const [removedEntry] = removedSameOrigin.skills.splice(0, 1);
+    removedSameOrigin.removed.alpha = {
+      ...removedEntry.lifecycle,
+      status: 'removed',
+    };
+    assert.match(
+      validateRegistry(previous, removedSameOrigin, '2026-07-27').join('\n'),
+      /removed-to-active transition is not allowed/,
+    );
+  } finally {
+    removeDir(root);
+  }
+});
+
+test('lifecycle normalization uses code-point ordering and canonical repository URLs', () => {
+  const manifest = lifecycleManifest(['zeta', 'alpha']);
+  manifest.removed = {
+    'zeta-old': { ...manifest.skills.zeta, status: 'removed' },
+    'alpha-old': { ...manifest.skills.alpha, status: 'removed' },
+  };
+  manifest.skills.alpha.origin.repository =
+    'https://github.com/Cody-Sims/agent-skills.git/';
+  const original = String.prototype.localeCompare;
+  String.prototype.localeCompare = () => {
+    throw new Error('localeCompare must not be used');
+  };
+  try {
+    const normalized = normalizeLifecycle(manifest);
+    assert.deepEqual(Object.keys(normalized.skills), ['alpha', 'zeta']);
+    assert.deepEqual(Object.keys(normalized.removed), ['alpha-old', 'zeta-old']);
+    assert.equal(
+      normalized.skills.alpha.origin.repository,
+      'https://github.com/Cody-Sims/agent-skills',
+    );
+  } finally {
+    String.prototype.localeCompare = original;
+  }
+});
+
+test('buildRegistry merges complete discovery metadata into registry v4', () => {
   const root = makeTempDir('reg-');
   try {
     writeSkill(root, 'alpha', { frontmatter: validFrontmatter('alpha') });
@@ -38,7 +305,7 @@ test('buildRegistry merges complete discovery metadata into registry v3', () => 
       root,
       discoveryManifest(['alpha']),
     );
-    assert.equal(registry.schemaVersion, 3);
+    assert.equal(registry.schemaVersion, 4);
     assert.deepEqual(registry.skills[0].discovery.tags, ['testing']);
     assert.deepEqual(validateRegistry(registry), []);
   } finally {
@@ -98,7 +365,12 @@ test('registry and discovery schemas keep the same discovery definitions', () =>
   expected.discovery.properties.inputs.items.$ref = `${referenceRoot}/typedArtifact`;
   expected.discovery.properties.outputs.items.$ref = `${referenceRoot}/typedArtifact`;
   expected.discovery.properties.runtimeCompatibility.items.$ref = `${referenceRoot}/runtime`;
-  assert.deepEqual(registrySchema.properties.skills.items.$defs, expected);
+  const actual = registrySchema.properties.skills.items.$defs;
+  assert.deepEqual({
+    typedArtifact: actual.typedArtifact,
+    runtime: actual.runtime,
+    discovery: actual.discovery,
+  }, expected);
 });
 
 test('buildRegistry produces schema-valid, sorted output', () => {

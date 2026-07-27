@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cody-Sims/agent-skills/schemas/lifecycle.schema.json",
+  "title": "Agent Skills Lifecycle Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "skills", "removed"],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "skills": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/activeRecord" }
+    },
+    "removed": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/removedRecord" }
+    }
+  },
+  "$defs": {
+    "origin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "repository", "ref", "commit"],
+      "properties": {
+        "type": { "type": "string", "enum": ["first-party", "external"] },
+        "repository": { "type": "string", "pattern": "^https://github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(?:\\.git)?/?$" },
+        "ref": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" }
+      }
+    },
+    "recordFields": {
+      "license": { "type": "string", "minLength": 1 },
+      "lastReviewedAt": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+      "reviewDueAt": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+      "replacement": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+      "origin": { "$ref": "#/$defs/origin" }
+    },
+    "activeRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "license", "lastReviewedAt", "origin"],
+      "properties": {
+        "status": { "type": "string", "enum": ["active", "deprecated", "superseded"] },
+        "license": { "$ref": "#/$defs/recordFields/license" },
+        "lastReviewedAt": { "$ref": "#/$defs/recordFields/lastReviewedAt" },
+        "reviewDueAt": { "$ref": "#/$defs/recordFields/reviewDueAt" },
+        "replacement": { "$ref": "#/$defs/recordFields/replacement" },
+        "origin": { "$ref": "#/$defs/origin" }
+      }
+    },
+    "removedRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "license", "lastReviewedAt", "origin"],
+      "properties": {
+        "status": { "type": "string", "const": "removed" },
+        "license": { "$ref": "#/$defs/recordFields/license" },
+        "lastReviewedAt": { "$ref": "#/$defs/recordFields/lastReviewedAt" },
+        "reviewDueAt": { "$ref": "#/$defs/recordFields/reviewDueAt" },
+        "replacement": { "$ref": "#/$defs/recordFields/replacement" },
+        "origin": { "$ref": "#/$defs/origin" }
+      }
+    }
+  }
+}

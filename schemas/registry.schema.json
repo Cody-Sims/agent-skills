@@ -5,18 +5,18 @@
   "description": "Machine-readable catalog generated from skills/*/SKILL.md by scripts/generate-registry.mjs.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "skills"],
+  "required": ["schemaVersion", "skills", "removed"],
   "properties": {
     "schemaVersion": {
       "type": "integer",
-      "const": 3
+      "const": 4
     },
     "skills": {
       "type": "array",
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["name", "description", "path", "skillFile", "sha256", "resources", "maturity", "discovery"],
+        "required": ["name", "description", "path", "skillFile", "sha256", "resources", "maturity", "discovery", "lifecycle"],
         "properties": {
           "name": {
             "type": "string",
@@ -87,6 +87,9 @@
           },
           "discovery": {
             "$ref": "#/properties/skills/items/$defs/discovery"
+          },
+          "lifecycle": {
+            "$ref": "#/properties/skills/items/$defs/lifecycle"
           },
           "path": {
             "type": "string",
@@ -204,8 +207,51 @@
                 "items": { "type": "string", "minLength": 1, "maxLength": 300 }
               }
             }
+          },
+          "origin": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["type", "repository", "ref", "commit"],
+              "properties": {
+                "type": { "type": "string", "enum": ["first-party", "external"] },
+                "repository": { "type": "string", "pattern": "^https://github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(?:\\.git)?/?$" },
+                "ref": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+                "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" }
+              }
+          },
+          "lifecycle": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["status", "license", "lastReviewedAt", "origin"],
+              "properties": {
+                "status": { "type": "string", "enum": ["active", "deprecated", "superseded"] },
+                "license": { "type": "string", "minLength": 1 },
+                "lastReviewedAt": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+                "reviewDueAt": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+                "replacement": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+                "origin": { "$ref": "#/properties/skills/items/$defs/origin" }
+              }
+          },
+          "removedLifecycle": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["status", "license", "lastReviewedAt", "origin"],
+              "properties": {
+                "status": { "type": "string", "const": "removed" },
+                "license": { "type": "string", "minLength": 1 },
+                "lastReviewedAt": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+                "reviewDueAt": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+                "replacement": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+                "origin": { "$ref": "#/properties/skills/items/$defs/origin" }
+              }
           }
         }
+      }
+    },
+    "removed": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/properties/skills/items/$defs/removedLifecycle"
       }
     }
   }

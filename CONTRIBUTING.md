@@ -117,6 +117,16 @@ runtimes, related and conflicting skills, and example prompts belong in this
 catalog-only manifest, not portable `SKILL.md` frontmatter. See
 [`docs/registry-discovery.md`](docs/registry-discovery.md).
 
+## Lifecycle and provenance metadata
+
+Add a complete `registry/lifecycle.json` record for every skill. The record
+tracks status, matching license, real review dates, optional replacement, and
+immutable first-party or external origin. External and compatibility-sensitive
+records use an annual review interval. Do not advance a review date without an
+actual review. External repository, ref, or commit changes require a version
+increase and a later review date. See
+[`docs/lifecycle-and-provenance.md`](docs/lifecycle-and-provenance.md).
+
 Regenerate and query the catalog after changing discovery or maturity metadata:
 
 ```bash
@@ -145,6 +155,8 @@ npm run contributions:validate -- --changed-skill <skill-name>
 - [ ] `README.md` skills table and `CHANGELOG.md` are updated.
 - [ ] `registry/discovery.json` has complete metadata and `npm run registry:check`
       passes after regeneration.
+- [ ] `registry/lifecycle.json` has matching license, current review, status,
+      replacement, and immutable origin metadata.
 - [ ] `npm run validate` and `npm test` pass.
 - [ ] Applicable behavior evaluations compare the candidate with no skill or
    the previous release and include independent human review where needed.

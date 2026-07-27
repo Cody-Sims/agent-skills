@@ -46,6 +46,11 @@ runtimes it detects on the machine. Preview the plan first with
 `npm run check:agents` and remove installed copies with
 `npm run uninstall:agents`.
 
+Installs write a strictly validated receipt v2 containing the immutable catalog
+identity, registry digest, skill versions, and every installed file hash. See
+[`docs/lifecycle-and-provenance.md`](docs/lifecycle-and-provenance.md) for safe
+migration and rollback behavior.
+
 To install a single skill from GitHub CLI (version 2.90.0 or later), without
 cloning:
 
@@ -132,6 +137,9 @@ Tier entry, promotion, regression, deprecation, and removal policy is documented
 in [`docs/tier-lifecycle.md`](docs/tier-lifecycle.md).
 Registry discovery fields and query filters are documented in
 [`docs/registry-discovery.md`](docs/registry-discovery.md).
+Lifecycle, immutable origin, scheduled review, tombstones, and receipt v2 are
+documented in
+[`docs/lifecycle-and-provenance.md`](docs/lifecycle-and-provenance.md).
 
 ## Repository layout
 
@@ -149,9 +157,11 @@ agent-skills/
 ├── schemas/
 │   ├── skill.schema.json       # Frontmatter contract
 │   ├── registry-discovery.schema.json # Catalog discovery manifest contract
+│   ├── lifecycle.schema.json   # Lifecycle and immutable origin contract
 │   └── registry.schema.json    # Generated registry contract
 ├── registry/
 │   ├── discovery.json          # Maintainer-authored discovery metadata
+│   ├── lifecycle.json          # Maintainer-authored lifecycle and provenance
 │   ├── maturity.json           # Maintainer-authored tier evidence
 │   └── skills.json             # Generated discovery and maturity catalog
 ├── tests/                      # Tooling tests (node --test)
@@ -187,8 +197,8 @@ agent-skills/
 | `npm run routing:smoke` | Synthetic routing smoke test | Exercise repeated trials and confusion reporting. |
 | `npm run routing -- --suite <suite> --adapter <command> --out <result>` | Routing evaluation runner | Measure activation, precision, recall, collisions, tokens, and duration. |
 | `npm run contributions:validate -- --changed-skill <name>` | Contribution evidence validator | Require expertise provenance and uplift or an approved safety exception. |
-| `npm run registry` | Registry generator | Generate registry v3 with discovery metadata and maturity evidence. |
-| `npm run registry:check -- --previous <registry.json>` | Registry validator | Check generated output and reject unsupported tier transitions against a base registry. |
+| `npm run registry -- --as-of YYYY-MM-DD` | Registry generator | Generate registry v4 with discovery, maturity, lifecycle, provenance, and tombstones. |
+| `npm run registry:check -- --previous <registry.json> --as-of YYYY-MM-DD` | Registry validator | Check generated output, review expiry, tier transitions, and external identity changes against a v1-v3 or v4 baseline. |
 | `npm run registry:query -- [filters]` | Registry query | Filter skills by category, tags, risk, runtime, and input/output shape. |
 | `npm run install:agents` | `node scripts/manage-skills.mjs install` | Install skills into detected runtimes. |
 | `npm run check:agents` | `node scripts/manage-skills.mjs check` | Report what an install or uninstall would change, without writing. |
@@ -214,6 +224,7 @@ the overlap check, review checklist, and third-party contribution policy.
 In short: create `skills/<name>/SKILL.md` with valid frontmatter, keep the body
 under 500 lines and roughly 5,000 tokens, push large or conditional material
 into `references/`, add its catalog-only metadata to `registry/discovery.json`,
+add lifecycle and immutable origin metadata to `registry/lifecycle.json`,
 regenerate the registry, run `npm run validate` and `npm test`, and update
 `CHANGELOG.md`.
 

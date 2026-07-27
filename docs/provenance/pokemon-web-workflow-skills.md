@@ -2,7 +2,7 @@
 
 The `parallel-worktree-delivery` and `verification-discipline` skills were
 developed in `Cody-Sims/Pokemon-Web` and added in commit
-[`b1d5a0f`](https://github.com/Cody-Sims/Pokemon-Web/commit/b1d5a0f).
+[`b1d5a0f395955450b984420622c235065ed59282`](https://github.com/Cody-Sims/Pokemon-Web/commit/b1d5a0f395955450b984420622c235065ed59282).
 
 They were migrated into this reusable catalog because neither workflow depends on
 Pokemon Web:

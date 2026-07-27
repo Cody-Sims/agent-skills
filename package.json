@@ -4,6 +4,7 @@
   "description": "Portable Agent Skills for Claude Code, GitHub Copilot, and OpenAI Codex",
   "type": "module",
   "private": true,
+  "repository": "https://github.com/Cody-Sims/agent-skills",
   "engines": {
     "node": ">=22"
   },
