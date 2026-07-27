@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "skill": "verification-discipline",
+  "evaluatedAt": "2026-07-27",
+  "profile": "experimental-entry",
+  "checks": [
+    {
+      "command": "npm run validate",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/validate-skills.mjs --profile portable --changed",
+      "status": "passed"
+    },
+    {
+      "command": "npm test",
+      "status": "passed"
+    },
+    {
+      "command": "gh skill publish --dry-run",
+      "status": "passed"
+    }
+  ]
+}

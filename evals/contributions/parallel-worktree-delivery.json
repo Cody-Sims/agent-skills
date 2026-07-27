@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "skill": "parallel-worktree-delivery",
+  "expertiseSources": [
+    {
+      "type": "review-history",
+      "reference": "docs/provenance/pokemon-web-workflow-skills.md",
+      "summary": "Records the immutable upstream commit, operational lessons, portability changes, overlap boundaries, and security review for the migrated worktree orchestration workflow."
+    }
+  ],
+  "comparison": null,
+  "exception": {
+    "type": "safety",
+    "rationale": "The workflow reduces checkout collisions, overlapping agent writes, accidental changes to live worktrees, and unvalidated multi-branch integration. These risk controls are better evaluated through routing and operational review than average output-quality uplift at experimental entry."
+  }
+}

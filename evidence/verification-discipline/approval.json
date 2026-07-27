@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "skill": "verification-discipline",
+  "reviewedAt": "2026-07-27",
+  "reviewer": "Cody-Sims",
+  "decision": "approved-for-experimental-entry",
+  "rationale": "The migrated workflow is portable, has explicit boundaries from TDD and final verification, and addresses false-green tests and validation-integrity risks."
+}

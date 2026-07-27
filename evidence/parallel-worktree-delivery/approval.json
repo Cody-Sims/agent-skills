@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "skill": "parallel-worktree-delivery",
+  "reviewedAt": "2026-07-27",
+  "reviewer": "Cody-Sims",
+  "decision": "approved-for-experimental-entry",
+  "rationale": "The migrated workflow is portable, has explicit boundaries from task planning and ordinary git operations, and addresses multi-agent checkout and integration safety risks."
+}

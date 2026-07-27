@@ -8,6 +8,18 @@ if (/authentication|threat model/i.test(request.prompt)) selectedSkills = ['secu
 if (/approved specification|sequence the accepted/i.test(request.prompt)) {
   selectedSkills = ['planning-and-task-breakdown'];
 }
+if (/approved migration|assigned in parallel/i.test(request.prompt)) {
+  selectedSkills = ['planning-and-task-breakdown'];
+}
+if (/separate git worktrees|dependency waves/i.test(request.prompt)) {
+  selectedSkills = ['parallel-worktree-delivery'];
+}
+if (/suspiciously green|production mutation/i.test(request.prompt)) {
+  selectedSkills = ['verification-discipline'];
+}
+if (/feature test-first|failing behavior test/i.test(request.prompt)) {
+  selectedSkills = ['test-driven-development'];
+}
 
 process.stdout.write(JSON.stringify({
   selectedSkills,

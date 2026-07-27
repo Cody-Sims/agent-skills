@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "skill": "verification-discipline",
+  "expertiseSources": [
+    {
+      "type": "review-history",
+      "reference": "docs/provenance/pokemon-web-workflow-skills.md",
+      "summary": "Records the immutable upstream commit, repeated test-hardening lessons, portability changes, overlap boundaries, and security review for the migrated verification workflow."
+    }
+  ],
+  "comparison": null,
+  "exception": {
+    "type": "safety",
+    "rationale": "The workflow prevents false-green tests, weakened assertions, unbounded CPU checks, and unnoticed build churn. These validation-integrity controls reduce release risk directly and are better evaluated through adversarial test review than average output-quality uplift at experimental entry."
+  }
+}

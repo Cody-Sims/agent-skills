@@ -94,6 +94,38 @@
       ]
     },
     {
+      "name": "parallel-worktree-delivery",
+      "description": "Executes multi-agent, multi-branch git worktree delivery with ownership partitions, dependency waves, branch integration, merge conflict handling, and post-merge gates. Use when running worktree fleets, integration branches, or wave-based migrations where checkout collisions are a risk; do not use merely to identify parallel tasks or for a single small change.",
+      "version": "1.0.0",
+      "license": "MIT",
+      "tier": "experimental",
+      "maturity": {
+        "status": "verified",
+        "lastEvaluatedAt": "2026-07-27",
+        "evidence": [
+          {
+            "type": "structural-validation",
+            "reference": "evidence/parallel-worktree-delivery/validation.json",
+            "sha256": "97023024e0460c90e899ffb2c76612fa7a6d176189f6c29f5a3d343cdbcb9693",
+            "recordedAt": "2026-07-27"
+          },
+          {
+            "type": "maintainer-approval",
+            "reference": "evidence/parallel-worktree-delivery/approval.json",
+            "sha256": "781d244d6e11fb3cb5332e3f6f9d1d9336c8890e1d3fae84d435ebd3a70a6266",
+            "recordedAt": "2026-07-27"
+          }
+        ]
+      },
+      "path": "skills/parallel-worktree-delivery",
+      "skillFile": "skills/parallel-worktree-delivery/SKILL.md",
+      "sha256": "2f8477db9268f9452a1f09786ebc3021ceb17a6306ef49c53b64ec0a84657e2d",
+      "resources": [
+        "references/fleet-setup.md",
+        "references/integration-playbook.md"
+      ]
+    },
+    {
       "name": "planning-and-task-breakdown",
       "description": "Decomposes an approved specification into small, ordered, dependency-aware tasks, each with explicit acceptance criteria and a verification command, and identifies which tasks are independent and safely parallelizable without overlapping writes. Use when planning multi-step work, breaking a spec or feature into tasks, sequencing dependencies, or coordinating parallel agents, after requirements are agreed and before implementation begins.",
       "version": "1.0.0",
@@ -274,6 +306,38 @@
       "skillFile": "skills/verification-before-completion/SKILL.md",
       "sha256": "e44f4f20777a14833e521ed1f85e983c4dc9ca4eaa2852a35966b96811ba5b5d",
       "resources": []
+    },
+    {
+      "name": "verification-discipline",
+      "description": "Audits and hardens existing tests and validation so green results are meaningful by detecting vacuous assertions, copied production logic, unbounded checks, unenforced invariants, and build impurity. Use when reviewing suspicious green tests, repairing test credibility, or hardening CI gates; do not use for ordinary test-first feature implementation or routine final gate selection.",
+      "version": "1.0.0",
+      "license": "MIT",
+      "tier": "experimental",
+      "maturity": {
+        "status": "verified",
+        "lastEvaluatedAt": "2026-07-27",
+        "evidence": [
+          {
+            "type": "structural-validation",
+            "reference": "evidence/verification-discipline/validation.json",
+            "sha256": "0bb6c288e031e7bc75a0cc754d943ee26b06fad13c7d81a848df05d00aa61d5f",
+            "recordedAt": "2026-07-27"
+          },
+          {
+            "type": "maintainer-approval",
+            "reference": "evidence/verification-discipline/approval.json",
+            "sha256": "7ff79ad338e14d60e4a7da32db0df392cb6be15ef79a249edc7bc43d37f2c073",
+            "recordedAt": "2026-07-27"
+          }
+        ]
+      },
+      "path": "skills/verification-discipline",
+      "skillFile": "skills/verification-discipline/SKILL.md",
+      "sha256": "44658725e815c8aac548151882d851edbd2f4de6fcbbbd1ae0c7c2564f600970",
+      "resources": [
+        "references/invariant-and-gate-patterns.md",
+        "references/red-green-proof.md"
+      ]
     },
     {
       "name": "web-research-and-verification",
