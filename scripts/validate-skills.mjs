@@ -11,6 +11,7 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { parseFrontmatter, MissingFrontmatterError } from './lib/frontmatter.mjs';
+import { usesFirstOrSecondPerson } from './lib/description-language.mjs';
 import { Diagnostics, formatJson, formatText } from './lib/diagnostics.mjs';
 import {
   discoverSkills,
@@ -39,8 +40,6 @@ const BOOLEAN_FIELDS = new Set(['user-invocable', 'disable-model-invocation']);
 const NAME_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const SEMVER_PATTERN = /^\d+\.\d+\.\d+$/;
 const TRIGGER_PATTERN = /\b(use when|use for|use to|use before|use after|use during|applies when|applies to|runs when|invoked when|invoke when|activate when|handles?\b)/i;
-const FIRST_PERSON_PATTERN = /(^|\s)(i|i'll|i'm|we|we'll|my|our|us)(\s|[.,!?']|$)/i;
-const SECOND_PERSON_PATTERN = /(^|\s)(you|your|you'll|you're)(\s|[.,!?']|$)/i;
 
 function stripLinkTarget(target) {
   let value = target.trim();
@@ -164,7 +163,7 @@ function validateSkill(skill, options, diagnostics, seenNames) {
     if (!TRIGGER_PATTERN.test(value)) {
       diagnostics.warning('description/missing-trigger', skillFileRel, 'description should state when to use the skill (e.g. "Use when ...").', keyLines.description);
     }
-    if (FIRST_PERSON_PATTERN.test(value) || SECOND_PERSON_PATTERN.test(value)) {
+    if (usesFirstOrSecondPerson(value)) {
       diagnostics.warning('description/person', skillFileRel, 'description should be written in third person, not first or second person.', keyLines.description);
     }
   }

@@ -8,6 +8,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Zero-dependency Node.js 22 `skill:create` scaffolder with deterministic
+  portable skill output, optional resource placeholders, per-skill behavior and
+  routing fixtures, preflight path and conflict safety, rollback, validation,
+  advisory overlap review, documentation, and snapshot-like tests.
 - Experimental `parallel-worktree-delivery` and `verification-discipline` skills,
   migrated from Pokemon Web with portable guidance, explicit overlap boundaries,
   immutable provenance, and safety-exception contribution evidence.

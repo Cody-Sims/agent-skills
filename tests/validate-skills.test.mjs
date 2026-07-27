@@ -72,6 +72,54 @@ test('angle brackets in description are rejected', () => {
   });
 });
 
+test('typographic-apostrophe person-language contractions produce warnings', () => {
+  withSkillsRoot((root) => {
+    for (const [name, description] of [
+      ['first-person', 'I’ll draft release notes from changes. Use when a release needs notes.'],
+      ['group-person', 'We’ll draft release notes from changes. Use when a release needs notes.'],
+      ['second-person', 'You’ll receive release notes from changes. Use when a release needs notes.'],
+    ]) {
+      writeSkill(root, name, {
+        frontmatter: `name: ${name}\ndescription: ${description}\nlicense: MIT`,
+      });
+    }
+    const diagnostics = validate({ skillsRoot: root });
+    assert.equal(
+      diagnostics.warnings.filter((entry) => entry.rule === 'description/person').length,
+      3,
+    );
+    assert.equal(diagnostics.errors.filter((entry) => entry.rule === 'description/person').length, 0);
+  });
+});
+
+test('a Phase I Roman numeral is valid third-person description language', () => {
+  withSkillsRoot((root) => {
+    writeSkill(root, 'clinical-protocols', {
+      frontmatter: [
+        'name: clinical-protocols',
+        'description: Reviews Phase I clinical trial protocols. Use when assessing early-stage study plans.',
+        'license: MIT',
+      ].join('\n'),
+    });
+    const diagnostics = validate({ skillsRoot: root });
+    assert.equal(rules(diagnostics).has('description/person'), false);
+  });
+});
+
+test('the US acronym is valid third-person description language', () => {
+  withSkillsRoot((root) => {
+    writeSkill(root, 'export-controls', {
+      frontmatter: [
+        'name: export-controls',
+        'description: Reviews US export controls. Use when assessing regulatory requirements.',
+        'license: MIT',
+      ].join('\n'),
+    });
+    const diagnostics = validate({ skillsRoot: root });
+    assert.equal(rules(diagnostics).has('description/person'), false);
+  });
+});
+
 test('non-string metadata values and bad semver are rejected', () => {
   withSkillsRoot((root) => {
     writeSkill(root, 'meta', {

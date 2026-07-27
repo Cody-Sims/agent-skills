@@ -228,7 +228,7 @@ approval gates live outside the canonical skill format.
 
 ### AS-008: Add a first-party skill scaffolder
 
-- **Priority / status / scope:** P1 / proposed / M
+- **Priority / status / scope:** P1 / done / M
 - **Purpose:** Make the correct structure and evaluation workflow the easiest
   path for contributors.
 - **Dependencies:** AS-001, AS-002, and AS-005.
@@ -242,6 +242,12 @@ approval gates live outside the canonical skill format.
   - Refuse overlapping names and run validation after generation.
 - **Verification:** Snapshot tests cover minimal and resource-bearing scaffolds;
   generated output passes repository and portable validation.
+- **Result:** Added a zero-dependency Node.js 22 non-interactive scaffolder with
+  deterministic portable output, external per-skill behavior and routing
+  suites, optional resource placeholders, strict argument/path/conflict
+  preflight, rollback, repository and portable validation, generalized
+  evaluation discovery, advisory overlap review, tests, and authoring
+  documentation.
 
 ### AS-009: Publish composable workflow packs
 

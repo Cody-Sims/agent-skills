@@ -5,7 +5,7 @@
 
 import { createHash } from 'node:crypto';
 import { lstatSync, readdirSync, readFileSync, rmdirSync } from 'node:fs';
-import { dirname, relative, resolve, sep } from 'node:path';
+import { dirname, parse, relative, resolve, sep } from 'node:path';
 
 export function resolveInside(root, candidate) {
   const resolvedRoot = resolve(root);
@@ -25,6 +25,21 @@ export function pathEntryExists(path) {
     if (error?.code === 'ENOENT') return false;
     throw error;
   }
+}
+
+// Rejects a symlink in any existing component of an absolute or relative path,
+// including components before the supplied managed root.
+export function assertNoSymlinkComponents(path) {
+  const resolvedPath = resolve(path);
+  const { root } = parse(resolvedPath);
+  let current = root;
+  for (const part of relative(root, resolvedPath).split(sep).filter(Boolean)) {
+    current = resolve(current, part);
+    if (pathEntryExists(current) && lstatSync(current).isSymbolicLink()) {
+      throw new Error(`Refusing a symlink in a managed path: ${current}`);
+    }
+  }
+  return resolvedPath;
 }
 
 // Resolves `candidate` under `root` and rejects the path if the root itself is

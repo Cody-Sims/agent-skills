@@ -178,6 +178,50 @@ Record the comparison and the expertise sources that informed the skill in
 or compliance exception when risk reduction, rather than average output uplift,
 is the correct success measure.
 
+## First-party scaffolder
+
+Node.js 22 users can create a deterministic starting point without prompts:
+
+```bash
+npm run skill:create -- \
+  --name example-skill \
+  --description "Produces a defined artifact from supplied inputs. Use when the user requests that artifact." \
+  --author "Maintainer Name" \
+  --references \
+  --scripts \
+  --assets
+```
+
+Only `--name` and `--description` are required. Resource flags create only the
+requested `references/`, `scripts/`, or `assets/` directories. Each requested
+directory contains a concise `README.md` because empty directories are not
+portable Git artifacts.
+
+The command creates:
+
+- `skills/<name>/SKILL.md`
+- `evals/skills/<name>/evals.json`
+- `evals/skills/<name>/routing.json`
+- Optional resource placeholder files for requested flags
+
+Before writing, it rejects malformed or reserved names, invalid descriptions,
+duplicate or unknown arguments, symlinks, path escapes, and every existing
+destination. It validates the planned frontmatter, repository and portable
+skill profiles, behavior suite, and routing suite. It never overwrites or
+merges. Unexpected write failures remove only paths created by that invocation.
+
+The behavior and positive/negative routing entries are schema-valid
+placeholders with training and validation routing coverage. Replace every
+bracketed placeholder with realistic prompts and objective assertions before
+evaluation. Placeholder files are not contribution, promotion, provenance, or
+evaluation evidence.
+
+Success output includes an advisory lexical/name list for human overlap review.
+Semantic trigger overlap remains a maintainer decision. The output also lists
+the required follow-ups: truthful discovery and lifecycle records, real
+contribution evidence, README and changelog updates, registry generation, and
+hosted evaluation.
+
 ## Tier maturity
 
 New skills start at `experimental`. `extended` and `core` are evidence-backed

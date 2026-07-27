@@ -31,7 +31,7 @@ other hosts. Claude Code does not read `.agents/skills`, so it requires a
 
 ## Quick start
 
-Requires Node.js 20 or later.
+Requires Node.js 22 or later.
 
 ```bash
 git clone https://github.com/Cody-Sims/agent-skills.git
@@ -191,6 +191,7 @@ agent-skills/
 | Command | Runs | Purpose |
 |---|---|---|
 | `npm run validate` | Repository validators | Validate every `SKILL.md` and the continuous-improvement policy. |
+| `npm run skill:create -- --name <slug> --description <text> [--author <name>] [--references] [--scripts] [--assets]` | First-party skill scaffolder | Create a validated portable skill and per-skill behavior and routing fixtures without overwriting existing paths. Requires Node.js 22 or later. |
 | `npm run improvement:validate` | Improvement policy validator | Validate budgets and protected-path configuration. |
 | `npm run improvement:preflight -- --item <item.json> --run <run.json>` | Improvement preflight | Validate approval, lease, scope, and budgets before editing. |
 | `npm run improvement:verify -- --item <item.json> --run <run.json>` | Improvement verification | Validate required checks and terminal run evidence. |
@@ -221,10 +222,23 @@ node scripts/validate-skills.mjs --profile portable --format json
 
 ## Adding a skill
 
-Use the `skill-creator` skill to scaffold and evaluate a new skill, and follow
+Run `npm run skill:create -- --name <slug> --description "<third-person text.
+Use when...>"` for a non-interactive starting point, then use the
+`skill-creator` skill to refine and evaluate it. The command writes
+`skills/<slug>/SKILL.md`, `evals/skills/<slug>/evals.json`, and
+`evals/skills/<slug>/routing.json`. Optional resource flags create only the
+requested directories with explicit placeholder files so they are portable Git
+artifacts. Generated placeholders are not contribution, promotion, provenance,
+or evaluation evidence.
+
+The command reports a deterministic, advisory adjacent-skill list for human
+overlap review. It does not claim to decide semantic overlap. Before
+contribution, replace placeholders, add truthful discovery and lifecycle
+records, provide real contribution evidence, update README and CHANGELOG,
+regenerate the registry, and run hosted evaluation. Follow
 `docs/authoring-guide.md` for the description-quality bar, progressive
-disclosure budgets, and the validation checklist. `CONTRIBUTING.md` describes
-the overlap check, review checklist, and third-party contribution policy.
+disclosure budgets, and validation checklist. `CONTRIBUTING.md` describes the
+overlap check, review checklist, and third-party contribution policy.
 
 In short: create `skills/<name>/SKILL.md` with valid frontmatter, keep the body
 under 500 lines and roughly 5,000 tokens, push large or conditional material

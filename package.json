@@ -12,6 +12,7 @@
     "validate": "node scripts/validate-skills.mjs && node scripts/continuous-improvement.mjs validate-policy && node scripts/validate-evaluations.mjs",
     "validate:json": "node scripts/validate-skills.mjs --format json",
     "validate:portable": "node scripts/validate-skills.mjs --profile portable",
+    "skill:create": "node scripts/create-skill.mjs",
     "registry": "node scripts/generate-registry.mjs",
     "registry:check": "node scripts/generate-registry.mjs --check",
     "registry:query": "node scripts/query-registry.mjs",
