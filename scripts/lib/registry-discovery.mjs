@@ -81,7 +81,8 @@ export function validateDiscoveryManifest(schema, manifest, skillNames) {
       .filter((entry) => entry && typeof entry === 'object')
       .map((entry) => entry.runtime);
     for (const [index, runtime] of runtimeCompatibility.entries()) {
-      if (runtime?.status === 'conditional' && !runtime.notes?.trim()) {
+      if (runtime?.status === 'conditional'
+        && (typeof runtime.notes !== 'string' || runtime.notes.trim() === '')) {
         errors.push(
           `$.skills.${name}.runtimeCompatibility[${index}].notes: conditional status requires notes.`,
         );
