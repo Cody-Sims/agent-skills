@@ -1,0 +1,3 @@
+interface:
+  display_name: Runtime Smoke Fixture
+  short_description: Exercises Codex host metadata.

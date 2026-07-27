@@ -10,6 +10,7 @@
 /.github/PULL_REQUEST_TEMPLATE/skill-improvement.md @Cody-Sims
 /.github/CODEOWNERS @Cody-Sims
 /schemas/ @Cody-Sims
+/schemas/runtime-smoke-*.schema.json @Cody-Sims
 /evals/ @Cody-Sims
 /registry/maturity.json @Cody-Sims
 /registry/discovery.json @Cody-Sims
@@ -20,12 +21,14 @@
 /scripts/continuous-improvement.mjs @Cody-Sims
 /scripts/run-evaluations.mjs @Cody-Sims
 /scripts/run-routing-evaluations.mjs @Cody-Sims
+/scripts/run-runtime-smoke.mjs @Cody-Sims
 /scripts/validate-evaluations.mjs @Cody-Sims
 /scripts/validate-contributions.mjs @Cody-Sims
 /scripts/validate-skills.mjs @Cody-Sims
 /scripts/lib/contribution-evidence.mjs @Cody-Sims
 /scripts/lib/evaluations.mjs @Cody-Sims
 /scripts/lib/routing-evaluations.mjs @Cody-Sims
+/scripts/lib/runtime-smoke.mjs @Cody-Sims
 /scripts/lib/process-adapter.mjs @Cody-Sims
 /scripts/lib/regex-grader.mjs @Cody-Sims
 /scripts/lib/regex-grader-worker.mjs @Cody-Sims
@@ -40,6 +43,7 @@
 /tests/evaluations.test.mjs @Cody-Sims
 /tests/contribution-evidence.test.mjs @Cody-Sims
 /tests/routing-evaluations.test.mjs @Cody-Sims
+/tests/runtime-smoke.test.mjs @Cody-Sims
 /tests/regex-grader.test.mjs @Cody-Sims
 /tests/jsonschema.test.mjs @Cody-Sims
 /tests/improvement-workflows.test.mjs @Cody-Sims
@@ -48,4 +52,5 @@
 /tests/frontmatter.test.mjs @Cody-Sims
 /tests/generate-registry.test.mjs @Cody-Sims
 /tests/fixtures/ @Cody-Sims
+/tests/fixtures/runtime-smoke/ @Cody-Sims
 /package.json @Cody-Sims

@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "name": "public-cross-runtime-smoke",
+  "skill": {
+    "name": "runtime-smoke-fixture",
+    "path": "skill",
+    "resource": "references/probe.txt"
+  },
+  "runtimes": [
+    {
+      "runtime": "claude-code",
+      "adapter": {
+        "id": "public-filesystem-v1",
+        "kind": "fixture",
+        "sha256": "f66d427362738c6b3adff19323e71195042ace1c33764227cda6bde714be37f4",
+        "launch": {
+          "executable": "process.execPath",
+          "arguments": ["{entrypoint}"],
+          "environment": []
+        },
+        "launchSha256": "724465641c5656d6aef5c5f42b690cd87f4f7d2daa5fee1963b757cedd7de8f2"
+      },
+      "installPath": ".claude/skills",
+      "invocation": "/runtime-smoke-fixture",
+      "hostExtensions": ["argument-hint", "user-invocable"]
+    },
+    {
+      "runtime": "github-copilot",
+      "adapter": {
+        "id": "public-filesystem-v1",
+        "kind": "fixture",
+        "sha256": "f66d427362738c6b3adff19323e71195042ace1c33764227cda6bde714be37f4",
+        "launch": {
+          "executable": "process.execPath",
+          "arguments": ["{entrypoint}"],
+          "environment": []
+        },
+        "launchSha256": "724465641c5656d6aef5c5f42b690cd87f4f7d2daa5fee1963b757cedd7de8f2"
+      },
+      "installPath": ".github/skills",
+      "invocation": "/runtime-smoke-fixture",
+      "hostExtensions": ["argument-hint", "user-invocable"]
+    },
+    {
+      "runtime": "openai-codex",
+      "adapter": {
+        "id": "public-filesystem-v1",
+        "kind": "fixture",
+        "sha256": "f66d427362738c6b3adff19323e71195042ace1c33764227cda6bde714be37f4",
+        "launch": {
+          "executable": "process.execPath",
+          "arguments": ["{entrypoint}"],
+          "environment": []
+        },
+        "launchSha256": "724465641c5656d6aef5c5f42b690cd87f4f7d2daa5fee1963b757cedd7de8f2"
+      },
+      "installPath": ".agents/skills",
+      "invocation": "$runtime-smoke-fixture",
+      "hostExtensions": ["agents/openai.yaml"]
+    }
+  ]
+}

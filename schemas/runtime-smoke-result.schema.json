@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cody-Sims/agent-skills/schemas/runtime-smoke-result.schema.json",
+  "title": "Agent Skill Runtime Smoke Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "suite", "suiteSha256", "skillSha256", "generatedAt", "runtimes", "summary"],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "suite": { "type": "string", "minLength": 1 },
+    "suiteSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "skillSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "generatedAt": { "type": "string", "minLength": 1 },
+    "runtimes": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": { "$ref": "#/$defs/runtime" }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pass", "fail", "skip"],
+      "properties": {
+        "pass": { "type": "integer", "minimum": 0, "maximum": 3 },
+        "fail": { "type": "integer", "minimum": 0, "maximum": 3 },
+        "skip": { "type": "integer", "minimum": 0, "maximum": 3 }
+      }
+    }
+  },
+  "$defs": {
+    "check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["check", "status", "reason"],
+      "properties": {
+        "check": { "type": "string", "enum": ["install", "discovery", "invocation", "resource-resolution", "host-extensions"] },
+        "status": { "type": "string", "enum": ["pass", "fail", "skip"] },
+        "reason": { "type": ["string", "null"], "minLength": 1 }
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["runtime", "status", "reason", "adapter", "checks"],
+      "properties": {
+        "runtime": { "type": "string", "enum": ["claude-code", "github-copilot", "openai-codex"] },
+        "status": { "type": "string", "enum": ["pass", "fail", "skip"] },
+        "reason": { "type": ["string", "null"], "minLength": 1 },
+        "adapter": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["configured", "id", "kind", "sha256", "policySha256", "launchSha256"],
+          "properties": {
+            "configured": { "type": "boolean" },
+            "id": { "type": ["string", "null"], "minLength": 1 },
+            "kind": { "type": "string", "enum": ["none", "fixture", "host"] },
+            "sha256": { "type": ["string", "null"], "pattern": "^[0-9a-f]{64}$" },
+            "policySha256": { "type": ["string", "null"], "pattern": "^[0-9a-f]{64}$" },
+            "launchSha256": { "type": ["string", "null"], "pattern": "^[0-9a-f]{64}$" }
+          }
+        },
+        "checks": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "items": { "$ref": "#/$defs/check" }
+        }
+      }
+    }
+  }
+}

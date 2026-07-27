@@ -30,6 +30,7 @@
     "schemas/improvement-*.schema.json",
     "schemas/eval-*.schema.json",
     "schemas/routing-*.schema.json",
+    "schemas/runtime-smoke-*.schema.json",
     "schemas/contribution-evidence.schema.json",
     "schemas/*evaluation*.json",
     "evals/**",
@@ -41,12 +42,14 @@
     "scripts/continuous-improvement.mjs",
     "scripts/run-evaluations.mjs",
     "scripts/run-routing-evaluations.mjs",
+    "scripts/run-runtime-smoke.mjs",
     "scripts/validate-evaluations.mjs",
     "scripts/validate-contributions.mjs",
     "scripts/validate-skills.mjs",
     "scripts/lib/contribution-evidence.mjs",
     "scripts/lib/evaluations.mjs",
     "scripts/lib/routing-evaluations.mjs",
+    "scripts/lib/runtime-smoke.mjs",
     "scripts/lib/process-adapter.mjs",
     "scripts/lib/regex-grader.mjs",
     "scripts/lib/regex-grader-worker.mjs",
@@ -61,6 +64,7 @@
     "tests/evaluations.test.mjs",
     "tests/contribution-evidence.test.mjs",
     "tests/routing-evaluations.test.mjs",
+    "tests/runtime-smoke.test.mjs",
     "tests/regex-grader.test.mjs",
     "tests/jsonschema.test.mjs",
     "tests/improvement-workflows.test.mjs",
@@ -68,6 +72,7 @@
     "tests/paths.test.mjs",
     "tests/frontmatter.test.mjs",
     "tests/generate-registry.test.mjs",
-    "tests/fixtures/**"
+    "tests/fixtures/**",
+    "tests/fixtures/runtime-smoke/**"
   ]
 }

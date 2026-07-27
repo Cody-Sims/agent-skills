@@ -46,6 +46,9 @@ jobs:
       - name: Run tooling tests
         run: npm test
 
+      - name: Run deterministic cross-runtime smoke matrix
+        run: npm run runtime:smoke
+
       - name: Require evidence for changed skills
         if: github.event_name == 'pull_request'
         run: node scripts/validate-contributions.mjs --base "${{ github.event.pull_request.base.sha }}"

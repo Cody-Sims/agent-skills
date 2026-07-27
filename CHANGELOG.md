@@ -54,6 +54,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   validation, removed tombstones, and guarded external identity changes.
 - Install receipt v2 with source identity, registry digest, skill versions,
   per-file ownership and hashes, strict path validation, and safe v1 migration.
+- Versioned cross-runtime smoke schemas and a bounded non-interactive runner for
+  Claude Code, GitHub Copilot, and OpenAI Codex, with deterministic public
+  fixture adapters, validated reports, and explicit hosted-runtime skips.
 
 ### Security
 
@@ -61,6 +64,25 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   process output on failure, cap output and workload sizes, isolate regular
   expressions in terminable workers, and persist only generic assertion
   evidence.
+- Runtime smoke adapters use isolated homes, bounded subprocesses, an explicit
+  environment allowlist, strict response evidence, and reasoned skips so
+  unavailable licensed or hosted products cannot become false passes.
+- Runtime smoke requests no longer expose expected evidence; reviewed adapter
+  identities bind ID, kind, and entrypoint digest, fixture sources reject
+  symlink escapes, unavailable hosts skip every host-dependent check, and POSIX
+  process-group timeouts terminate descendants before cleanup.
+- Runtime smoke adapter identities now bind the safe executable shape, complete
+  normalized argument list, and environment allowlist. Timeout cleanup polls
+  the process group through `ESRCH` and fails on bounded cleanup expiry or
+  `EPERM` instead of removing temporary roots while descendants may remain.
+- Runtime smoke launches now require an absolute native executable or the exact
+  current Node executable, reject shebang/PATH and interpreter-control
+  environment injection, bind actual environment values in result launch
+  digests, bound stderr as well as stdout, and finalize descendants on every
+  subprocess outcome.
+- Runtime smoke cleanup now applies one deadline to direct-child closure and
+  process-group verification, and preserves the isolated workspace with a safe
+  operator-cleanup path whenever process termination cannot be confirmed.
 - Evaluation and routing artifacts now reject unsafe counters and inconsistent
   metrics, bind contribution evidence to committed suite and skill hashes, and
   require local expertise sources and completed human review.

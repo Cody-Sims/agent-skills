@@ -203,7 +203,7 @@ approval gates live outside the canonical skill format.
 
 ### AS-007: Add cross-runtime smoke tests
 
-- **Priority / status / scope:** P1 / proposed / L
+- **Priority / status / scope:** P1 / done / L
 - **Purpose:** Test actual discovery and execution instead of format conformance
   alone.
 - **Dependencies:** AS-001 for a common result format.
@@ -216,6 +216,15 @@ approval gates live outside the canonical skill format.
   - Report unsupported or unavailable hosts as explicit skips, not false passes.
 - **Verification:** A fixture skill completes the supported smoke-test matrix and
   produces a machine-readable report.
+- **Result:** Added strict v1 suite and result contracts, a deterministic
+  non-interactive runner with bounded and sanitized adapters, a public fixture
+  matrix for Claude Code, GitHub Copilot, and OpenAI Codex, explicit reasoned
+  hosted-runtime skips, reviewed adapter identities without request answer keys,
+  complete safe-launch binding, symlink-safe fixture buffering,
+  interpreter/loader environment rejection, descendant-safe centralized
+  process-group cleanup for every exit path, one bounded child/group cleanup
+  deadline with uncertain-cleanup workspace preservation, CI coverage, and
+  focused compatibility documentation.
 
 ### AS-008: Add a first-party skill scaffolder
 

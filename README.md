@@ -133,6 +133,8 @@ Manual pilot operation is documented in the
 [`continuous improvement runbook`](docs/continuous-improvement-runbook.md).
 Behavior evaluation setup and the adapter protocol are documented in
 [`docs/evaluations.md`](docs/evaluations.md).
+Cross-runtime install, discovery, invocation, resource, and host-extension smoke
+testing is documented in [`docs/runtime-smoke.md`](docs/runtime-smoke.md).
 Tier entry, promotion, regression, deprecation, and removal policy is documented
 in [`docs/tier-lifecycle.md`](docs/tier-lifecycle.md).
 Registry discovery fields and query filters are documented in
@@ -158,6 +160,7 @@ agent-skills/
 │   ├── skill.schema.json       # Frontmatter contract
 │   ├── registry-discovery.schema.json # Catalog discovery manifest contract
 │   ├── lifecycle.schema.json   # Lifecycle and immutable origin contract
+│   ├── runtime-smoke-*.schema.json # Runtime smoke suite and result contracts
 │   └── registry.schema.json    # Generated registry contract
 ├── registry/
 │   ├── discovery.json          # Maintainer-authored discovery metadata
@@ -196,6 +199,8 @@ agent-skills/
 | `npm run eval -- --suite <suite> --adapter <command> --out <result>` | Behavior evaluation runner | Compare baseline and candidate outputs through a model adapter. |
 | `npm run routing:smoke` | Synthetic routing smoke test | Exercise repeated trials and confusion reporting. |
 | `npm run routing -- --suite <suite> --adapter <command> --out <result>` | Routing evaluation runner | Measure activation, precision, recall, collisions, tokens, and duration. |
+| `npm run runtime:smoke` | Deterministic fixture adapters | Exercise install, discovery, invocation, resources, and host extensions for Claude Code, Copilot, and Codex. |
+| `node scripts/run-runtime-smoke.mjs --suite <suite> --out <result> [--adapter <runtime=command> --adapter-entrypoint <runtime=path>]` | Runtime smoke runner | Run reviewed host adapters; record unavailable hosts as structured skips. |
 | `npm run contributions:validate -- --changed-skill <name>` | Contribution evidence validator | Require expertise provenance and uplift or an approved safety exception. |
 | `npm run registry -- --as-of YYYY-MM-DD` | Registry generator | Generate registry v4 with discovery, maturity, lifecycle, provenance, and tombstones. |
 | `npm run registry:check -- --previous <registry.json> --as-of YYYY-MM-DD` | Registry validator | Check generated output, review expiry, tier transitions, and external identity changes against a v1-v3 or v4 baseline. |

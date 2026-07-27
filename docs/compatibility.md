@@ -88,3 +88,18 @@ Recommended strategy: keep the canonical source under `skills/`, and let
 equivalents) rather than hand-maintaining duplicate trees, which drift. Source:
 `docs/research/codex-portability.md` (executive summary),
 `docs/research/anthropic-spec.md` (executive conclusions).
+
+## Runtime smoke coverage
+
+`npm run runtime:smoke` runs the public, deterministic adapter matrix for Claude
+Code, GitHub Copilot, and OpenAI Codex. It uses throwaway project and home roots.
+For every runtime it verifies the documented project install path, discovery,
+explicit invocation syntax, a referenced resource, and supported host-extension
+metadata. The fixture lives under `tests/fixtures/runtime-smoke/`; it is not a
+catalog entry and does not affect the generated registry.
+
+The public adapters exercise the complete protocol and filesystem matrix without
+claiming that a licensed or hosted product ran. Real host execution requires an
+explicit adapter command. An unconfigured or unavailable host is recorded as
+`skip` with a reason, never as `pass`. See [`runtime-smoke.md`](runtime-smoke.md)
+for the adapter contract and hosted-test boundary.

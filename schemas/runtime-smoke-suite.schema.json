@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cody-Sims/agent-skills/schemas/runtime-smoke-suite.schema.json",
+  "title": "Agent Skill Runtime Smoke Suite",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "name", "skill", "runtimes"],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "name": { "type": "string", "minLength": 1, "maxLength": 100, "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "skill": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "path", "resource"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 64, "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "path": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "resource": { "type": "string", "minLength": 1, "maxLength": 200 }
+      }
+    },
+    "runtimes": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["runtime", "adapter", "installPath", "invocation", "hostExtensions"],
+        "properties": {
+          "runtime": { "type": "string", "enum": ["claude-code", "github-copilot", "openai-codex"] },
+          "adapter": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "kind", "sha256", "launch", "launchSha256"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1, "maxLength": 100, "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+              "kind": { "type": "string", "enum": ["fixture", "host"] },
+              "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+              "launch": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["executable", "arguments", "environment"],
+                "properties": {
+                  "executable": { "type": "string", "enum": ["process.execPath", "entrypoint"] },
+                  "arguments": {
+                    "type": "array",
+                    "minItems": 0,
+                    "maxItems": 20,
+                    "items": { "type": "string", "maxLength": 500 }
+                  },
+                  "environment": {
+                    "type": "array",
+                    "minItems": 0,
+                    "maxItems": 20,
+                    "items": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$" }
+                  }
+                }
+              },
+              "launchSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+            }
+          },
+          "installPath": { "type": "string", "minLength": 1, "maxLength": 100 },
+          "invocation": { "type": "string", "minLength": 1, "maxLength": 100 },
+          "hostExtensions": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 10,
+            "items": { "type": "string", "minLength": 1, "maxLength": 100 }
+          }
+        }
+      }
+    }
+  }
+}
