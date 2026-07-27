@@ -27,8 +27,11 @@
     "improvement:preflight": "node scripts/continuous-improvement.mjs preflight",
     "improvement:verify": "node scripts/continuous-improvement.mjs verify",
     "install:agents": "node scripts/manage-skills.mjs install",
+    "install:pack": "node scripts/manage-skills.mjs install --pack",
     "check:agents": "node scripts/manage-skills.mjs check",
+    "check:pack": "node scripts/manage-skills.mjs check --pack",
     "uninstall:agents": "node scripts/manage-skills.mjs uninstall",
+    "uninstall:pack": "node scripts/manage-skills.mjs uninstall --pack",
     "list": "node scripts/manage-skills.mjs list",
     "test": "node --test \"tests/**/*.test.mjs\""
   },

@@ -70,12 +70,15 @@ output is always v5.
 
 ## Install receipts and rollback
 
-The installer writes receipt v2. It records source repository, immutable ref and
-commit, registry SHA-256 digest, every installed skill version, and the SHA-256
-hash and owning skill for every installed file. `check` reports identity,
-catalog, version, set, missing-file, modified-file, and receipt drift.
+The installer writes receipt v3. It records full-catalog and exact pack
+selections, source repository, immutable ref and commit, registry SHA-256 digest,
+every selected skill version, and the SHA-256 hash and owning skill for every
+selected file. Desired files are the union of the catalog selection and all
+selected packs. `check` reports identity, catalog, selection, version,
+missing-file, modified-file, and receipt drift. `check --pack` still verifies
+shared managed bytes instead of hiding drift outside a pack-exclusive subset.
 
-Default-catalog install and check operations first require the complete
+Default-catalog operations first require the complete
 `skills/` and `registry/` trees to match repository `HEAD`. They then verify
 that generated registry skill hashes, versions, and resource lists match the
 bytes to be copied. The complete current tree is compared with the commit, so
@@ -87,21 +90,64 @@ After collection, the buffered file set, every buffered file hash, derived skill
 versions, and registry digest are compared with blobs at that same commit. A
 transient worktree mutation therefore cannot be restored before final
 verification and still enter commit-attributed install bytes.
+When an existing v2/v3 receipt names an older commit, ownership is validated
+against the registry, selected packs and skills, and every resource blob at that
+immutable commit. The full-SHA commit must be an ancestor of the already
+verified current `HEAD`; an orphan or unrelated commit tree is rejected. This
+allows uninstall or recovery after unrelated `HEAD` advancement without
+granting repository-only ownership trust.
+For immutable v2/v3 recovery, the reconstructed historical resource plan is the
+prior ownership plan. Current catalog bytes are not used in its place; current
+catalog comparison remains for legacy or local-unverified receipts where no
+historical Git plan exists. V2 receipts retain full-catalog migration semantics.
+Pack-version changes remain fail closed: uninstall requires a checkout with the
+exact selected pack version recorded by the receipt.
 
 Custom `sourceRoot` calls use the explicit `local-unverified` receipt identity
-with null ref and commit. Their deterministic catalog digest is derived from
-the copied paths and hashes; it is not represented as immutable Git
-provenance.
+with null ref and commit. When an adjacent v5 registry exists, its bytes provide
+the digest and pack contract. Otherwise the deterministic catalog digest is
+derived from copied paths and hashes. Neither form is represented as immutable
+Git provenance.
 
 Receipts are validated before installation, removal, or checking. Absolute,
 escaping, duplicate, malformed, or mismatched resource paths are rejected.
 Receipt v1 is accepted only when all destinations and hashes pass the safe
 legacy checks and its normalized `source_repository` equals the current source
 identity. Foreign v1 receipts are rejected before their hashes can establish
-ownership. The next install migrates a valid receipt to v2; new v1 receipts are
-never written.
+ownership. A valid v2 receipt migrates as `catalog=true`; v1 retains the same
+source and ownership restrictions. The next install writes v3. Older receipt
+versions are never newly written.
 
-Rollback is ownership-safe:
+Mutations use a target-specific staged journal. The installer preflights every
+selected resource, backs up only receipt-owned paths, writes the receipt last,
+and rolls back command failures. An exclusive operation lock spans recovery,
+preflight, mutation, and finalization. Paths are revalidated immediately before
+replacement. Existing locks are never reclaimed automatically, even when their
+recorded owner appears dead. Explicit inspection and removal are required.
+Transaction and cleanup roots have ownership markers and are preserved whenever
+the installer cannot prove that it created or inherited them from a validated
+transaction.
+
+Recovery validates the prior receipt ownership and binds the complete operation
+set to the staged next receipt, current source identity, registry digest,
+selection, and resource hashes. The exact set contains one write per next
+resource and one removal per prior-owned resource omitted from the next receipt,
+including full uninstall. Journal-provided hashes are not ownership evidence by
+themselves. A valid active journal rolls forward to that trusted plan. Logical commit and cleanup are separate: terminal state is atomically
+handed to `.agent-skills-transaction-cleanup`, and cleanup failure preserves
+recoverable committed state instead of attempting rollback without backups.
+The active-root handoff and cleanup-root deletion each re-read the owner marker
+and require the expected transaction token, terminal state, and journal digest.
+Replacement directories or symlink swaps are preserved for operator inspection.
+Malformed, foreign, forged, or uncertain state fails closed and identifies the
+managed transaction path for operator inspection.
+
+Multi-target operations preflight every target before the first mutation and
+roll back completed targets in reverse order if a later target fails. These are
+command-failure and crash-recovery guarantees. Instantaneous atomicity across
+filesystems or targets is not claimed.
+
+Ownership-safe operator flow:
 
 1. Restore locally modified files manually or move them aside.
 2. Install the desired catalog checkout.

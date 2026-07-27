@@ -59,10 +59,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Registry v5 workflow pack metadata with strict schemas, three version-pinned
   initial packs, continuous ordered handoff validation, deterministic
   normalization, compatibility and conflict validation, strict historical
-  baseline checks, and semver-guarded pack lifecycle transitions. This does not
-  yet add pack installation or composition evaluation.
-- Install receipt v2 with source identity, registry digest, skill versions,
-  per-file ownership and hashes, strict path validation, and safe v1 migration.
+  baseline checks, and semver-guarded pack lifecycle transitions.
+- Transactional exact-version workflow pack install, check, uninstall, and
+  selection reporting with conflict preflight, shared-skill retention,
+  multi-target rollback, and recoverable target-local journals. Composition
+  evaluation remains deferred.
+- Install receipt v3 with catalog and pack selections, source identity, registry
+  digest, exact selected skill versions, per-file ownership hashes, safe v1/v2
+  migration, and receipt-last transaction commits.
 - Versioned cross-runtime smoke schemas and a bounded non-interactive runner for
   Claude Code, GitHub Copilot, and OpenAI Codex, with deterministic public
   fixture adapters, validated reports, and explicit hosted-runtime skips.
@@ -98,6 +102,22 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Installer checks now detect receipt tampering, source and catalog drift,
   duplicate or escaping destinations, and modified or unmanaged files before
   mutation.
+- Pack transactions now use exclusive target locks, strict receipt v3 selection
+  validation, immediate pre-rename state checks, receipt-bound recovery plans,
+  atomic terminal cleanup handoff, and fail-closed rollback preservation.
+- Existing operation locks now always require explicit operator removal;
+  transaction roots carry ownership markers, and recovery rejects recomputed
+  plans that omit any required write or prior-owned removal.
+- Transaction finalization now revalidates the owner token, terminal journal
+  state, and journal digest before root handoff and recursive cleanup, preserving
+  replacement directories and symlink swaps.
+- Default-source pack uninstall now verifies existing receipt ownership against
+  its immutable Git commit and requires that commit to be an ancestor of verified
+  `HEAD`, fixing CLI uninstall while preserving fail-closed handling for foreign,
+  orphaned, forged, or commit-inconsistent receipts.
+- Crash recovery for immutable v2 receipts now uses the reconstructed historical
+  full-catalog resource plan instead of comparing prior ownership to descendant
+  catalog bytes.
 - Default-source receipts now reject dirty tracked or untracked catalog bytes
   and registry/resource mismatches before claiming `HEAD`; custom sources use a
   non-immutable `local-unverified` identity, and foreign v1 receipts cannot

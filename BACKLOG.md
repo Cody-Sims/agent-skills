@@ -270,13 +270,13 @@ approval gates live outside the canonical skill format.
   - [x] Slice 1: Add the strict pack manifest, three initial versioned pack
     definitions, semantic validation, lifecycle-safe transitions, and generated
     registry v5 integration.
-  - [ ] Slice 2: Add atomic pack installation, uninstall, receipt, conflict
+  - [x] Slice 2: Add atomic pack installation, uninstall, receipt, conflict
     preflight, and rollback transactions.
   - [ ] Slice 3: Add composition routing and combined-context evaluation,
     reporting, and promotion gates.
-- **Current result:** Slice 1 publishes metadata and validation only. Pack
-  installation transactions and composition evaluation remain unimplemented, so
-  AS-009 remains in progress.
+- **Current result:** Slices 1 and 2 publish validated metadata plus transactional
+  pack selection, receipt, install, check, uninstall, rollback, and recovery.
+  Composition evaluation remains unimplemented, so AS-009 remains in progress.
 
 ### AS-010: Add provenance and lifecycle management
 

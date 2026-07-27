@@ -46,8 +46,20 @@ runtimes it detects on the machine. Preview the plan first with
 `npm run check:agents` and remove installed copies with
 `npm run uninstall:agents`.
 
-Installs write a strictly validated receipt v2 containing the immutable catalog
-identity, registry digest, skill versions, and every installed file hash. See
+Installs write a strictly validated receipt v3 containing selection state,
+source identity, the registry digest, exact skill versions, and every installed
+file hash. Full-catalog commands remain the default. Packs use deterministic
+exact-version forms:
+
+```bash
+npm run install:pack -- feature-delivery@1.0.0
+npm run check:pack -- feature-delivery
+npm run uninstall:pack -- feature-delivery
+```
+
+Repeated `--pack` options select multiple packs. Pack installs add to existing
+catalog or pack selections; pack uninstall removes only that selection and
+retains shared skills required elsewhere. See
 [`docs/lifecycle-and-provenance.md`](docs/lifecycle-and-provenance.md) for safe
 migration and rollback behavior.
 
@@ -139,12 +151,13 @@ Tier entry, promotion, regression, deprecation, and removal policy is documented
 in [`docs/tier-lifecycle.md`](docs/tier-lifecycle.md).
 Registry discovery fields and query filters are documented in
 [`docs/registry-discovery.md`](docs/registry-discovery.md).
-Lifecycle, immutable origin, scheduled review, tombstones, and receipt v2 are
+Lifecycle, immutable origin, scheduled review, tombstones, and receipt v3 are
 documented in
 [`docs/lifecycle-and-provenance.md`](docs/lifecycle-and-provenance.md).
-Versioned workflow pack manifests and registry validation are documented in
-[`docs/workflow-packs.md`](docs/workflow-packs.md). Pack installation and
-composition evaluation are not implemented yet.
+Versioned workflow pack manifests, registry validation, and transactional pack
+selection are documented in
+[`docs/workflow-packs.md`](docs/workflow-packs.md). Composition evaluation is
+not implemented yet.
 
 ## Repository layout
 
