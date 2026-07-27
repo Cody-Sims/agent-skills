@@ -22,7 +22,7 @@
     {
       "name": "codebase-exploration",
       "description": "Builds a focused, evidence-based map of an unfamiliar repository before modifying it, locating entry points, build, test, and lint commands, architecture boundaries, conventions, the dependency graph, and the nearest agent instructions, then reading tests to learn intended behavior and finding the smallest correct change site. Use when onboarding to a new or unfamiliar codebase, orienting before a change, or answering how a project is structured and where to edit, while staying read-only.",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "license": "MIT",
       "tier": "core",
       "maturity": {
@@ -32,7 +32,7 @@
       },
       "path": "skills/codebase-exploration",
       "skillFile": "skills/codebase-exploration/SKILL.md",
-      "sha256": "97189845348c006e644e8505a44fd170fa761586a94e50475cabdc1b3e247ef9",
+      "sha256": "fc6b313f089000ec7833bccd6fd31633b1aec4bedd9671247a81cb18eda2c721",
       "resources": [
         "references/exploration-playbook.md"
       ]
@@ -59,7 +59,7 @@
     {
       "name": "external-skill-review",
       "description": "Reviews third-party agent skills as untrusted code before installing or updating them, assessing provenance, license, the full file tree, scripts, hidden Unicode, network and secret access, destructive commands, tool permissions, and supply-chain risk. Use when installing, updating, vetting, or auditing an external skill, a gh skill install candidate, or any skill from an untrusted repository.",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "license": "MIT",
       "tier": "core",
       "maturity": {
@@ -69,7 +69,7 @@
       },
       "path": "skills/external-skill-review",
       "skillFile": "skills/external-skill-review/SKILL.md",
-      "sha256": "3f80b1fe9e662464df6b7c9e41d1d6fc1153069a00adfe6d49a27d176ee89df1",
+      "sha256": "0879292f06d4c35c1c505b8320486120af7d129db6c94d08a0b309939178e104",
       "resources": [
         "references/inspection-checklist.md"
       ]
@@ -164,7 +164,7 @@
     {
       "name": "repository-agent-bootstrap",
       "description": "Audits and bootstraps repository-owned agent customization including AGENTS.md, repository and path-scoped instructions, custom agents, and skills, without overwriting established conventions. Use to set up, review, or maintain a repository's agent guidance, add a skill or agent, or fix overlapping, stale, or overly broad customization.",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "license": "MIT",
       "tier": "core",
       "maturity": {
@@ -174,7 +174,7 @@
       },
       "path": "skills/repository-agent-bootstrap",
       "skillFile": "skills/repository-agent-bootstrap/SKILL.md",
-      "sha256": "274dee9ac2596aabffd23fbc63c1be2cbda76dfd0ee3827bdd7ee48f7b305737",
+      "sha256": "136dd9aa26a6449f0b9383fcaf280e4f90075cb296a35fa51f457ea53764afe2",
       "resources": [
         "references/artifact-selection.md"
       ]
@@ -219,7 +219,7 @@
     {
       "name": "shadow-architecture",
       "description": "Builds, inspects, checks, updates, or renders a repository's .shadow decision graph as durable, evidence-linked architecture memory. Use to record durable architecture decisions, anchor claims to code, tests, docs, and commits, detect drift between decisions and implementation, or maintain the .shadow directory convention.",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "license": "MIT",
       "tier": "core",
       "maturity": {
@@ -229,7 +229,7 @@
       },
       "path": "skills/shadow-architecture",
       "skillFile": "skills/shadow-architecture/SKILL.md",
-      "sha256": "82fb0e9fc8f466f61fa973a38095ee1f621ea6cfa5ce5fffd50855cc1e32430c",
+      "sha256": "5e359b152381b2a713f0b5b3ba7498a12f051f0486130819685c3c1db99f9584",
       "resources": [
         "references/shadow-conventions.md"
       ]
@@ -294,7 +294,7 @@
     {
       "name": "verification-before-completion",
       "description": "Requires fresh evidence before any claim that work is done, fixed, passing, working, complete, or ready. Run the relevant command now, read the actual output and exit status, inspect the produced artifact or diff, reproduce the original symptom and confirm it is gone, and distinguish verified results from assumed ones. Use before reporting completion, closing a task, or telling the user something works, and whenever tests, builds, or lint results are described as passing.",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "license": "MIT",
       "tier": "core",
       "maturity": {
@@ -304,7 +304,7 @@
       },
       "path": "skills/verification-before-completion",
       "skillFile": "skills/verification-before-completion/SKILL.md",
-      "sha256": "e44f4f20777a14833e521ed1f85e983c4dc9ca4eaa2852a35966b96811ba5b5d",
+      "sha256": "4d807c1acb04432d1baee5168f55c3be073dcbea86df620942d866415aa810cb",
       "resources": []
     },
     {

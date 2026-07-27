@@ -2,9 +2,8 @@
 name: verification-before-completion
 description: "Requires fresh evidence before any claim that work is done, fixed, passing, working, complete, or ready. Run the relevant command now, read the actual output and exit status, inspect the produced artifact or diff, reproduce the original symptom and confirm it is gone, and distinguish verified results from assumed ones. Use before reporting completion, closing a task, or telling the user something works, and whenever tests, builds, or lint results are described as passing."
 license: MIT
-disable-model-invocation: false
 metadata:
-  version: "1.0.0"
+  version: "1.0.1"
   author: "Cody-Sims"
   tier: "core"
 ---

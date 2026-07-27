@@ -120,7 +120,7 @@ approval gates live outside the canonical skill format.
 
 ### AS-003: Require demonstrated uplift for new skills
 
-- **Priority / status / scope:** P0 / in-progress / M
+- **Priority / status / scope:** P0 / done / M
 - **Purpose:** Avoid adding generic instructions that duplicate the base model's
   existing strengths.
 - **Dependencies:** AS-001.
@@ -158,9 +158,8 @@ approval gates live outside the canonical skill format.
   accepts a fixture with complete evidence.
 - **Result:** Added the tier lifecycle policy, registry v2 maturity records,
   persistent evidence manifest, one-tier promotion and evidence-backed demotion
-  validation, legacy registry migration, and pull-request base comparison.
-  Catalog-wide portable validation remains blocked by pre-existing host
-  extension fields in unchanged skills.
+  validation, legacy registry migration, pull-request base comparison, and
+  portable-profile cleanup of legacy host-specific frontmatter.
 
 ### AS-005: Enrich registry discovery metadata
 

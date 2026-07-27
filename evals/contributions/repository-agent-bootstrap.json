@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "skill": "repository-agent-bootstrap",
+  "expertiseSources": [
+    {
+      "type": "specification",
+      "reference": "docs/research/anthropic-spec.md",
+      "summary": "Documents the strict portable frontmatter contract and rejection of runtime-specific fields."
+    }
+  ],
+  "comparison": null,
+  "exception": {
+    "type": "compliance",
+    "rationale": "Removes host-specific invocation metadata to satisfy the portable Agent Skills profile without changing the bounded bootstrap workflow."
+  }
+}

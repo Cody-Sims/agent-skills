@@ -3,11 +3,9 @@ name: shadow-architecture
 description: "Builds, inspects, checks, updates, or renders a repository's .shadow decision graph as durable, evidence-linked architecture memory. Use to record durable architecture decisions, anchor claims to code, tests, docs, and commits, detect drift between decisions and implementation, or maintain the .shadow directory convention."
 license: MIT
 metadata:
-  version: "1.0.0"
+  version: "1.0.1"
   author: Cody-Sims
   tier: core
-user-invocable: true
-disable-model-invocation: false
 ---
 
 # Shadow Architecture

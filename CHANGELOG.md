@@ -57,6 +57,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   metrics, bind contribution evidence to committed suite and skill hashes, and
   require local expertise sources and completed human review.
 
+### Changed
+
+- Removed host-specific invocation frontmatter from five canonical skills and
+  patch-bumped them so the complete catalog passes the portable profile.
+
 ## [0.1.0] - 2026-07-24
 
 ### Added

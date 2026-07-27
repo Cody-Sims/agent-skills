@@ -3,11 +3,9 @@ name: codebase-exploration
 description: "Builds a focused, evidence-based map of an unfamiliar repository before modifying it, locating entry points, build, test, and lint commands, architecture boundaries, conventions, the dependency graph, and the nearest agent instructions, then reading tests to learn intended behavior and finding the smallest correct change site. Use when onboarding to a new or unfamiliar codebase, orienting before a change, or answering how a project is structured and where to edit, while staying read-only."
 license: MIT
 metadata:
-  version: "1.0.0"
+  version: "1.0.1"
   author: Cody-Sims
   tier: core
-user-invocable: true
-disable-model-invocation: false
 ---
 
 # Codebase Exploration

@@ -3,12 +3,9 @@ name: repository-agent-bootstrap
 description: "Audits and bootstraps repository-owned agent customization including AGENTS.md, repository and path-scoped instructions, custom agents, and skills, without overwriting established conventions. Use to set up, review, or maintain a repository's agent guidance, add a skill or agent, or fix overlapping, stale, or overly broad customization."
 license: MIT
 metadata:
-  version: "1.0.0"
+  version: "1.0.1"
   author: Cody-Sims
   tier: core
-argument-hint: "[repository path or audit focus]"
-user-invocable: true
-disable-model-invocation: true
 ---
 
 # Repository Agent Bootstrap

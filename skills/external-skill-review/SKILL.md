@@ -3,12 +3,9 @@ name: external-skill-review
 description: "Reviews third-party agent skills as untrusted code before installing or updating them, assessing provenance, license, the full file tree, scripts, hidden Unicode, network and secret access, destructive commands, tool permissions, and supply-chain risk. Use when installing, updating, vetting, or auditing an external skill, a gh skill install candidate, or any skill from an untrusted repository."
 license: MIT
 metadata:
-  version: "1.0.0"
+  version: "1.0.1"
   author: Cody-Sims
   tier: core
-argument-hint: "[source repository, skill, and revision]"
-user-invocable: true
-disable-model-invocation: true
 ---
 
 # External Skill Review
