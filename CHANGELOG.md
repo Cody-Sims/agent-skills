@@ -8,6 +8,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Experimental `parallel-worktree-delivery` and `verification-discipline` skills,
+  migrated from Pokemon Web with portable guidance, explicit overlap boundaries,
+  immutable provenance, and safety-exception contribution evidence.
 - Prioritized catalog backlog covering behavior and routing evaluations,
   discovery metadata, maturity policy, cross-runtime validation, workflow packs,
   provenance, and a bounded two-agent continuous learning and improvement

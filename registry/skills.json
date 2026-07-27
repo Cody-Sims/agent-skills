@@ -94,6 +94,25 @@
       ]
     },
     {
+      "name": "parallel-worktree-delivery",
+      "description": "Executes multi-agent, multi-branch git worktree delivery with ownership partitions, dependency waves, branch integration, merge conflict handling, and post-merge gates. Use when running worktree fleets, integration branches, or wave-based migrations where checkout collisions are a risk; do not use merely to identify parallel tasks or for a single small change.",
+      "version": "1.0.0",
+      "license": "MIT",
+      "tier": "experimental",
+      "maturity": {
+        "status": "unverified",
+        "lastEvaluatedAt": null,
+        "evidence": []
+      },
+      "path": "skills/parallel-worktree-delivery",
+      "skillFile": "skills/parallel-worktree-delivery/SKILL.md",
+      "sha256": "2f8477db9268f9452a1f09786ebc3021ceb17a6306ef49c53b64ec0a84657e2d",
+      "resources": [
+        "references/fleet-setup.md",
+        "references/integration-playbook.md"
+      ]
+    },
+    {
       "name": "planning-and-task-breakdown",
       "description": "Decomposes an approved specification into small, ordered, dependency-aware tasks, each with explicit acceptance criteria and a verification command, and identifies which tasks are independent and safely parallelizable without overlapping writes. Use when planning multi-step work, breaking a spec or feature into tasks, sequencing dependencies, or coordinating parallel agents, after requirements are agreed and before implementation begins.",
       "version": "1.0.0",
@@ -274,6 +293,25 @@
       "skillFile": "skills/verification-before-completion/SKILL.md",
       "sha256": "e44f4f20777a14833e521ed1f85e983c4dc9ca4eaa2852a35966b96811ba5b5d",
       "resources": []
+    },
+    {
+      "name": "verification-discipline",
+      "description": "Audits and hardens existing tests and validation so green results are meaningful by detecting vacuous assertions, copied production logic, unbounded checks, unenforced invariants, and build impurity. Use when reviewing suspicious green tests, repairing test credibility, or hardening CI gates; do not use for ordinary test-first feature implementation or routine final gate selection.",
+      "version": "1.0.0",
+      "license": "MIT",
+      "tier": "experimental",
+      "maturity": {
+        "status": "unverified",
+        "lastEvaluatedAt": null,
+        "evidence": []
+      },
+      "path": "skills/verification-discipline",
+      "skillFile": "skills/verification-discipline/SKILL.md",
+      "sha256": "44658725e815c8aac548151882d851edbd2f4de6fcbbbd1ae0c7c2564f600970",
+      "resources": [
+        "references/invariant-and-gate-patterns.md",
+        "references/red-green-proof.md"
+      ]
     },
     {
       "name": "web-research-and-verification",

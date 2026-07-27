@@ -124,6 +124,10 @@ test('routing CLI runs repeated adapter trials and writes a confusion artifact',
       "if (/pull request|staged patch/i.test(request.prompt)) selectedSkills = ['code-review'];",
       "if (/authentication|threat model/i.test(request.prompt)) selectedSkills = ['security-review'];",
       "if (/approved specification|sequence the accepted/i.test(request.prompt)) selectedSkills = ['planning-and-task-breakdown'];",
+      "if (/approved migration|assigned in parallel/i.test(request.prompt)) selectedSkills = ['planning-and-task-breakdown'];",
+      "if (/separate git worktrees|dependency waves/i.test(request.prompt)) selectedSkills = ['parallel-worktree-delivery'];",
+      "if (/suspiciously green|production mutation/i.test(request.prompt)) selectedSkills = ['verification-discipline'];",
+      "if (/feature test-first|failing behavior test/i.test(request.prompt)) selectedSkills = ['test-driven-development'];",
       "process.stdout.write(JSON.stringify({ selectedSkills, inputTokens: 5, outputTokens: 1 }));",
     ].join('\n'));
 
@@ -137,7 +141,7 @@ test('routing CLI runs repeated adapter trials and writes a confusion artifact',
 
     assert.equal(execution.status, 0, execution.stderr);
     const result = JSON.parse(readFileSync(outputPath, 'utf8'));
-    assert.equal(result.summary.overall.trials, 24);
+    assert.equal(result.summary.overall.trials, 36);
     assert.equal(result.summary.overall.recall, 1);
     assert.equal(result.thresholds, null);
     assert.match(execution.stdout, /validation recall: 100\.0%/);

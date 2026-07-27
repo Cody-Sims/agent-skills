@@ -73,6 +73,7 @@ command surface.
 | `documentation-maintenance` | Keeps README, API docs, architecture notes, ADRs, and changelogs accurate when code, configuration, commands, or behavior change. |
 | `external-skill-review` | Reviews third-party agent skills as untrusted code before installing or updating them, assessing provenance, scripts, hidden Unicode, network and secret access, and supply-chain risk. |
 | `git-and-pr-workflow` | Guides Git branching, atomic commits, rebasing, conflict resolution, worktrees, pull request descriptions, and safely finishing a branch. |
+| `parallel-worktree-delivery` | Orchestrates multi-agent worktree fleets with exclusive ownership, dependency waves, one-branch-at-a-time integration, conflict handling, and post-merge gates. |
 | `planning-and-task-breakdown` | Decomposes an approved specification into small, ordered, dependency-aware tasks with acceptance criteria and verification commands, and flags safely parallelizable work. |
 | `refactoring-and-dead-code-removal` | Changes code structure without changing behavior and removes unused code safely, making one mechanical change at a time against a passing baseline and proving code is dead before deleting it. |
 | `repository-agent-bootstrap` | Audits and bootstraps repository-owned agent customization: `AGENTS.md`, repository and path-scoped instructions, custom agents, and skills. |
@@ -83,6 +84,7 @@ command surface.
 | `systematic-debugging` | Reproduces failures, captures exact error output, isolates the root cause, and fixes the cause rather than the symptom. |
 | `test-driven-development` | Drives implementation with the red-green-refactor cycle: a failing behavior test first, minimum code to pass, then refactor while green. |
 | `verification-before-completion` | Requires fresh command evidence before any claim that work is done, fixed, passing, or ready. |
+| `verification-discipline` | Hardens tests and CI so green results are meaningful through red-green proof, independent assertions, bounded expensive checks, report-only adoption, and build-purity checks. |
 | `web-research-and-verification` | Answers questions that depend on current external information by detecting the version in use, preferring authoritative sources, corroborating, and citing URLs. |
 
 ## Implementation agent

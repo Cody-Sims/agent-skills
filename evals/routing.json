@@ -58,6 +58,34 @@
       "prompt": "Sequence the accepted design into dependency-aware delivery tasks and identify parallel work.",
       "expected": ["planning-and-task-breakdown"],
       "excluded": ["requirements-and-spec-writing"]
+    },
+    {
+      "id": "orchestrate-worktree-fleet",
+      "split": "validation",
+      "prompt": "Coordinate four agents in separate git worktrees with exclusive file ownership, dependency waves, and one-branch-at-a-time integration.",
+      "expected": ["parallel-worktree-delivery"],
+      "excluded": ["planning-and-task-breakdown", "git-and-pr-workflow"]
+    },
+    {
+      "id": "harden-suspicious-green-test",
+      "split": "validation",
+      "prompt": "Audit this suspiciously green invariant test, prove it fails under a production mutation, and check that the build leaves tracked output clean.",
+      "expected": ["verification-discipline"],
+      "excluded": ["test-driven-development", "verification-before-completion"]
+    },
+    {
+      "id": "plan-independent-tasks",
+      "split": "validation",
+      "prompt": "Break the approved migration into independent tasks and identify which tasks can be assigned in parallel.",
+      "expected": ["planning-and-task-breakdown"],
+      "excluded": ["parallel-worktree-delivery"]
+    },
+    {
+      "id": "implement-feature-test-first",
+      "split": "validation",
+      "prompt": "Implement this feature test-first by writing a failing behavior test, making it pass, and then refactoring.",
+      "expected": ["test-driven-development"],
+      "excluded": ["verification-discipline"]
     }
   ]
 }
