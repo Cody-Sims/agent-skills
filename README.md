@@ -159,8 +159,8 @@ documented in
 [`docs/lifecycle-and-provenance.md`](docs/lifecycle-and-provenance.md).
 Versioned workflow pack manifests, registry validation, and transactional pack
 selection are documented in
-[`docs/workflow-packs.md`](docs/workflow-packs.md). Composition evaluation is
-not implemented yet.
+[`docs/workflow-packs.md`](docs/workflow-packs.md). Workflow pack composition
+evaluation is documented in [`docs/evaluations.md`](docs/evaluations.md).
 
 ## Repository layout
 
