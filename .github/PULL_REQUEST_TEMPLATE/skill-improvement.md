@@ -26,6 +26,8 @@ Evidence:
 
 ## Acceptance Criteria
 
+<!-- Record every approved criterion exactly once as: ID | passed|failed | evidence. -->
+
 ## Validation And Evaluation
 
 <!-- Record each independent gate with before evidence, after evidence, and preserved status. -->

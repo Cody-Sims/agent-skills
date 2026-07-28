@@ -147,6 +147,23 @@ test('refuses a proposal outside the learning-agent authority boundary', () => {
   assert.match(result.reasons[0], /proposal-only/);
 });
 
+test('refuses traversal and absolute paths that resemble an allowed scope', () => {
+  for (const path of [
+    'scripts/../.github/workflows/pwn.yml',
+    '/scripts/lib/improvement-proposal.mjs',
+    'scripts\\lib\\improvement-proposal.mjs',
+  ]) {
+    const proposal = groundedProposal();
+    proposal.scope.allowedPaths = [path];
+    const result = validateImprovementProposal(schema, proposal, {
+      ...options,
+      allowedPathPatterns: ['scripts/**'],
+    });
+    assert.equal(result.status, 'refused');
+    assert.equal(result.code, 'out-of-scope');
+  }
+});
+
 test('accepts a grounded novel proposal', () => {
   assert.deepEqual(validateImprovementProposal(schema, groundedProposal(), options), {
     schemaVersion: 1,

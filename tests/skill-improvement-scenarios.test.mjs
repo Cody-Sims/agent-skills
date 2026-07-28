@@ -7,6 +7,7 @@ import { validateImprovementOutput } from '../scripts/lib/improvement-pr.mjs';
 const NOW = '2026-07-27T20:00:00.000Z';
 const REQUIRED_CHECK = 'node --test tests/skill-improvement-scenarios.test.mjs tests/agent-profiles.test.mjs';
 const POLICY = {
+  approvedPermissions: ['contents:read'],
   protectedPaths: ['.github/agents/**', '.github/workflows/**', '.github/PULL_REQUEST_TEMPLATE/**', 'scripts/**', 'tests/**'],
 };
 
@@ -134,7 +135,7 @@ ${run.changedPaths.map((path) => `- \`${path}\``).join('\n')}
 
 ## Acceptance Criteria
 
-- AC-1: passed
+- AC-1 | passed | Scenario tests reject unsafe output and accept a complete result.
 
 ## Validation And Evaluation
 
@@ -177,6 +178,11 @@ function completeOutput(item, run, overrides = {}) {
     },
     firstEditAt: '2026-07-27T18:10:00.000Z',
     changedPaths: [...run.changedPaths],
+    acceptanceCriteria: [{
+      id: 'AC-1',
+      passed: true,
+      evidence: 'Scenario tests reject unsafe output and accept a complete result.',
+    }],
     independentGates: [{
       name: REQUIRED_CHECK,
       before: { passed: true, evidence: 'Existing agent profile tests passed.' },
@@ -247,12 +253,30 @@ test('refuses permission and protected-path expansion', () => {
     approvedProtectedPaths: [],
   });
   const run = activeRun(item, {
-    permissions: ['contents:read', 'contents:write'],
+    permissions: ['contents:read', 'actions:read', 'contents:write'],
     changedPaths: ['.github/workflows/improvement-policy.yml'],
   });
   const errors = validate(item, run, completeOutput(item, run)).join('\n');
   assert.match(errors, /Permission is outside the improvement-agent boundary: contents:write/);
+  assert.match(errors, /Permission is outside the improvement-agent boundary: actions:read/);
   assert.match(errors, /Protected path lacks explicit approval/);
+});
+
+test('fails closed without a permission allowlist and rejects path traversal', () => {
+  const item = approvedItem({ allowedPaths: ['scripts/**'] });
+  const run = activeRun(item, {
+    changedPaths: ['scripts/../.github/workflows/pwn.yml'],
+  });
+  const output = completeOutput(item, run);
+  const errors = validateImprovementOutput({
+    items: [item],
+    run,
+    output,
+    policy: { protectedPaths: ['.github/workflows/**'] },
+    now: NOW,
+  }).join('\n');
+  assert.match(errors, /must define a nonempty approvedPermissions/);
+  assert.match(errors, /outside the approved scope/);
 });
 
 test('refuses a failed evaluation or weakened independent gate', () => {
@@ -282,6 +306,24 @@ test('refuses incomplete or non-draft pull request output', () => {
   assert.match(errors, /Rollback instructions are required/);
   assert.match(errors, /Pull request must remain in draft state/);
   assert.match(errors, /PR body section is missing or empty: Sources And Provenance/);
+});
+
+test('requires every approved criterion with passing evidence in data and PR body', () => {
+  const item = approvedItem();
+  const run = activeRun(item);
+  const missing = completeOutput(item, run, { acceptanceCriteria: [] });
+  assert.match(validate(item, run, missing).join('\n'), /Acceptance criterion has no result: AC-1/);
+
+  const unsupported = completeOutput(item, run);
+  unsupported.acceptanceCriteria[0] = { id: 'AC-1', passed: false, evidence: '' };
+  unsupported.pullRequest.body = unsupported.pullRequest.body.replace(
+    '- AC-1 | passed | Scenario tests reject unsafe output and accept a complete result.',
+    '- None.',
+  );
+  const errors = validate(item, run, unsupported).join('\n');
+  assert.match(errors, /Acceptance criterion did not pass: AC-1/);
+  assert.match(errors, /Acceptance criterion has no evidence: AC-1/);
+  assert.match(errors, /PR body does not report acceptance-criterion evidence/);
 });
 
 test('refuses self-approval or merge claims', () => {

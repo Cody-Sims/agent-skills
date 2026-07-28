@@ -1,4 +1,5 @@
 import { validateAgainstSchema } from './jsonschema.mjs';
+import { pathMatches } from './continuous-improvement.mjs';
 
 export const IMPROVEMENT_PROPOSAL_SCHEMA_VERSION = 1;
 
@@ -16,22 +17,6 @@ function decision(status, code, reasons = []) {
     code,
     reasons,
   };
-}
-
-function pathMatches(path, pattern) {
-  let regex = '^';
-  for (let index = 0; index < pattern.length; index += 1) {
-    const character = pattern[index];
-    if (character === '*' && pattern[index + 1] === '*') {
-      regex += '.*';
-      index += 1;
-    } else if (character === '*') {
-      regex += '[^/]*';
-    } else {
-      regex += character.replace(/[|\\{}()[\]^$+?.]/g, '\\$&');
-    }
-  }
-  return new RegExp(`${regex}$`).test(path);
 }
 
 function citationErrors(proposal) {

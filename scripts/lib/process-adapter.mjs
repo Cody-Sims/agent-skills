@@ -1,4 +1,5 @@
 import { spawn, spawnSync } from 'node:child_process';
+import { resolve } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 
 const DEFAULT_ENVIRONMENT = [
@@ -61,13 +62,22 @@ export function runJsonAdapter({
   label,
 }) {
   const startedAt = performance.now();
+  const isolatedEnvironment = {
+    HOME: cwd,
+    XDG_CONFIG_HOME: resolve(cwd, '.config'),
+    XDG_CACHE_HOME: resolve(cwd, '.cache'),
+    TMPDIR: cwd,
+    TEMP: cwd,
+    TMP: cwd,
+    ...environment,
+  };
   const execution = spawnSync(command, args, {
     cwd,
     input: JSON.stringify(request),
     encoding: 'utf8',
     timeout: timeoutMs,
     maxBuffer: 2 * 1024 * 1024,
-    env: buildAdapterEnvironment(environmentNames, environment),
+    env: buildAdapterEnvironment(environmentNames, isolatedEnvironment),
     shell: false,
   });
   if (execution.error) {
@@ -195,11 +205,20 @@ export function runJsonAdapterAsync({
     processGroupState: supervisionOverrides.processGroupState ?? processGroupState,
     terminateProcessGroup: supervisionOverrides.terminateProcessGroup ?? terminateProcessGroup,
   };
+  const isolatedEnvironment = {
+    HOME: cwd,
+    XDG_CONFIG_HOME: resolve(cwd, '.config'),
+    XDG_CACHE_HOME: resolve(cwd, '.cache'),
+    TMPDIR: cwd,
+    TEMP: cwd,
+    TMP: cwd,
+    ...environment,
+  };
   return new Promise((resolvePromise, reject) => {
     const startedAt = performance.now();
     const child = supervision.spawn(command, args, {
       cwd,
-      env: buildAdapterEnvironment(environmentNames, environment),
+      env: buildAdapterEnvironment(environmentNames, isolatedEnvironment),
       shell: false,
       detached: true,
       stdio: ['pipe', 'pipe', 'pipe'],

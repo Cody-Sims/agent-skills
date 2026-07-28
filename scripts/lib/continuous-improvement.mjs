@@ -1,4 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
+import { posix } from 'node:path';
 
 import { validateAgainstSchema } from './jsonschema.mjs';
 
@@ -444,7 +445,18 @@ export function expireItem(item, {
   });
 }
 
+export function isRepositoryRelativePath(path) {
+  return typeof path === 'string'
+    && path.length > 0
+    && path !== '.'
+    && !path.startsWith('/')
+    && !path.includes('\\')
+    && !path.split('/').includes('..')
+    && posix.normalize(path) === path;
+}
+
 export function pathMatches(path, pattern) {
+  if (!isRepositoryRelativePath(path)) return false;
   let regex = '^';
   for (let index = 0; index < pattern.length; index += 1) {
     const character = pattern[index];

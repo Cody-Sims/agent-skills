@@ -112,11 +112,13 @@ function validateBaseline(output, errors) {
 }
 
 function validateScope({ item, run, output, policy }, errors) {
-  const allowedPermissions = policy?.allowedPermissions;
+  const allowedPermissions = policy?.approvedPermissions;
+  if (!Array.isArray(allowedPermissions) || allowedPermissions.length === 0) {
+    errors.push('Policy must define a nonempty approvedPermissions allowlist.');
+  }
   for (const permission of run?.permissions ?? []) {
     const allowed = Array.isArray(allowedPermissions)
-      ? allowedPermissions.includes(permission)
-      : /^[a-z-]+:read$/.test(permission);
+      && allowedPermissions.includes(permission);
     if (!allowed) errors.push(`Permission is outside the improvement-agent boundary: ${permission}.`);
   }
 
@@ -134,6 +136,39 @@ function validateScope({ item, run, output, policy }, errors) {
     const explicitlyApproved = (item.approvedProtectedPaths ?? []).some((pattern) => pathMatches(path, pattern));
     if (protectedPath && !explicitlyApproved) {
       errors.push(`Protected path lacks explicit approval: ${path}.`);
+    }
+  }
+}
+
+function validateAcceptanceCriteria(item, output, errors) {
+  if (!Array.isArray(output?.acceptanceCriteria)) {
+    errors.push('Acceptance-criteria results are required.');
+    return;
+  }
+  const results = new Map();
+  for (const result of output.acceptanceCriteria) {
+    if (results.has(result?.id)) {
+      errors.push(`Acceptance criterion is reported more than once: ${result?.id}.`);
+      continue;
+    }
+    results.set(result?.id, result);
+  }
+  for (const criterion of item.acceptanceCriteria ?? []) {
+    const result = results.get(criterion.id);
+    if (!result) {
+      errors.push(`Acceptance criterion has no result: ${criterion.id}.`);
+      continue;
+    }
+    if (result.passed !== true) {
+      errors.push(`Acceptance criterion did not pass: ${criterion.id}.`);
+    }
+    if (typeof result.evidence !== 'string' || result.evidence.trim().length === 0) {
+      errors.push(`Acceptance criterion has no evidence: ${criterion.id}.`);
+    }
+  }
+  for (const id of results.keys()) {
+    if (!(item.acceptanceCriteria ?? []).some((criterion) => criterion.id === id)) {
+      errors.push(`Output reports an unknown acceptance criterion: ${id}.`);
     }
   }
 }
@@ -234,6 +269,18 @@ function validatePullRequest(item, run, output, errors) {
   for (const required of item.requiredChecks ?? []) {
     if (!validation.includes(required)) errors.push(`PR body does not report required check: ${required}.`);
   }
+  const acceptanceCriteria = section(body, 'Acceptance Criteria');
+  for (const result of output?.acceptanceCriteria ?? []) {
+    for (const value of [
+      result.id,
+      result.passed === true ? 'passed' : 'failed',
+      result.evidence,
+    ]) {
+      if (!acceptanceCriteria.includes(value)) {
+        errors.push(`PR body does not report acceptance-criterion evidence: ${value}.`);
+      }
+    }
+  }
   const sources = section(body, 'Sources And Provenance');
   for (const source of output?.sources ?? []) {
     if (!sources.includes(source)) errors.push(`PR body does not report source link: ${source}.`);
@@ -275,6 +322,7 @@ export function validateImprovementOutput({
   if (!item) return errors;
   validateBaseline(output, errors);
   validateScope({ item, run, output, policy }, errors);
+  validateAcceptanceCriteria(item, output, errors);
   validateGates(item, run, output, errors);
   validateGrounding(output, errors);
   validatePullRequest(item, run, output, errors);

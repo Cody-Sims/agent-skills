@@ -160,6 +160,9 @@ test('preflight enforces lease ownership, path scope, protected paths, and budge
 test('double-star path scopes include nested directories', () => {
   assert.equal(pathMatches('scripts/lib/nested/check.mjs', 'scripts/**'), true);
   assert.equal(pathMatches('docs/check.mjs', 'scripts/**'), false);
+  assert.equal(pathMatches('scripts/../.github/workflows/pwn.yml', 'scripts/**'), false);
+  assert.equal(pathMatches('/absolute/scripts/check.mjs', 'scripts/**'), false);
+  assert.equal(pathMatches('scripts\\check.mjs', 'scripts/**'), false);
 });
 
 test('expired leases block implementation', () => {

@@ -202,9 +202,11 @@ test('CLI runs a subprocess adapter and writes a benchmark artifact', () => {
       "for await (const chunk of process.stdin) input += chunk;",
       'const request = JSON.parse(input);',
       "const stableSkillPath = resolve(process.cwd(), '.candidate-skill');",
-      "let text = request.skillPath === null && !existsSync(stableSkillPath) ? 'Looks complete.' : 'Isolation failed.';",
+      `const parentHome = ${JSON.stringify(process.env.HOME)};`,
+      "const isolated = process.env.HOME === process.cwd() && process.env.HOME !== parentHome;",
+      "let text = request.skillPath === null && !existsSync(stableSkillPath) && isolated ? 'Looks complete.' : 'Isolation failed.';",
       "if (request.variant === 'candidate' && request.skillPath === stableSkillPath",
-      "    && existsSync(resolve(request.skillPath, 'SKILL.md'))) text = 'Ran npm test.';",
+      "    && existsSync(resolve(request.skillPath, 'SKILL.md')) && isolated) text = 'Ran npm test.';",
       "process.stdout.write(JSON.stringify({ text, inputTokens: 5, outputTokens: 3 }));",
     ].join('\n'));
 
