@@ -58,9 +58,16 @@ JSON object on standard input:
   "caseId": "fresh-command-evidence",
   "prompt": "Evaluation prompt",
   "variant": "candidate",
+  "skillPath": "/isolated/workspace/.candidate-skill",
   "skillContent": "Complete SKILL.md content or null for baseline"
 }
 ```
+
+Candidate runs receive the complete skill tree at the stable `.candidate-skill`
+path inside their isolated workspace, including declared references, scripts,
+and assets. `skillPath` is `null` for baseline runs, and the candidate tree is
+not staged there. Adapters should resolve bundled resources from `skillPath`
+rather than assuming a repository checkout.
 
 The adapter writes one JSON object to standard output:
 
