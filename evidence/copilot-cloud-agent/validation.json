@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "skill": "copilot-cloud-agent",
+  "evaluatedAt": "2026-07-27",
+  "profile": "experimental-entry",
+  "checks": [
+    {
+      "command": "npm run validate",
+      "status": "passed"
+    },
+    {
+      "command": "npm run validate:portable",
+      "status": "passed"
+    },
+    {
+      "command": "npm test",
+      "status": "passed"
+    },
+    {
+      "command": "gh skill publish --dry-run",
+      "status": "passed"
+    }
+  ]
+}
