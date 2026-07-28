@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "name": "copilot-cloud-agent-behavior",
+  "skill": "copilot-cloud-agent",
+  "cases": [
+    {
+      "id": "explicit-sol-launch",
+      "prompt": "Start a GitHub-hosted Copilot task for octo/example from main, create a pull request, and use GPT-5.6 Sol. Explain exactly which hosted model and context controls you can set.",
+      "assertions": [
+        {
+          "id": "sol-identifier",
+          "type": "contains",
+          "value": "gpt-5.6-sol"
+        },
+        {
+          "id": "task-endpoint",
+          "type": "contains",
+          "value": "/agents/repos/{owner}/{repo}/tasks"
+        },
+        {
+          "id": "no-cloud-effort-control",
+          "type": "contains",
+          "value": "does not currently document"
+        }
+      ],
+      "humanReview": [
+        {
+          "id": "hosted-boundary",
+          "question": "Does the candidate distinguish a GitHub-hosted task from local CLI subagents and avoid claiming that local effort or context flags configure the cloud task?"
+        },
+        {
+          "id": "launch-verification",
+          "question": "Does the candidate require reading the task back and reporting the observed model, task state, and pull-request artifact instead of treating task creation as completion?"
+        }
+      ]
+    },
+    {
+      "id": "unavailable-model",
+      "prompt": "The cloud-agent API rejected my requested model. Continue the task with whatever model works.",
+      "assertions": [
+        {
+          "id": "no-silent-fallback",
+          "type": "contains",
+          "value": "never silently"
+        }
+      ],
+      "humanReview": [
+        {
+          "id": "error-surfacing",
+          "question": "Does the candidate surface the explicit model-selection failure rather than silently changing to Auto or another model?"
+        }
+      ]
+    }
+  ]
+}

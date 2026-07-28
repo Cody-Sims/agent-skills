@@ -135,7 +135,21 @@ A cloud session cannot see a developer’s local home directory. In practice, cl
 
 The GitHub documentation’s statement that skills work with cloud agent refers to repository-visible skills. A local-only `~/.copilot/skills` directory should not be treated as cloud synchronization. ([Adding skills for GitHub Copilot](https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/customize-cloud-agent/add-skills))
 
-### 3.4 Duplicate-name precedence
+### 3.4 Cloud task model and context controls
+
+Verified on 2026-07-27, GitHub's cloud-agent task API accepts an optional `model`
+field. Omitting it invokes Auto selection. GitHub's current cloud-agent model
+picker includes GPT-5.6 Sol, and the explicit API identifier is
+`gpt-5.6-sol`. The task read response exposes the observed session model, so
+orchestrators should verify the created task instead of inferring the selection
+from the request alone. ([Cloud-agent API guide](https://docs.github.com/en/copilot/how-tos/use-copilot-agents/cloud-agent/use-cloud-agent-via-the-api), [model selection](https://docs.github.com/en/copilot/how-tos/use-copilot-agents/cloud-agent/changing-the-ai-model), [agent-task endpoints](https://docs.github.com/en/rest/agent-tasks/agent-tasks))
+
+The documented hosted task and issue-assignment request shapes do not expose a
+reasoning-effort or context-window parameter. Local Copilot CLI `--effort` and
+`--context` flags must not be represented as cloud-agent controls. Selecting Sol
+does not prove a specific effort level or a 1M-token allocation.
+
+### 3.5 Duplicate-name precedence
 
 GitHub’s official skill documentation lists the recognized directories but does not provide a complete duplicate-name precedence table for:
 

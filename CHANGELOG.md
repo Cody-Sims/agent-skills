@@ -8,6 +8,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Experimental `copilot-cloud-agent` skill for launching and monitoring genuine
+  GitHub-hosted tasks, explicitly selecting GPT-5.6 Sol, verifying observed task
+  metadata and pull-request artifacts, and distinguishing cloud model controls
+  from unsupported reasoning-effort and context-window requests.
 - Zero-dependency Node.js 22 `skill:create` scaffolder with deterministic
   portable skill output, optional resource placeholders, per-skill behavior and
   routing fixtures, preflight path and conflict safety, rollback, validation,

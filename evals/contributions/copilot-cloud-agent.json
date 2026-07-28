@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "skill": "copilot-cloud-agent",
+  "expertiseSources": [
+    {
+      "type": "specification",
+      "reference": "docs/research/copilot-skills.md",
+      "summary": "Records current GitHub cloud-agent task APIs, explicit model selection, observed session metadata, and the boundary between hosted controls and local CLI flags."
+    }
+  ],
+  "comparison": null,
+  "exception": {
+    "type": "safety",
+    "rationale": "The workflow prevents duplicate hosted tasks, silent model fallback, unsupported claims about reasoning or context controls, credential disclosure, and unreviewed remote changes. These controls require operational review at experimental entry."
+  }
+}

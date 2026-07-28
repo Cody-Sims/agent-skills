@@ -15,6 +15,13 @@
       "reviewDueAt": "2027-07-27",
       "origin": { "type": "first-party", "repository": "https://github.com/Cody-Sims/agent-skills", "ref": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2", "commit": "5fa48ad8e34edb70532bca7b26fc0d3832fc68f2" }
     },
+    "copilot-cloud-agent": {
+      "status": "active",
+      "license": "MIT",
+      "lastReviewedAt": "2026-07-27",
+      "reviewDueAt": "2027-07-27",
+      "origin": { "type": "first-party", "repository": "https://github.com/Cody-Sims/agent-skills", "ref": "69e00b0a34f7b95e19b36fdb084152bf5610b1f7", "commit": "69e00b0a34f7b95e19b36fdb084152bf5610b1f7" }
+    },
     "documentation-maintenance": {
       "status": "active",
       "license": "MIT",
