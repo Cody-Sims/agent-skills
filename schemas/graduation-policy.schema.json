@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cody-Sims/agent-skills/schemas/graduation-policy.schema.json",
+  "title": "Continuous Improvement Graduation Policy",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "minimumProposalCycles",
+    "minimumImprovementPullRequests",
+    "minimumProposalAcceptanceRate",
+    "maximumDuplicateRate",
+    "minimumImplementationSuccessRate",
+    "minimumMeanEvaluationDelta",
+    "maximumMeanAiCreditsPerImprovement",
+    "maximumMeanMaintainerMinutesPerImprovement"
+  ],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "minimumProposalCycles": { "type": "integer", "minimum": 3 },
+    "minimumImprovementPullRequests": { "type": "integer", "minimum": 3 },
+    "minimumProposalAcceptanceRate": { "type": "number", "minimum": 0, "maximum": 1 },
+    "maximumDuplicateRate": { "type": "number", "minimum": 0, "maximum": 1 },
+    "minimumImplementationSuccessRate": { "type": "number", "minimum": 0, "maximum": 1 },
+    "minimumMeanEvaluationDelta": { "type": "number" },
+    "maximumMeanAiCreditsPerImprovement": { "type": "number", "minimum": 0 },
+    "maximumMeanMaintainerMinutesPerImprovement": { "type": "number", "minimum": 0 }
+  }
+}

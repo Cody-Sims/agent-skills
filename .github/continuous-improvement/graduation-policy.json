@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "minimumProposalCycles": 3,
+  "minimumImprovementPullRequests": 3,
+  "minimumProposalAcceptanceRate": 0.5,
+  "maximumDuplicateRate": 0.2,
+  "minimumImplementationSuccessRate": 0.8,
+  "minimumMeanEvaluationDelta": 0,
+  "maximumMeanAiCreditsPerImprovement": 5,
+  "maximumMeanMaintainerMinutesPerImprovement": 60
+}
