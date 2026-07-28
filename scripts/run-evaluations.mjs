@@ -38,12 +38,19 @@ function readJson(path) {
 }
 
 function createProcessAdapter({ command, args, timeoutMs, environmentNames }) {
-  return async ({ case: evaluationCase, variant, workspace, skillContent }) => {
+  return async ({
+    case: evaluationCase,
+    variant,
+    workspace,
+    skillPath,
+    skillContent,
+  }) => {
     const request = {
       protocolVersion: 1,
       caseId: evaluationCase.id,
       prompt: evaluationCase.prompt,
       variant,
+      skillPath,
       skillContent,
     };
     const { response, durationMs } = runJsonAdapter({
@@ -89,6 +96,7 @@ async function main() {
   const result = await runEvaluationSuite({
     suite,
     suiteDirectory: dirname(suitePath),
+    skillRoot,
     skillContent,
     skillSha256: sha256Tree(skillRoot),
     execute: createProcessAdapter({ command: adapter, args: adapterArgs, timeoutMs, environmentNames }),

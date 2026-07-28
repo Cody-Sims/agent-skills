@@ -1,6 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdirSync, readFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  symlinkSync,
+} from 'node:fs';
 import { writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -57,6 +62,91 @@ test('compares candidate and baseline in isolated workspaces with objective and 
   assert.equal(result.cases[0].humanReview[0].status, 'pending');
 });
 
+test('stages the complete candidate skill tree without exposing it to the baseline', async () => {
+  const temp = makeTempDir('eval-skill-tree-');
+  try {
+    const skillRoot = resolve(temp, 'source-skill');
+    mkdirSync(resolve(skillRoot, 'references', 'nested'), { recursive: true });
+    mkdirSync(resolve(skillRoot, 'scripts', 'nested'), { recursive: true });
+    mkdirSync(resolve(skillRoot, 'assets', 'nested'), { recursive: true });
+    writeFileSync(resolve(skillRoot, 'SKILL.md'), '# Resource Skill\n');
+    writeFileSync(resolve(skillRoot, 'references', 'nested', 'guide.md'), 'reference content\n');
+    writeFileSync(resolve(skillRoot, 'scripts', 'nested', 'check.mjs'), 'console.log("script content");\n');
+    writeFileSync(resolve(skillRoot, 'assets', 'nested', 'template.txt'), 'asset content\n');
+
+    const suite = {
+      schemaVersion: 1,
+      name: 'resource-pilot',
+      skill: 'resource-skill',
+      cases: [{
+        id: 'resource-case',
+        prompt: 'Use the complete skill.',
+        assertions: [{ id: 'resources', type: 'contains', value: 'resources visible' }],
+        humanReview: [],
+      }],
+    };
+    const workspaces = [];
+    await runEvaluationSuite({
+      suite,
+      skillRoot,
+      skillContent: '# Resource Skill\n',
+      tempRoot: resolve(temp, 'runs'),
+      execute: async ({ variant, workspace, skillPath }) => {
+        workspaces.push(workspace);
+        const stableSkillPath = resolve(workspace, '.candidate-skill');
+        if (variant === 'baseline') {
+          assert.equal(skillPath, null);
+          assert.equal(existsSync(stableSkillPath), false);
+          return { text: 'resources hidden', inputTokens: 1, outputTokens: 1, durationMs: 1 };
+        }
+
+        assert.equal(skillPath, stableSkillPath);
+        assert.equal(readFileSync(resolve(skillPath, 'SKILL.md'), 'utf8'), '# Resource Skill\n');
+        assert.equal(readFileSync(resolve(skillPath, 'references', 'nested', 'guide.md'), 'utf8'), 'reference content\n');
+        assert.equal(readFileSync(resolve(skillPath, 'scripts', 'nested', 'check.mjs'), 'utf8'), 'console.log("script content");\n');
+        assert.equal(readFileSync(resolve(skillPath, 'assets', 'nested', 'template.txt'), 'utf8'), 'asset content\n');
+        return { text: 'resources visible', inputTokens: 1, outputTokens: 1, durationMs: 1 };
+      },
+    });
+
+    assert.equal(new Set(workspaces).size, 2);
+    assert.equal(workspaces.every((workspace) => !existsSync(workspace)), true);
+  } finally {
+    removeDir(temp);
+  }
+});
+
+test('rejects symlinks in a candidate skill tree', async () => {
+  const temp = makeTempDir('eval-skill-symlink-');
+  try {
+    const skillRoot = resolve(temp, 'source-skill');
+    mkdirSync(resolve(skillRoot, 'references'), { recursive: true });
+    writeFileSync(resolve(skillRoot, 'SKILL.md'), '# Resource Skill\n');
+    writeFileSync(resolve(temp, 'outside.md'), 'outside content\n');
+    symlinkSync(resolve(temp, 'outside.md'), resolve(skillRoot, 'references', 'outside.md'));
+
+    await assert.rejects(() => runEvaluationSuite({
+      suite: {
+        schemaVersion: 1,
+        name: 'resource-symlink-pilot',
+        skill: 'resource-skill',
+        cases: [{
+          id: 'resource-case',
+          prompt: 'Use the complete skill.',
+          assertions: [{ id: 'resources', type: 'contains', value: 'visible' }],
+          humanReview: [],
+        }],
+      },
+      skillRoot,
+      skillContent: '# Resource Skill\n',
+      tempRoot: resolve(temp, 'runs'),
+      execute: async () => ({ text: 'visible', inputTokens: 1, outputTokens: 1, durationMs: 1 }),
+    }), /Refusing a symlink in a managed path/);
+  } finally {
+    removeDir(temp);
+  }
+});
+
 test('validates versioned suites and benchmark artifacts', async () => {
   const suiteSchema = JSON.parse(readFileSync(resolve(REPO_ROOT, 'schemas/eval-suite.schema.json'), 'utf8'));
   const resultSchema = JSON.parse(readFileSync(resolve(REPO_ROOT, 'schemas/eval-result.schema.json'), 'utf8'));
@@ -106,10 +196,15 @@ test('CLI runs a subprocess adapter and writes a benchmark artifact', () => {
       }],
     }));
     writeFileSync(adapterPath, [
+      "import { existsSync } from 'node:fs';",
+      "import { resolve } from 'node:path';",
       "let input = '';",
       "for await (const chunk of process.stdin) input += chunk;",
       'const request = JSON.parse(input);',
-      "const text = request.variant === 'candidate' ? 'Ran npm test.' : 'Looks complete.';",
+      "const stableSkillPath = resolve(process.cwd(), '.candidate-skill');",
+      "let text = request.skillPath === null && !existsSync(stableSkillPath) ? 'Looks complete.' : 'Isolation failed.';",
+      "if (request.variant === 'candidate' && request.skillPath === stableSkillPath",
+      "    && existsSync(resolve(request.skillPath, 'SKILL.md'))) text = 'Ran npm test.';",
       "process.stdout.write(JSON.stringify({ text, inputTokens: 5, outputTokens: 3 }));",
     ].join('\n'));
 

@@ -1,4 +1,10 @@
-import { copyFileSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs';
+import {
+  copyFileSync,
+  mkdirSync,
+  mkdtempSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
 
@@ -7,6 +13,7 @@ import { validateAgainstSchema } from './jsonschema.mjs';
 import { gradeRegex } from './regex-grader.mjs';
 
 const MAX_OUTPUT_LENGTH = 256 * 1024;
+const CANDIDATE_SKILL_DIRECTORY = '.candidate-skill';
 
 function duplicateIds(items) {
   const seen = new Set();
@@ -180,9 +187,28 @@ function copyFixture({ suiteDirectory, fixture, workspace }) {
   }
 }
 
+function stageCandidateSkill({ skillRoot, skillContent, workspace }) {
+  const destinationRoot = assertNoSymlinks(workspace, CANDIDATE_SKILL_DIRECTORY);
+  mkdirSync(destinationRoot);
+  if (!skillRoot) {
+    writeFileSync(assertNoSymlinks(destinationRoot, 'SKILL.md'), skillContent);
+    return destinationRoot;
+  }
+
+  const sourceRoot = assertNoSymlinks(skillRoot, '.');
+  for (const relativePath of walkFiles(sourceRoot)) {
+    const source = assertNoSymlinks(sourceRoot, relativePath);
+    const destination = assertNoSymlinks(destinationRoot, relativePath);
+    mkdirSync(dirname(destination), { recursive: true });
+    copyFileSync(source, destination);
+  }
+  return destinationRoot;
+}
+
 export async function runEvaluationSuite({
   suite,
   suiteDirectory,
+  skillRoot,
   skillContent,
   skillSha256 = sha256(skillContent),
   execute,
@@ -197,10 +223,14 @@ export async function runEvaluationSuite({
       const workspace = mkdtempSync(resolve(tempRoot, `${evaluationCase.id}-${variant}-`));
       try {
         copyFixture({ suiteDirectory, fixture: evaluationCase.fixture, workspace });
+        const skillPath = variant === 'candidate'
+          ? stageCandidateSkill({ skillRoot, skillContent, workspace })
+          : null;
         const execution = await execute({
           case: evaluationCase,
           variant,
           workspace,
+          skillPath,
           skillContent: variant === 'candidate' ? skillContent : null,
         });
         validateExecution(execution);
