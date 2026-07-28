@@ -48,6 +48,30 @@ export function validatePilotReport(report, policy, schema) {
   if (report.improvements.independentlyReviewed > report.improvements.completed) {
     errors.push('$.improvements.independentlyReviewed: cannot exceed completed improvements.');
   }
+  const evidenceByType = new Map();
+  const evidenceReferences = new Set();
+  for (const [index, evidence] of report.evidence.entries()) {
+    const entries = evidenceByType.get(evidence.type) ?? [];
+    entries.push(evidence.reference);
+    evidenceByType.set(evidence.type, entries);
+    if (evidenceReferences.has(evidence.reference)) {
+      errors.push(`$.evidence[${index}].reference: evidence references must be unique.`);
+    }
+    evidenceReferences.add(evidence.reference);
+  }
+  const evidenceMinimums = new Map([
+    ['proposal-cycle', report.proposalCycles],
+    ['pull-request', report.improvements.independentlyReviewed],
+    ['evaluation', report.improvements.completed],
+    ['maintainer-review', report.improvements.independentlyReviewed],
+  ]);
+  if (report.improvements.completed > 0) evidenceMinimums.set('billing', 1);
+  for (const [type, minimum] of evidenceMinimums) {
+    const count = evidenceByType.get(type)?.length ?? 0;
+    if (count < minimum) {
+      errors.push(`$.evidence: ${type} requires at least ${minimum} distinct record(s); found ${count}.`);
+    }
+  }
 
   const proposalAcceptanceRate = rate(report.proposals.accepted, report.proposals.total);
   const duplicateRate = rate(report.proposals.duplicates, report.proposals.total);
@@ -90,6 +114,13 @@ export function validatePilotReport(report, policy, schema) {
   if (report.decision.recommendation === 'graduate'
       && (!report.decision.approvedBy || !report.decision.approvedAt)) {
     errors.push('$.decision: graduation requires maintainer approval and date.');
+  }
+  if (report.decision.approvedAt && !calendarDate(report.decision.approvedAt)) {
+    errors.push('$.decision.approvedAt: must be a valid calendar date.');
+  } else if (report.decision.approvedAt
+      && (report.decision.approvedAt < report.period.startedAt
+        || report.decision.approvedAt > report.period.endedAt)) {
+    errors.push('$.decision.approvedAt: must fall within the pilot period.');
   }
   return errors;
 }

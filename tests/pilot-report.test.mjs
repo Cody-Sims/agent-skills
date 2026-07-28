@@ -32,9 +32,18 @@ function report() {
     limitations: ['Hosted results apply only to the tested repository and model versions.'],
     evidence: [
       { type: 'proposal-cycle', reference: 'https://example.test/issues/1' },
+      { type: 'proposal-cycle', reference: 'https://example.test/issues/2' },
+      { type: 'proposal-cycle', reference: 'https://example.test/issues/3' },
+      { type: 'pull-request', reference: 'https://example.test/pulls/1' },
       { type: 'pull-request', reference: 'https://example.test/pulls/2' },
-      { type: 'evaluation', reference: 'evidence/evaluation.json' },
+      { type: 'pull-request', reference: 'https://example.test/pulls/3' },
+      { type: 'evaluation', reference: 'evidence/evaluation-1.json' },
+      { type: 'evaluation', reference: 'evidence/evaluation-2.json' },
+      { type: 'evaluation', reference: 'evidence/evaluation-3.json' },
+      { type: 'evaluation', reference: 'evidence/evaluation-4.json' },
       { type: 'billing', reference: 'evidence/billing.json' },
+      { type: 'maintainer-review', reference: 'https://example.test/reviews/1' },
+      { type: 'maintainer-review', reference: 'https://example.test/reviews/2' },
       { type: 'maintainer-review', reference: 'https://example.test/reviews/3' },
     ],
     decision: {
@@ -79,6 +88,23 @@ test('rejects inconsistent counters and threshold regressions', () => {
   assert.match(errors, /cannot exceed completed improvements/);
   assert.match(errors, /mean evaluation delta/);
   assert.match(errors, /mean AI credits/);
+});
+
+test('rejects unsupported counters, duplicate evidence, and out-of-period approval', () => {
+  const candidate = report();
+  candidate.evidence = [
+    { type: 'proposal-cycle', reference: 'https://example.test/reused' },
+    { type: 'pull-request', reference: 'https://example.test/reused' },
+  ];
+  candidate.decision.approvedAt = '2026-08-01';
+  const errors = validatePilotReport(candidate, policy, schema).join('\n');
+  assert.match(errors, /evidence references must be unique/);
+  assert.match(errors, /proposal-cycle requires at least 3/);
+  assert.match(errors, /pull-request requires at least 3/);
+  assert.match(errors, /evaluation requires at least 4/);
+  assert.match(errors, /billing requires at least 1/);
+  assert.match(errors, /maintainer-review requires at least 3/);
+  assert.match(errors, /must fall within the pilot period/);
 });
 
 test('revise and stop decisions may record failed gates without claiming graduation', () => {
