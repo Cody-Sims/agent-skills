@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import {
   approvalDigest,
   preflight,
+  validateAuditTrail,
   validateItem,
   validateRun,
   verifyRun,
@@ -43,6 +44,7 @@ function loadContext() {
     policy: readJson(resolve(ROOT, '.github/continuous-improvement/policy.json')),
     itemSchema: readJson(resolve(ROOT, 'schemas/improvement-item.schema.json')),
     runSchema: readJson(resolve(ROOT, 'schemas/improvement-run.schema.json')),
+    auditEventSchema: readJson(resolve(ROOT, 'schemas/improvement-audit-event.schema.json')),
   };
 }
 
@@ -56,7 +58,17 @@ function main() {
       if (!Number.isFinite(context.policy[field]) || context.policy[field] < 0) errors.push(`Policy ${field} must be a non-negative number.`);
     }
     if (!Array.isArray(context.policy.protectedPaths) || context.policy.protectedPaths.length === 0) errors.push('Policy protectedPaths must not be empty.');
+    if (!Array.isArray(context.policy.approvedPermissions) || context.policy.approvedPermissions.length === 0) {
+      errors.push('Policy approvedPermissions must not be empty.');
+    } else if (context.policy.approvedPermissions.some((permission) => typeof permission !== 'string' || permission.length === 0)) {
+      errors.push('Policy approvedPermissions must contain non-empty strings.');
+    }
     report(errors);
+    return;
+  }
+
+  if (command === 'validate-audit') {
+    report(validateAuditTrail(context.auditEventSchema, readJson(requireArgument('audit'))));
     return;
   }
 
@@ -67,9 +79,11 @@ function main() {
   }
   if (command === 'validate') {
     const runPath = argument('run');
+    const auditPath = argument('audit');
     report([
       ...validateItem(context.itemSchema, item),
       ...(runPath ? validateRun(context.runSchema, readJson(runPath)) : []),
+      ...(auditPath ? validateAuditTrail(context.auditEventSchema, readJson(auditPath)) : []),
     ]);
     return;
   }

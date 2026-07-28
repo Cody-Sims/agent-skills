@@ -10,6 +10,9 @@
   "maxConcurrentRuns": 1,
   "maxOpenPullRequests": 1,
   "maxProposalsPerLearningRun": 3,
+  "approvedPermissions": [
+    "contents:read"
+  ],
   "protectedPaths": [
     "AGENTS.md",
     "SECURITY.md",

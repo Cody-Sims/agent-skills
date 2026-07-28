@@ -70,6 +70,36 @@
     "allowedPaths": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
     "approvedProtectedPaths": { "type": "array", "items": { "type": "string", "minLength": 1 } },
     "requiredChecks": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+    "blockedOutcome": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["code", "message", "evidence"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "enum": [
+            "invalid-claim",
+            "expired-claim",
+            "retry-exhausted",
+            "permission-expansion",
+            "path-scope-violation",
+            "protected-path-change",
+            "evaluation-regression",
+            "required-check-failed",
+            "lease-conflict",
+            "run-budget-exhausted",
+            "monthly-budget-exhausted",
+            "manual-block",
+            "invalid-record"
+          ]
+        },
+        "message": { "type": "string", "minLength": 1 },
+        "evidence": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
     "approval": {
       "type": ["object", "null"],
       "additionalProperties": false,

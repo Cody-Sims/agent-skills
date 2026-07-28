@@ -44,7 +44,9 @@
         "properties": {
           "name": { "type": "string", "minLength": 1 },
           "passed": { "type": "boolean" },
-          "evidence": { "type": "string", "minLength": 1 }
+          "evidence": { "type": "string", "minLength": 1 },
+          "headCommit": { "type": ["string", "null"], "pattern": "^[0-9a-f]{7,64}$" },
+          "regressed": { "type": "boolean" }
         }
       }
     },
@@ -74,8 +76,47 @@
         "openPullRequests": { "type": "integer", "minimum": 0 }
       }
     },
+    "monthlyUsage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actionsMinutes", "aiCredits"],
+      "properties": {
+        "actionsMinutes": { "type": "number", "minimum": 0 },
+        "aiCredits": { "type": "number", "minimum": 0 }
+      }
+    },
     "promptSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
     "finalState": { "type": "string", "enum": ["active", "draft-ready", "blocked"] },
-    "stopReason": { "type": ["string", "null"] }
+    "stopReason": { "type": ["string", "null"] },
+    "blockedOutcome": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["code", "message", "evidence"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "enum": [
+            "invalid-claim",
+            "expired-claim",
+            "retry-exhausted",
+            "permission-expansion",
+            "path-scope-violation",
+            "protected-path-change",
+            "evaluation-regression",
+            "required-check-failed",
+            "lease-conflict",
+            "run-budget-exhausted",
+            "monthly-budget-exhausted",
+            "manual-block",
+            "invalid-record"
+          ]
+        },
+        "message": { "type": "string", "minLength": 1 },
+        "evidence": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
   }
 }

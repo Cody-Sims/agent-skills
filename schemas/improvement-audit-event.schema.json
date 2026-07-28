@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cody-Sims/agent-skills/schemas/improvement-audit-event.schema.json",
+  "title": "Continuous Improvement Audit Event",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "sequence",
+    "eventType",
+    "itemId",
+    "runId",
+    "actor",
+    "at",
+    "outcome",
+    "evidence",
+    "data",
+    "previousHash",
+    "eventHash"
+  ],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "sequence": { "type": "integer", "minimum": 1 },
+    "eventType": {
+      "type": "string",
+      "enum": ["claim-acquired", "state-transition", "control-blocked", "run-verified"]
+    },
+    "itemId": { "type": "string", "pattern": "^[A-Z]+-[0-9]+$" },
+    "runId": { "type": ["string", "null"] },
+    "actor": { "type": "string", "minLength": 1 },
+    "at": { "type": "string", "minLength": 1 },
+    "outcome": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["code", "message", "evidence"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "enum": [
+            "invalid-claim",
+            "expired-claim",
+            "retry-exhausted",
+            "permission-expansion",
+            "path-scope-violation",
+            "protected-path-change",
+            "evaluation-regression",
+            "required-check-failed",
+            "lease-conflict",
+            "run-budget-exhausted",
+            "monthly-budget-exhausted",
+            "manual-block",
+            "invalid-record"
+          ]
+        },
+        "message": { "type": "string", "minLength": 1 },
+        "evidence": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "data": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "previousHash": {
+      "type": ["string", "null"],
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "eventHash": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+  }
+}
