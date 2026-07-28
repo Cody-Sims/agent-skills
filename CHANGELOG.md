@@ -28,6 +28,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Separate learning and improvement custom agents with minimal tool sets,
   approval and lease requirements, protected-path boundaries, and draft pull
   request evidence contracts.
+- Strict learning-proposal and improvement-result contracts with deterministic
+  refusal scenarios for duplicate, uncited, untestable, stale, multi-item,
+  permission-expanding, regressed, and incomplete agent output.
 - Implementation custom agent with focused read-only exploration and review
   specialists, Copilot CLI built-in agent routing, incremental editing, and
   executable validation requirements.

@@ -347,8 +347,11 @@ approval gates live outside the canonical skill format.
 - **Verification:** Scenario tests reject duplicate, uncited, untestable, and
   out-of-scope proposals while accepting a grounded novel proposal.
 - **Result:** Added the read-only `.github/agents/skill-learning.agent.md`, the
-  structured issue form, and static authority tests. Behavioral scenario
-  evaluation remains blocked on AS-001.
+  structured issue form, strict versioned proposal contract, deterministic
+  duplicate, citation, testability, scope, and grounded-proposal scenarios, and
+  static authority tests. The agent remains proposal-only; a maintainer creates
+  the issue so the learning agent has no repository write authority. A hosted
+  custom-agent behavior pilot remains.
 
 ### SI-003: Create the skill improvement agent
 
@@ -369,8 +372,10 @@ approval gates live outside the canonical skill format.
 - **Verification:** Scenario tests demonstrate correct refusal, one-item scope,
   independent-gate preservation, and complete pull request output.
 - **Result:** Added `.github/agents/skill-improvement.agent.md`, the draft pull
-  request contract, deterministic preflight and verification, and static
-  authority tests. Behavioral evaluation and a delegated cloud pilot remain.
+  request contract and validator, deterministic refusal scenarios for stale
+  approval, multi-item scope, permission expansion, failed evaluations, and
+  incomplete output, plus preflight, verification, and static authority tests.
+  A delegated cloud pilot remains.
 
 ### SI-004: Implement a versioned backlog state machine
 
