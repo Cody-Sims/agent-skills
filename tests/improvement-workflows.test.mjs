@@ -18,6 +18,22 @@ test('all repository workflow actions use immutable commit pins', () => {
   }
 });
 
+test('Copilot setup uses one least-privilege job and the protected environment', () => {
+  const content = workflow('copilot-setup-steps');
+  const jobs = [...content.matchAll(/^  ([a-z0-9-]+):\n    runs-on:/gm)]
+    .map((match) => match[1]);
+  assert.deepEqual(jobs, ['copilot-setup-steps']);
+  assert.match(content, /^    environment: copilot$/m);
+  assert.match(content, /^    timeout-minutes: 15$/m);
+  assert.match(content, /^    permissions:\n      contents: read$/m);
+  assert.doesNotMatch(content, /^\s+(?:actions|checks|issues|pull-requests): write$/m);
+  assert.match(content, /node-version: "22"/);
+  assert.match(content, /persist-credentials: false/);
+  assert.match(content, /npm run validate/);
+  assert.match(content, /npm test/);
+  assert.match(content, /npm run registry:check/);
+});
+
 test('pull request validation checks tier transitions against the base registry', () => {
   const content = workflow('validate');
   assert.match(content, /github\.event\.pull_request\.base\.sha/);

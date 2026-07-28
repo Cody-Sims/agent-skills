@@ -21,7 +21,13 @@ Recurring execution remains disabled until the measured pilot in SI-010 passes.
 
 ## Repository Prerequisites
 
-Before the first pilot, configure the default branch to:
+Before the first pilot, create a GitHub environment named `copilot`. Store any
+future cloud-run secrets only in that environment; the current setup workflow
+requires none. Do not add repository-wide secrets for the agents. If the
+environment requires deployment approval, designate a maintainer who is
+independent from the delegated agent.
+
+Then configure the default branch to:
 
 1. Require pull requests and at least one approval.
 2. Require review from Code Owners.
