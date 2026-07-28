@@ -146,6 +146,8 @@ repository-versioned GitHub Agentic Workflows for future recurring operation
 while schedules remain disabled until pilot graduation.
 Manual pilot operation is documented in the
 [`continuous improvement runbook`](docs/continuous-improvement-runbook.md).
+Post-merge artifact comparison and sanitized corrective proposals are
+documented in [`docs/drift-detection.md`](docs/drift-detection.md).
 Behavior evaluation setup and the adapter protocol are documented in
 [`docs/evaluations.md`](docs/evaluations.md).
 Cross-runtime install, discovery, invocation, resource, and host-extension smoke
@@ -217,6 +219,7 @@ agent-skills/
 | `npm run improvement:preflight -- --item <item.json> --run <run.json>` | Improvement preflight | Validate approval, lease, scope, and budgets before editing. |
 | `npm run improvement:verify -- --item <item.json> --run <run.json>` | Improvement verification | Validate required checks and terminal run evidence. |
 | `npm run pilot:validate -- --report <report.json>` | Pilot report validator | Enforce versioned graduation thresholds, evidence counts, and maintainer approval. |
+| `npm run drift:detect -- [artifact pairs] --lifecycle <manifest> --as-of <date> [--out <report>]` | Drift detector | Compare behavior, routing, runtime, cost, and lifecycle evidence and emit a sanitized corrective proposal. |
 | `npm run eval:validate` | Evaluation suite validator | Validate the committed behavior suite without model execution. |
 | `npm run eval:smoke` | Synthetic evaluation smoke test | Exercise isolation, grading, metrics, and artifact generation. |
 | `npm run eval -- --suite <suite> --adapter <command> --out <result>` | Behavior evaluation runner | Compare baseline and candidate outputs through a model adapter. |

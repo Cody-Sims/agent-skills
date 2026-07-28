@@ -504,10 +504,16 @@ approval gates live outside the canonical skill format.
     explicitly approved and sanitized.
 - **Verification:** Seeded regressions create deduplicated corrective proposals
   with evidence and no direct product changes.
+- **Result:** Added strict local comparison of behavior, routing, runtime,
+  cost-proxy, compatibility, and lifecycle artifacts; identity mismatch
+  refusal; sanitized typed findings; stable deduplication fingerprints; and
+  corrective proposal output with no direct edits or reverts. Scheduled
+  real-adapter reruns and deduplicated hosted issue creation remain gated on
+  AS-001, AS-002, SI-007, and pilot graduation.
 
 ### SI-010: Pilot and graduate the loop
 
-- **Priority / status / scope:** P1 / proposed / M
+- **Priority / status / scope:** P1 / in-progress / M
 - **Purpose:** Prove the operating model before enabling recurring work broadly.
 - **Dependencies:** All P0 `AS` and `SI` items.
 - **Files likely touched:** Pilot configuration, reports, and the ADR status.

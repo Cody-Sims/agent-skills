@@ -31,6 +31,7 @@
     "improvement:preflight": "node scripts/continuous-improvement.mjs preflight",
     "improvement:verify": "node scripts/continuous-improvement.mjs verify",
     "pilot:validate": "node scripts/validate-pilot-report.mjs",
+    "drift:detect": "node scripts/detect-drift.mjs",
     "install:agents": "node scripts/manage-skills.mjs install",
     "install:pack": "node scripts/manage-skills.mjs install --pack",
     "check:agents": "node scripts/manage-skills.mjs check",
