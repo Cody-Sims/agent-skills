@@ -50,6 +50,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   template.
 - Architecture decision selecting repository-versioned GitHub Agentic
   Workflows for future recurring orchestration while schedules remain gated.
+- Read-only recurring planner with fail-closed enablement, deterministic
+  dependency selection, active-lease exclusion, cadence, proposal, and monthly
+  budget gates.
 - Sanitized post-merge drift detection for behavior, routing, cost proxies,
   runtime compatibility, and lifecycle staleness with stable corrective-proposal
   fingerprints and strict identity matching.

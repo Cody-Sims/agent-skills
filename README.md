@@ -219,6 +219,7 @@ agent-skills/
 | `npm run improvement:validate` | Improvement policy validator | Validate budgets and protected-path configuration. |
 | `npm run improvement:preflight -- --item <item.json> --run <run.json>` | Improvement preflight | Validate approval, lease, scope, and budgets before editing. |
 | `npm run improvement:verify -- --item <item.json> --run <run.json>` | Improvement verification | Validate required checks and terminal run evidence. |
+| `npm run improvement:plan -- --queue <queue.json> [--now <timestamp>]` | Recurring planner | Emit a read-only `learn`, `implement`, or `no-op` decision under kill-switch, lease, cadence, dependency, and budget gates. |
 | `npm run pilot:validate -- --report <report.json>` | Pilot report validator | Enforce versioned graduation thresholds, evidence counts, and maintainer approval. |
 | `npm run drift:detect -- [artifact pairs] --lifecycle <manifest> --as-of <date> [--out <report>]` | Drift detector | Compare behavior, routing, runtime, cost, and lifecycle evidence and emit a sanitized corrective proposal. |
 | `npm run eval:validate` | Evaluation suite validator | Validate the committed behavior suite without model execution. |

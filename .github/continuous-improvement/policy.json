@@ -10,6 +10,9 @@
   "maxConcurrentRuns": 1,
   "maxOpenPullRequests": 1,
   "maxProposalsPerLearningRun": 3,
+  "recurringEnabled": false,
+  "minimumLearningIntervalHours": 168,
+  "minimumImplementationIntervalHours": 24,
   "approvedPermissions": [
     "contents:read"
   ],
@@ -36,6 +39,7 @@
     "schemas/drift-report.schema.json",
     "schemas/graduation-policy.schema.json",
     "schemas/pilot-report.schema.json",
+    "schemas/orchestration-plan.schema.json",
     "schemas/runtime-smoke-*.schema.json",
     "schemas/contribution-evidence.schema.json",
     "schemas/*evaluation*.json",

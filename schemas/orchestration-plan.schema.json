@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cody-Sims/agent-skills/schemas/orchestration-plan.schema.json",
+  "title": "Continuous Improvement Orchestration Plan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "action", "itemId", "reason"],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "action": { "type": "string", "enum": ["learn", "implement", "no-op"] },
+    "itemId": { "type": ["string", "null"], "pattern": "^[A-Z]+-[0-9]+$" },
+    "reason": {
+      "type": "string",
+      "enum": [
+        "recurring-disabled",
+        "concurrency-limit",
+        "monthly-budget-exhausted",
+        "implementation-cadence",
+        "ready-item",
+        "proposal-limit",
+        "learning-cadence",
+        "learning-due"
+      ]
+    }
+  }
+}

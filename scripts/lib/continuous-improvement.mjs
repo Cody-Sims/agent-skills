@@ -566,6 +566,96 @@ export function verifyRun(options) {
   return errors;
 }
 
+function elapsedHours(previous, now, label) {
+  if (previous === null || previous === undefined) return Number.POSITIVE_INFINITY;
+  return (parseTime(now, 'Planner time') - parseTime(previous, label)) / 3_600_000;
+}
+
+function plan(action, itemId, reason) {
+  return {
+    schemaVersion: 1,
+    action,
+    itemId,
+    reason,
+  };
+}
+
+export function planRecurringAction({ queue, policy, now = new Date().toISOString() }) {
+  if (!queue || typeof queue !== 'object' || Array.isArray(queue)) {
+    throw new Error('Recurring queue state must be an object.');
+  }
+  parseTime(now, 'Planner time');
+  if (policy.recurringEnabled !== true) return plan('no-op', null, 'recurring-disabled');
+
+  const items = Array.isArray(queue.items) ? queue.items : [];
+  const activeRuns = Array.isArray(queue.activeRuns) ? queue.activeRuns : [];
+  const activeLeases = items.filter((item) => (
+    item?.status === 'in-progress'
+    && item.lease
+    && parseTime(item.lease.expiresAt, 'Lease expiry') > parseTime(now, 'Planner time')
+  ));
+  const activeRunCount = activeRuns.filter((run) => run?.finalState === 'active').length;
+  if (activeRunCount + activeLeases.length >= policy.maxConcurrentRuns) {
+    return plan('no-op', null, 'concurrency-limit');
+  }
+
+  const monthlyUsage = queue.monthlyUsage ?? {};
+  if (!Number.isFinite(monthlyUsage.actionsMinutes)
+      || !Number.isFinite(monthlyUsage.aiCredits)
+      || !Number.isSafeInteger(monthlyUsage.proposalsThisRun)
+      || monthlyUsage.actionsMinutes < 0
+      || monthlyUsage.aiCredits < 0
+      || monthlyUsage.proposalsThisRun < 0) {
+    throw new Error('Recurring queue monthlyUsage must contain non-negative counters.');
+  }
+  if (monthlyUsage.actionsMinutes >= policy.maxMonthlyActionsMinutes
+      || monthlyUsage.aiCredits >= policy.maxMonthlyAiCredits) {
+    return plan('no-op', null, 'monthly-budget-exhausted');
+  }
+
+  const statusById = new Map(items.map((item) => [item?.id, item?.status]));
+  const completedItemIds = Array.isArray(queue.completedItemIds)
+    ? queue.completedItemIds
+    : [];
+  if (new Set(completedItemIds).size !== completedItemIds.length
+      || completedItemIds.some((id) => typeof id !== 'string' || !/^[A-Z]+-[0-9]+$/.test(id))) {
+    throw new Error('Recurring queue completedItemIds must contain unique item IDs.');
+  }
+  const completed = new Set(completedItemIds);
+  const ready = items
+    .filter((item) => (
+      item?.status === 'ready'
+      && item.lease === null
+      && item.approval?.payloadSha256 === approvalDigest(item)
+      && (item.dependencies ?? []).every((dependency) => (
+        statusById.get(dependency) === 'done' || completed.has(dependency)
+      ))
+    ))
+    .sort((left, right) => left.id.localeCompare(right.id));
+  if (ready.length > 0) {
+    if (elapsedHours(
+      queue.lastImplementationAt,
+      now,
+      'Last implementation time',
+    ) < policy.minimumImplementationIntervalHours) {
+      return plan('no-op', null, 'implementation-cadence');
+    }
+    return plan('implement', ready[0].id, 'ready-item');
+  }
+
+  if (monthlyUsage.proposalsThisRun >= policy.maxProposalsPerLearningRun) {
+    return plan('no-op', null, 'proposal-limit');
+  }
+  if (elapsedHours(
+    queue.lastLearningAt,
+    now,
+    'Last learning time',
+  ) < policy.minimumLearningIntervalHours) {
+    return plan('no-op', null, 'learning-cadence');
+  }
+  return plan('learn', null, 'learning-due');
+}
+
 function detectedOutcome({ item, run, policy, itemSchema, runSchema, now }) {
   const itemErrors = validateItem(itemSchema, item);
   const runErrors = validateRun(runSchema, run);

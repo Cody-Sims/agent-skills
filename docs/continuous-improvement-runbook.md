@@ -19,6 +19,18 @@ a second live queue.
 
 Recurring execution remains disabled until the measured pilot in SI-010 passes.
 
+The local planner is read-only and cannot enable a schedule. It consumes queue
+state with `items`, `completedItemIds`, `activeRuns`, `monthlyUsage`,
+`lastLearningAt`, and `lastImplementationAt`, then emits one versioned decision:
+
+```bash
+npm run improvement:plan -- --queue <queue.json> --now <timestamp>
+```
+
+The committed policy keeps `recurringEnabled` false. When disabled, the planner
+must return `no-op`; changing that field or cadence is a protected governance
+change and does not itself authorize a hosted workflow.
+
 ## Repository Prerequisites
 
 Before the first pilot, create a GitHub environment named `copilot`. Store any

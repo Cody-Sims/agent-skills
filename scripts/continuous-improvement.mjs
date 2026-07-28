@@ -6,12 +6,14 @@ import { fileURLToPath } from 'node:url';
 
 import {
   approvalDigest,
+  planRecurringAction,
   preflight,
   validateAuditTrail,
   validateItem,
   validateRun,
   verifyRun,
 } from './lib/continuous-improvement.mjs';
+import { validateAgainstSchema } from './lib/jsonschema.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -63,12 +65,35 @@ function main() {
     } else if (context.policy.approvedPermissions.some((permission) => typeof permission !== 'string' || permission.length === 0)) {
       errors.push('Policy approvedPermissions must contain non-empty strings.');
     }
+    if (typeof context.policy.recurringEnabled !== 'boolean') errors.push('Policy recurringEnabled must be boolean.');
+    for (const field of ['minimumLearningIntervalHours', 'minimumImplementationIntervalHours']) {
+      if (!Number.isFinite(context.policy[field]) || context.policy[field] < 0) {
+        errors.push(`Policy ${field} must be a non-negative number.`);
+      }
+    }
     report(errors);
     return;
   }
 
   if (command === 'validate-audit') {
     report(validateAuditTrail(context.auditEventSchema, readJson(requireArgument('audit'))));
+    return;
+  }
+
+  if (command === 'plan') {
+    const queue = readJson(requireArgument('queue'));
+    const plan = planRecurringAction({
+      queue,
+      policy: context.policy,
+      now: argument('now') ?? new Date().toISOString(),
+    });
+    const schema = readJson(resolve(ROOT, 'schemas/orchestration-plan.schema.json'));
+    const errors = validateAgainstSchema(schema, plan);
+    if (errors.length > 0) {
+      report(errors);
+      return;
+    }
+    console.log(JSON.stringify(plan));
     return;
   }
 

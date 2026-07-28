@@ -30,6 +30,7 @@
     "improvement:validate": "node scripts/continuous-improvement.mjs validate-policy",
     "improvement:preflight": "node scripts/continuous-improvement.mjs preflight",
     "improvement:verify": "node scripts/continuous-improvement.mjs verify",
+    "improvement:plan": "node scripts/continuous-improvement.mjs plan",
     "pilot:validate": "node scripts/validate-pilot-report.mjs",
     "drift:detect": "node scripts/detect-drift.mjs",
     "install:agents": "node scripts/manage-skills.mjs install",

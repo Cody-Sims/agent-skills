@@ -462,9 +462,11 @@ approval gates live outside the canonical skill format.
 - **Verification:** A dry-run or staging repository demonstrates scheduled
   proposal creation and one approval-gated implementation without duplicate work.
 - **Result:** ADR 0002 selects repository-versioned GitHub Agentic Workflows
-  over private, off-repository Copilot automations. A deterministic planner,
-  successful prerequisite pilots, and a maintainer-approved compiled workflow
-  remain before any schedule is enabled.
+  over private, off-repository Copilot automations. A deterministic read-only
+  planner now enforces the kill switch, concurrency, leases, dependencies,
+  cadence, proposal count, and monthly budgets. Successful prerequisite pilots
+  and a maintainer-approved compiled workflow remain before any schedule is
+  enabled.
 
 ### SI-008: Enforce audit, rollback, and budget controls
 
