@@ -36,6 +36,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   versioned policy and schemas, deterministic validation tooling, and tests.
 - Manual Copilot cloud pilot runbook covering proposal, approval, claim,
   delegation, review, cancellation, shutdown, and rollback.
+- Protected `copilot` setup environment with static least-privilege workflow
+  contract checks.
+- Versioned continuous-improvement graduation thresholds, pilot report schemas,
+  distinct evidence-count validation, maintainer approval gates, and report
+  template.
+- Architecture decision selecting repository-versioned GitHub Agentic
+  Workflows for future recurring orchestration while schedules remain gated.
 - Immutable commit pins for every GitHub Action used by validation, Copilot
   setup, and continuous-improvement control workflows.
 - Versioned behavior-evaluation schemas and pilot suite, isolated comparative

@@ -141,6 +141,9 @@ See [`BACKLOG.md`](BACKLOG.md) for the prioritized catalog improvements and the
 approval-gated two-agent continuous learning and improvement architecture. The
 governing architecture decision is
 [`ADR 0001`](docs/decisions/0001-bounded-continuous-improvement.md).
+[`ADR 0002`](docs/decisions/0002-recurring-orchestration.md) selects
+repository-versioned GitHub Agentic Workflows for future recurring operation
+while schedules remain disabled until pilot graduation.
 Manual pilot operation is documented in the
 [`continuous improvement runbook`](docs/continuous-improvement-runbook.md).
 Behavior evaluation setup and the adapter protocol are documented in
@@ -213,6 +216,7 @@ agent-skills/
 | `npm run improvement:validate` | Improvement policy validator | Validate budgets and protected-path configuration. |
 | `npm run improvement:preflight -- --item <item.json> --run <run.json>` | Improvement preflight | Validate approval, lease, scope, and budgets before editing. |
 | `npm run improvement:verify -- --item <item.json> --run <run.json>` | Improvement verification | Validate required checks and terminal run evidence. |
+| `npm run pilot:validate -- --report <report.json>` | Pilot report validator | Enforce versioned graduation thresholds, evidence counts, and maintainer approval. |
 | `npm run eval:validate` | Evaluation suite validator | Validate the committed behavior suite without model execution. |
 | `npm run eval:smoke` | Synthetic evaluation smoke test | Exercise isolation, grading, metrics, and artifact generation. |
 | `npm run eval -- --suite <suite> --adapter <command> --out <result>` | Behavior evaluation runner | Compare baseline and candidate outputs through a model adapter. |

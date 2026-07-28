@@ -408,9 +408,10 @@ approval gates live outside the canonical skill format.
   delegated session can run validation and tests.
 - **Result:** Added
   [`.github/workflows/copilot-setup-steps.yml`](.github/workflows/copilot-setup-steps.yml)
-  with least-privilege read access, Node.js 22, and repository validation. Mark
-  this item `done` after the workflow succeeds from the default branch and a
-  delegated cloud session runs the same checks.
+  with one least-privilege read-only job, the protected `copilot` environment,
+  Node.js 22, repository validation, and static contract tests. Mark this item
+  `done` after the workflow succeeds from the default branch and a delegated
+  cloud session runs the same checks.
 
 ### SI-006: Document manual cloud delegation
 
@@ -432,7 +433,7 @@ approval gates live outside the canonical skill format.
 
 ### SI-007: Add recurring cloud orchestration
 
-- **Priority / status / scope:** P1 / proposed / L
+- **Priority / status / scope:** P1 / in-progress / L
 - **Purpose:** Run learning and improvement work on a recurring cadence without
   creating an uncontrolled loop.
 - **Dependencies:** SI-002 through SI-006 and AS-001.
@@ -452,6 +453,10 @@ approval gates live outside the canonical skill format.
     and retries; provide a kill switch.
 - **Verification:** A dry-run or staging repository demonstrates scheduled
   proposal creation and one approval-gated implementation without duplicate work.
+- **Result:** ADR 0002 selects repository-versioned GitHub Agentic Workflows
+  over private, off-repository Copilot automations. A deterministic planner,
+  successful prerequisite pilots, and a maintainer-approved compiled workflow
+  remain before any schedule is enabled.
 
 ### SI-008: Enforce audit, rollback, and budget controls
 
@@ -475,7 +480,7 @@ approval gates live outside the canonical skill format.
 
 ### SI-009: Add post-merge learning and drift detection
 
-- **Priority / status / scope:** P1 / proposed / M
+- **Priority / status / scope:** P1 / in-progress / M
 - **Purpose:** Learn from real outcomes without treating agent-generated
   conclusions as ground truth.
 - **Dependencies:** AS-001, AS-002, AS-010, and SI-008.
@@ -508,6 +513,11 @@ approval gates live outside the canonical skill format.
   - Document shutdown and rollback procedures before graduation.
 - **Verification:** A maintainer-approved pilot report records results,
   limitations, and the decision to graduate, revise, or stop.
+- **Result:** Added versioned graduation thresholds, strict policy and report
+  schemas, distinct evidence-count enforcement, maintainer approval gates, a
+  validator, and a report template. Three real learning cycles, three
+  independently reviewed improvement pull requests, and the final maintainer
+  decision remain external pilot work.
 
 ## Safe parallel work
 
