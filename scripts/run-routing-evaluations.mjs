@@ -8,7 +8,9 @@ import {
   runRoutingEvaluation,
   validateRoutingResult,
   validateRoutingSuite,
+  validateRoutingThresholdPolicy,
 } from './lib/routing-evaluations.mjs';
+import { sha256 } from './lib/paths.mjs';
 import { runJsonAdapter } from './lib/process-adapter.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -34,6 +36,11 @@ function requiredArgument(name) {
 
 function readJson(path) {
   return JSON.parse(readFileSync(path, 'utf8'));
+}
+
+function readJsonBytes(path) {
+  const bytes = readFileSync(path);
+  return { bytes, value: JSON.parse(bytes.toString('utf8')) };
 }
 
 function createProcessAdapter({ command, args, timeoutMs, environmentNames }) {
@@ -68,6 +75,12 @@ async function main() {
   const suitePath = resolve(requiredArgument('suite'));
   const outputPath = resolve(requiredArgument('out'));
   const adapter = requiredArgument('adapter');
+  const thresholdPolicyPath = argument('threshold-policy');
+  const adapterId = argument('adapter-id');
+  const model = argument('model');
+  if (thresholdPolicyPath && (!adapterId?.trim() || !model?.trim())) {
+    throw new Error('--threshold-policy requires explicit --adapter-id and --model arguments.');
+  }
   const adapterArgs = argumentsFor('adapter-arg').map((value) => {
     const localPath = resolve(ROOT, value);
     return existsSync(localPath) ? localPath : value;
@@ -76,7 +89,9 @@ async function main() {
   const timeoutMs = Number(argument('timeout-ms') ?? 120_000);
   if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) throw new Error('--timeout-ms must be a positive number.');
 
-  const suite = readJson(suitePath);
+  const suiteFile = readJsonBytes(suitePath);
+  const suite = suiteFile.value;
+  const suiteSha256 = sha256(suiteFile.bytes);
   const suiteSchema = readJson(resolve(ROOT, 'schemas/routing-suite.schema.json'));
   const suiteErrors = validateRoutingSuite(suiteSchema, suite);
   if (suiteErrors.length > 0) throw new Error(`Routing suite is invalid:\n${suiteErrors.join('\n')}`);
@@ -90,13 +105,42 @@ async function main() {
     }
   }
 
+  const generatedAt = new Date().toISOString();
+  let thresholdPolicy = null;
+  let thresholdPolicySha256;
+  let adapterIdentity;
+  if (thresholdPolicyPath) {
+    const policyFile = readJsonBytes(resolve(thresholdPolicyPath));
+    thresholdPolicy = policyFile.value;
+    thresholdPolicySha256 = sha256(policyFile.bytes);
+    adapterIdentity = { id: adapterId, model };
+    const thresholdSchema = readJson(resolve(ROOT, 'schemas/routing-thresholds.schema.json'));
+    const thresholdErrors = validateRoutingThresholdPolicy(thresholdSchema, thresholdPolicy, {
+      suite,
+      suiteSha256,
+      adapter: adapterIdentity,
+      generatedAt,
+    });
+    if (thresholdErrors.length > 0) {
+      throw new Error(`Routing threshold policy is invalid:\n${thresholdErrors.join('\n')}`);
+    }
+  }
+
   const result = await runRoutingEvaluation({
     suite,
     catalog,
+    generatedAt,
+    suiteSha256,
+    thresholdPolicy,
+    thresholdPolicySha256,
+    adapter: adapterIdentity,
     execute: createProcessAdapter({ command: adapter, args: adapterArgs, timeoutMs, environmentNames }),
   });
   const resultSchema = readJson(resolve(ROOT, 'schemas/routing-result.schema.json'));
-  const resultErrors = validateRoutingResult(resultSchema, result);
+  const resultErrors = validateRoutingResult(resultSchema, result, {
+    thresholdPolicy,
+    thresholdPolicySha256,
+  });
   if (resultErrors.length > 0) throw new Error(`Routing result is invalid:\n${resultErrors.join('\n')}`);
 
   mkdirSync(dirname(outputPath), { recursive: true });
@@ -106,6 +150,9 @@ async function main() {
   console.log(`overall precision: ${(result.summary.overall.precision * 100).toFixed(1)}%`);
   console.log(`collision rate: ${(result.summary.overall.collisionRate * 100).toFixed(1)}%`);
   console.log(`wrote ${outputPath}`);
+  if (result.thresholds && !result.thresholds.passed) {
+    throw new Error('Routing thresholds failed for the measured result.');
+  }
 }
 
 main().catch((error) => {

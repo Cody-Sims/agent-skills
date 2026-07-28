@@ -4,6 +4,7 @@ import { isDeepStrictEqual } from 'node:util';
 
 import { sha256 } from './paths.mjs';
 import { validateAgainstSchema } from './jsonschema.mjs';
+import { isCalendarDate } from './lifecycle.mjs';
 
 export function validateRoutingSuite(schema, suite) {
   const errors = validateAgainstSchema(schema, suite);
@@ -27,7 +28,55 @@ export function validateRoutingSuite(schema, suite) {
   return errors;
 }
 
-export function validateRoutingResult(schema, result) {
+function thresholdContextErrors(policy, {
+  suite,
+  suiteSha256,
+  adapter,
+  generatedAt,
+} = {}) {
+  const errors = [];
+  if (suiteSha256 && policy?.suiteSha256 !== suiteSha256) {
+    errors.push('$.suiteSha256: does not match the evaluated routing suite.');
+  }
+  if (suite?.trials !== undefined && policy?.trials !== suite.trials) {
+    errors.push('$.trials: does not match the evaluated routing suite.');
+  }
+  if (adapter && !isDeepStrictEqual(policy?.adapter, adapter)) {
+    errors.push('$.adapter: identity does not match the configured adapter and model.');
+  }
+  if (!isCalendarDate(policy?.measuredAt)) {
+    errors.push('$.measuredAt: value must be a valid calendar date.');
+  } else if (generatedAt) {
+    const generatedDate = /^\d{4}-\d{2}-\d{2}T/.test(generatedAt)
+      ? generatedAt.slice(0, 10)
+      : null;
+    if (!generatedDate || !isCalendarDate(generatedDate)) {
+      errors.push('$: generatedAt must begin with a valid calendar date.');
+    } else if (policy.measuredAt > generatedDate) {
+      errors.push('$.measuredAt: measured date must not be after the evaluation date.');
+    }
+  }
+  const measured = policy?.measured;
+  const limits = policy?.thresholds;
+  if (limits?.minimumValidationRecall !== measured?.validationRecall) {
+    errors.push('$.thresholds.minimumValidationRecall: must equal the measured baseline.');
+  }
+  if (limits?.minimumOverallPrecision !== measured?.overallPrecision) {
+    errors.push('$.thresholds.minimumOverallPrecision: must equal the measured baseline.');
+  }
+  if (limits?.maximumOverallCollisionRate !== measured?.overallCollisionRate) {
+    errors.push('$.thresholds.maximumOverallCollisionRate: must equal the measured baseline.');
+  }
+  return errors;
+}
+
+export function validateRoutingThresholdPolicy(schema, policy, context = {}) {
+  const errors = validateAgainstSchema(schema, policy);
+  errors.push(...thresholdContextErrors(policy, context));
+  return errors;
+}
+
+export function validateRoutingResult(schema, result, context = {}) {
   const errors = validateAgainstSchema(schema, result);
   if (result.cases?.length === 0) errors.push('$.cases: at least one case result is required.');
   const summaries = {
@@ -77,6 +126,61 @@ export function validateRoutingResult(schema, result) {
   }
   if (!isDeepStrictEqual(result.confusion, confusion)) {
     errors.push('$.confusion: confusion matrix does not match case trials.');
+  }
+  if (result.thresholds !== null && result.thresholds !== undefined) {
+    const thresholdEvaluation = result.thresholds;
+    if (!isDeepStrictEqual(result.adapter, thresholdEvaluation.adapter)) {
+      errors.push('$.adapter: adapter identity does not match the threshold evaluation.');
+    }
+    const observed = {
+      validationRecall: result.summary?.validation?.recall,
+      overallPrecision: result.summary?.overall?.precision,
+      overallCollisionRate: result.summary?.overall?.collisionRate,
+    };
+    if (!isDeepStrictEqual(thresholdEvaluation.observed, observed)) {
+      errors.push('$.thresholds.observed: observed metrics do not match summary.');
+    }
+    const limits = thresholdEvaluation.limits;
+    const measured = thresholdEvaluation.measured;
+    if (limits?.minimumValidationRecall !== measured?.validationRecall
+        || limits?.minimumOverallPrecision !== measured?.overallPrecision
+        || limits?.maximumOverallCollisionRate !== measured?.overallCollisionRate) {
+      errors.push('$.thresholds.limits: limits do not match the measured baseline.');
+    }
+    const passed = observed.validationRecall >= limits?.minimumValidationRecall
+      && observed.overallPrecision >= limits?.minimumOverallPrecision
+      && observed.overallCollisionRate <= limits?.maximumOverallCollisionRate;
+    if (thresholdEvaluation.passed !== passed) {
+      errors.push('$.thresholds.passed: value does not match observed metrics and limits.');
+    }
+    if (!isCalendarDate(thresholdEvaluation.measuredAt)) {
+      errors.push('$.thresholds.measuredAt: value must be a valid calendar date.');
+    }
+    if (context.thresholdPolicy) {
+      const expected = {
+        policySha256: context.thresholdPolicySha256
+          ?? sha256(JSON.stringify(context.thresholdPolicy)),
+        suiteSha256: context.thresholdPolicy.suiteSha256,
+        sourceResultSha256: context.thresholdPolicy.sourceResultSha256,
+        measuredAt: context.thresholdPolicy.measuredAt,
+        trials: context.thresholdPolicy.trials,
+        adapter: context.thresholdPolicy.adapter,
+        measured: context.thresholdPolicy.measured,
+        limits: context.thresholdPolicy.thresholds,
+      };
+      for (const [field, value] of Object.entries(expected)) {
+        if (!isDeepStrictEqual(thresholdEvaluation[field], value)) {
+          errors.push(`$.thresholds.${field}: value does not match the supplied threshold policy.`);
+        }
+      }
+    }
+    for (const [caseIndex, entry] of (result.cases ?? []).entries()) {
+      if (entry.trials?.length !== thresholdEvaluation.trials) {
+        errors.push(`$.cases[${caseIndex}].trials: count does not match threshold provenance.`);
+      }
+    }
+  } else if (result.adapter !== undefined) {
+    errors.push('$.adapter: adapter identity is only embedded when thresholds are evaluated.');
   }
   return errors;
 }
@@ -145,7 +249,23 @@ export async function runRoutingEvaluation({
   execute,
   tempRoot = resolve('tmp', 'routing-evaluations'),
   generatedAt = new Date().toISOString(),
+  thresholdPolicy = null,
+  thresholdPolicySha256,
+  suiteSha256 = sha256(JSON.stringify(suite)),
+  adapter,
 }) {
+  if (thresholdPolicy) {
+    const thresholdErrors = thresholdContextErrors(thresholdPolicy, {
+      suite,
+      suiteSha256,
+      adapter,
+      generatedAt,
+    });
+    if (thresholdErrors.length > 0) {
+      throw new Error(`Routing threshold policy is invalid:\n${thresholdErrors.join('\n')}`);
+    }
+    if (!adapter) throw new Error('Routing thresholds require an explicit adapter and model identity.');
+  }
   mkdirSync(tempRoot, { recursive: true });
   const catalogNames = new Set(catalog.map((skill) => skill.name));
   const summaries = {
@@ -217,17 +337,38 @@ export async function runRoutingEvaluation({
     });
   }
 
+  const summary = {
+    overall: finalize(summaries.overall),
+    training: finalize(summaries.training),
+    validation: finalize(summaries.validation),
+  };
+  const thresholds = thresholdPolicy ? {
+    policySha256: thresholdPolicySha256 ?? sha256(JSON.stringify(thresholdPolicy)),
+    suiteSha256: thresholdPolicy.suiteSha256,
+    sourceResultSha256: thresholdPolicy.sourceResultSha256,
+    measuredAt: thresholdPolicy.measuredAt,
+    trials: thresholdPolicy.trials,
+    adapter: { ...thresholdPolicy.adapter },
+    measured: { ...thresholdPolicy.measured },
+    limits: { ...thresholdPolicy.thresholds },
+    observed: {
+      validationRecall: summary.validation.recall,
+      overallPrecision: summary.overall.precision,
+      overallCollisionRate: summary.overall.collisionRate,
+    },
+    passed: summary.validation.recall >= thresholdPolicy.thresholds.minimumValidationRecall
+      && summary.overall.precision >= thresholdPolicy.thresholds.minimumOverallPrecision
+      && summary.overall.collisionRate <= thresholdPolicy.thresholds.maximumOverallCollisionRate,
+  } : null;
+
   return {
     schemaVersion: 1,
     suite: suite.name,
     generatedAt,
-    thresholds: null,
+    ...(thresholdPolicy ? { adapter: { ...adapter } } : {}),
+    thresholds,
     cases,
     confusion,
-    summary: {
-      overall: finalize(summaries.overall),
-      training: finalize(summaries.training),
-      validation: finalize(summaries.validation),
-    },
+    summary,
   };
 }
