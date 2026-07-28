@@ -3,7 +3,7 @@
   "name": "safe-refactor-composition",
   "version": "1.0.0",
   "source": {
-    "registrySha256": "2f90d422109f6da62cb2bf5a6788549325519a7a16e0d22764ba14659c734373",
+    "registrySha256": "60a07e2c04e581fdc442f33084f4ac20ee65ae7a0ef6a93ecaac5eb27856252f",
     "memberTreeSha256": "d279ff05d17ade5488bd7e4961a6a36477aab4a3cfc6398d3b06d934beb7e258",
     "suitePath": "evals/packs/safe-refactor.json"
   },

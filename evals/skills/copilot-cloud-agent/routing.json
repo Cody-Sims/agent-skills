@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "name": "copilot-cloud-agent-routing",
+  "trials": 3,
+  "cases": [
+    {
+      "id": "training-positive",
+      "split": "training",
+      "prompt": "Launch a GitHub Copilot cloud agent on this repository with GPT-5.6 Sol and return the hosted task URL.",
+      "expected": [
+        "copilot-cloud-agent"
+      ],
+      "excluded": []
+    },
+    {
+      "id": "training-positive-issue",
+      "split": "training",
+      "prompt": "Assign this issue to Copilot's hosted coding agent with an explicit model and monitor the session.",
+      "expected": [
+        "copilot-cloud-agent"
+      ],
+      "excluded": []
+    },
+    {
+      "id": "validation-positive",
+      "split": "validation",
+      "prompt": "Check whether our active cloud-agent task actually used Sol or Auto and report its PR artifact.",
+      "expected": [
+        "copilot-cloud-agent"
+      ],
+      "excluded": []
+    },
+    {
+      "id": "training-negative-skill",
+      "split": "training",
+      "prompt": "Create a new Agent Skill scaffold with portable frontmatter, routing fixtures, and behavior evaluations.",
+      "expected": [
+        "skill-creator"
+      ],
+      "excluded": [
+        "copilot-cloud-agent"
+      ]
+    },
+    {
+      "id": "validation-negative-worktrees",
+      "split": "validation",
+      "prompt": "Run three local implementation agents in isolated git worktrees and integrate their branches.",
+      "expected": [
+        "parallel-worktree-delivery"
+      ],
+      "excluded": [
+        "copilot-cloud-agent"
+      ]
+    },
+    {
+      "id": "validation-negative-pr",
+      "split": "validation",
+      "prompt": "Commit my staged changes and open a normal pull request.",
+      "expected": [
+        "git-and-pr-workflow"
+      ],
+      "excluded": [
+        "copilot-cloud-agent"
+      ]
+    }
+  ]
+}

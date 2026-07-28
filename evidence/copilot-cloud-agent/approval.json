@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "skill": "copilot-cloud-agent",
+  "reviewedAt": "2026-07-27",
+  "reviewer": "Cody-Sims",
+  "decision": "approved-for-experimental-entry",
+  "rationale": "The workflow records current hosted API controls, requires explicit model and task verification, rejects silent fallback, and clearly separates cloud execution from local agents and unsupported reasoning or context claims."
+}

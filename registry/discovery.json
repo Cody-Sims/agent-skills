@@ -45,6 +45,28 @@
         "Find the entry points, test commands, and smallest correct edit location."
       ]
     },
+    "copilot-cloud-agent": {
+      "category": "delivery",
+      "tags": ["cloud-agent", "github", "hosted-task", "model-selection"],
+      "inputs": [
+        { "type": "cloud-task-request", "description": "A repository, bounded prompt, base ref, pull-request preference, and optional hosted model." }
+      ],
+      "outputs": [
+        { "type": "cloud-task", "description": "A verified hosted task with task, session, model, branch, and pull-request metadata." }
+      ],
+      "risk": { "level": "high", "factors": ["remote-write", "repository-write", "usage-cost"] },
+      "runtimeCompatibility": [
+        { "runtime": "claude-code", "status": "compatible", "notes": "Requires authenticated access to GitHub's cloud-agent API." },
+        { "runtime": "github-copilot", "status": "compatible", "notes": "Requires authenticated access to GitHub's cloud-agent API." },
+        { "runtime": "openai-codex", "status": "compatible", "notes": "Requires authenticated access to GitHub's cloud-agent API." }
+      ],
+      "relatedSkills": ["git-and-pr-workflow", "verification-before-completion"],
+      "conflictingSkills": [],
+      "examplePrompts": [
+        "Launch a GitHub Copilot cloud agent with GPT-5.6 Sol and create a pull request.",
+        "Check which model this hosted Copilot task used and report its current state."
+      ]
+    },
     "documentation-maintenance": {
       "category": "documentation",
       "tags": ["adr", "changelog", "documentation", "readme"],

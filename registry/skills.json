@@ -168,6 +168,104 @@
       ]
     },
     {
+      "name": "copilot-cloud-agent",
+      "description": "Launches and monitors GitHub Copilot cloud-agent tasks through supported GitHub APIs, selecting explicit models, recording task and pull-request IDs, and distinguishing hosted controls from local CLI flags. Use when starting cloud agents, running hosted loops, assigning issues to Copilot, choosing GPT-5.6 Sol, or checking cloud-agent status; do not use for local subagents or git worktree fleets.",
+      "version": "1.0.0",
+      "license": "MIT",
+      "tier": "experimental",
+      "maturity": {
+        "status": "verified",
+        "lastEvaluatedAt": "2026-07-27",
+        "evidence": [
+          {
+            "type": "structural-validation",
+            "reference": "evidence/copilot-cloud-agent/validation.json",
+            "sha256": "8d23489eff54ee37c2b1e1e07158cf6cc189a6366eae97c841842ce2c0d7ae20",
+            "recordedAt": "2026-07-27"
+          },
+          {
+            "type": "maintainer-approval",
+            "reference": "evidence/copilot-cloud-agent/approval.json",
+            "sha256": "be3dbfbfc414c82f20c62af0134bc6b5a1d93cb04a756fc0a647baf3682554de",
+            "recordedAt": "2026-07-27"
+          }
+        ]
+      },
+      "discovery": {
+        "category": "delivery",
+        "tags": [
+          "cloud-agent",
+          "github",
+          "hosted-task",
+          "model-selection"
+        ],
+        "inputs": [
+          {
+            "type": "cloud-task-request",
+            "description": "A repository, bounded prompt, base ref, pull-request preference, and optional hosted model."
+          }
+        ],
+        "outputs": [
+          {
+            "type": "cloud-task",
+            "description": "A verified hosted task with task, session, model, branch, and pull-request metadata."
+          }
+        ],
+        "risk": {
+          "level": "high",
+          "factors": [
+            "remote-write",
+            "repository-write",
+            "usage-cost"
+          ]
+        },
+        "runtimeCompatibility": [
+          {
+            "runtime": "claude-code",
+            "status": "compatible",
+            "notes": "Requires authenticated access to GitHub's cloud-agent API."
+          },
+          {
+            "runtime": "github-copilot",
+            "status": "compatible",
+            "notes": "Requires authenticated access to GitHub's cloud-agent API."
+          },
+          {
+            "runtime": "openai-codex",
+            "status": "compatible",
+            "notes": "Requires authenticated access to GitHub's cloud-agent API."
+          }
+        ],
+        "relatedSkills": [
+          "git-and-pr-workflow",
+          "verification-before-completion"
+        ],
+        "conflictingSkills": [],
+        "examplePrompts": [
+          "Launch a GitHub Copilot cloud agent with GPT-5.6 Sol and create a pull request.",
+          "Check which model this hosted Copilot task used and report its current state."
+        ]
+      },
+      "lifecycle": {
+        "status": "active",
+        "license": "MIT",
+        "lastReviewedAt": "2026-07-27",
+        "reviewDueAt": "2027-07-27",
+        "origin": {
+          "type": "first-party",
+          "repository": "https://github.com/Cody-Sims/agent-skills",
+          "ref": "69e00b0a34f7b95e19b36fdb084152bf5610b1f7",
+          "commit": "69e00b0a34f7b95e19b36fdb084152bf5610b1f7"
+        }
+      },
+      "path": "skills/copilot-cloud-agent",
+      "skillFile": "skills/copilot-cloud-agent/SKILL.md",
+      "sha256": "5c55fe5bda3425f612771e3d3d0fa243ac5d9a9c19792141a4808e986ed91ed0",
+      "resources": [
+        "references/github-cloud-agent-controls.md"
+      ]
+    },
+    {
       "name": "documentation-maintenance",
       "description": "Keeps README, API docs, architecture notes, ADRs, and changelogs accurate when code changes by identifying which documents a change invalidates, documenting rationale, keeping setup instructions and examples runnable, updating the changelog with user-visible changes, and removing stale content. Use when code, configuration, commands, interfaces, or behavior change and documentation must be updated, or when writing an ADR or changelog entry.",
       "version": "1.0.0",

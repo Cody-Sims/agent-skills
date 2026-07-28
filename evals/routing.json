@@ -64,7 +64,14 @@
       "split": "validation",
       "prompt": "Coordinate four agents in separate git worktrees with exclusive file ownership, dependency waves, and one-branch-at-a-time integration.",
       "expected": ["parallel-worktree-delivery"],
-      "excluded": ["planning-and-task-breakdown", "git-and-pr-workflow"]
+      "excluded": ["planning-and-task-breakdown", "git-and-pr-workflow", "copilot-cloud-agent"]
+    },
+    {
+      "id": "launch-hosted-copilot-task",
+      "split": "validation",
+      "prompt": "Launch a GitHub-hosted Copilot cloud-agent task with GPT-5.6 Sol, create a pull request, and report the observed session model and task URL.",
+      "expected": ["copilot-cloud-agent"],
+      "excluded": ["parallel-worktree-delivery", "git-and-pr-workflow"]
     },
     {
       "id": "harden-suspicious-green-test",

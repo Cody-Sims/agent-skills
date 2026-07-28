@@ -53,6 +53,9 @@ if (/suspiciously green|production mutation/i.test(request.prompt)) {
 if (/feature test-first|failing behavior test/i.test(request.prompt)) {
   selectedSkills = ['test-driven-development'];
 }
+if (/GitHub-hosted Copilot cloud-agent task|observed session model.*task URL/i.test(request.prompt)) {
+  selectedSkills = ['copilot-cloud-agent'];
+}
 
 process.stdout.write(JSON.stringify({
   selectedSkills,
