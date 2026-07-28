@@ -7,19 +7,50 @@ body:
   - type: markdown
     attributes:
       value: |
-        Submit one bounded proposal. A maintainer must approve the unchanged issue body before implementation can begin.
+        Submit one bounded proposal using `schemas/improvement-proposal.schema.json`. A maintainer must approve the unchanged issue body before implementation can begin. The learning agent returns proposal text only and cannot create or update this issue.
+  - type: dropdown
+    id: contract-version
+    attributes:
+      label: Contract version
+      description: Select the schema version used to validate the proposal.
+      options:
+        - "1"
+    validations:
+      required: true
+  - type: input
+    id: deduplication-identity
+    attributes:
+      label: Deduplication identity
+      description: Enter the stable lowercase, hyphen-separated identity checked against open and completed work.
+      placeholder: improve-routing-evaluation-evidence
+    validations:
+      required: true
   - type: textarea
     id: objective
     attributes:
       label: Objective
-      description: State the problem and the single outcome this item should achieve.
+      description: State the problem, its verified evidence identifiers, and the single outcome this item should achieve.
     validations:
       required: true
   - type: textarea
-    id: evidence
+    id: verified
     attributes:
-      label: Evidence
-      description: Separate verified facts, inferences, and unknowns. Cite publisher, URL, retrieval date, and version for external claims.
+      label: Verified facts
+      description: List identified facts. For every fact, cite its source URL, publisher, retrieval date, and applicable version.
+    validations:
+      required: true
+  - type: textarea
+    id: inferences
+    attributes:
+      label: Inferences
+      description: List identified inferences separately. Cite the source URL, publisher, retrieval date, and applicable version for every inference.
+    validations:
+      required: true
+  - type: textarea
+    id: unknowns
+    attributes:
+      label: Unknowns
+      description: List identified unknowns and how each can be resolved. Enter "None" when there are no known unknowns.
     validations:
       required: true
   - type: textarea
@@ -47,9 +78,18 @@ body:
     id: criteria
     attributes:
       label: Acceptance criteria
-      description: Use stable identifiers and independently verifiable outcomes.
+      description: Use stable identifiers, independently verifiable outcomes, and verification identifiers.
       placeholder: |
-        - AC-1: Outcome. Verification: command or evaluation.
+        - AC-1: Outcome. Verification: VERIFY-1.
+    validations:
+      required: true
+  - type: textarea
+    id: verification
+    attributes:
+      label: Verification
+      description: Define each referenced verification identifier, method, procedure, and expected result.
+      placeholder: |
+        - VERIFY-1: Command or evaluation. Expected result: observable outcome.
     validations:
       required: true
   - type: textarea
@@ -80,6 +120,14 @@ body:
     id: duplicates
     attributes:
       label: Duplicate check
-      description: Record the backlog, issue, pull request, and history searches performed.
+      description: Record the backlog, issue, pull request, and history searches performed and every matching identity or reference.
     validations:
       required: true
+  - type: checkboxes
+    id: authority-boundary
+    attributes:
+      label: Authority boundary
+      description: Confirm that this submission preserves the learning agent's read-only, proposal-only authority.
+      options:
+        - label: This proposal does not grant issue creation, repository writes, approval, or queue-state authority.
+          required: true

@@ -1,0 +1,255 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cody-Sims/agent-skills/schemas/improvement-proposal.schema.json",
+  "title": "Skill Learning Improvement Proposal",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "title",
+    "problem",
+    "evidence",
+    "expectedBenefit",
+    "scope",
+    "effort",
+    "risk",
+    "dependencies",
+    "acceptanceCriteria",
+    "verification",
+    "deduplication",
+    "authorityBoundary"
+  ],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "title": { "type": "string", "minLength": 1 },
+    "problem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["statement", "evidenceIds"],
+      "properties": {
+        "statement": { "type": "string", "minLength": 1 },
+        "evidenceIds": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "pattern": "^V-[1-9][0-9]*$" }
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["verified", "inferred", "unknown"],
+      "properties": {
+        "verified": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/sourcedClaim" }
+        },
+        "inferred": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/sourcedInference" }
+        },
+        "unknown": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/unknown" }
+        }
+      }
+    },
+    "expectedBenefit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["statement", "measure", "baseline", "target"],
+      "properties": {
+        "statement": { "type": "string", "minLength": 1 },
+        "measure": { "type": "string", "minLength": 1 },
+        "baseline": { "type": "string", "minLength": 1 },
+        "target": { "type": "string", "minLength": 1 }
+      }
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "summary",
+        "allowedPaths",
+        "nonGoals",
+        "protectedPathsRequiringApproval"
+      ],
+      "properties": {
+        "summary": { "type": "string", "minLength": 1 },
+        "allowedPaths": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "nonGoals": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "protectedPathsRequiringApproval": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "effort": { "type": "string", "enum": ["S", "M", "L"] },
+    "risk": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["description", "mitigation"],
+        "properties": {
+          "description": { "type": "string", "minLength": 1 },
+          "mitigation": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "dependencies": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "acceptanceCriteria": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "outcome", "verificationIds"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^AC-[1-9][0-9]*$" },
+          "outcome": { "type": "string", "minLength": 1 },
+          "verificationIds": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "pattern": "^VERIFY-[1-9][0-9]*$" }
+          }
+        }
+      }
+    },
+    "verification": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "method", "procedure", "expectedResult"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^VERIFY-[1-9][0-9]*$" },
+          "method": {
+            "type": "string",
+            "enum": ["command", "evaluation", "inspection"]
+          },
+          "procedure": { "type": "string", "minLength": 1 },
+          "expectedResult": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "deduplication": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["identity", "searches"],
+      "properties": {
+        "identity": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "searches": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["surface", "query", "matches"],
+            "properties": {
+              "surface": {
+                "type": "string",
+                "enum": ["backlog", "issues", "pull-requests", "history"]
+              },
+              "query": { "type": "string", "minLength": 1 },
+              "matches": {
+                "type": "array",
+                "items": { "type": "string", "minLength": 1 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "authorityBoundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "requestedCapabilities"],
+      "properties": {
+        "mode": { "type": "string", "const": "proposal-only" },
+        "requestedCapabilities": {
+          "type": "array",
+          "maxItems": 0,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "url",
+        "publisher",
+        "retrievalDate",
+        "applicableVersion"
+      ],
+      "properties": {
+        "url": { "type": "string", "pattern": "^https://\\S+$" },
+        "publisher": { "type": "string", "minLength": 1 },
+        "retrievalDate": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "applicableVersion": { "type": "string", "minLength": 1 }
+      }
+    },
+    "sourcedClaim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "claim", "sources"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^V-[1-9][0-9]*$" },
+        "claim": { "type": "string", "minLength": 1 },
+        "sources": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/source" }
+        }
+      }
+    },
+    "sourcedInference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "claim", "sources"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^I-[1-9][0-9]*$" },
+        "claim": { "type": "string", "minLength": 1 },
+        "sources": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/source" }
+        }
+      }
+    },
+    "unknown": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "question", "resolution"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^U-[1-9][0-9]*$" },
+        "question": { "type": "string", "minLength": 1 },
+        "resolution": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

@@ -28,27 +28,33 @@ work, change queue state, invoke another agent, or implement a proposal.
 4. When external research is necessary, prefer current primary sources. Record
    the URL, publisher, retrieval date, and applicable version for every claim.
 5. Check the backlog and repository history for duplicates. Stop and report the
-   match when the idea is already represented.
+   match when the deduplication identity or search results show that the idea is
+   already represented.
 6. Draft acceptance criteria that another agent can verify independently.
 7. Stop when evidence is insufficient, provenance is unresolved, or the
    proposal would expand agent authority without explicit maintainer review.
+8. Check the draft against
+   `schemas/improvement-proposal.schema.json`. Keep `authorityBoundary.mode` set
+   to `proposal-only` and request no additional capabilities.
 
-## Proposal Format
+## Output Contract
 
-Return exactly one proposal with these sections:
+Return exactly one JSON object. A valid proposal conforms to
+`schemas/improvement-proposal.schema.json` version 1. It includes:
 
-* Title
-* Problem and local evidence
-* External evidence
-* Verified facts, inferences, and unknowns
-* Expected benefit
-* Scope and non-goals
-* Effort, risk, and dependencies
-* Acceptance criteria
-* Verification
-* Allowed paths
-* Protected paths requiring approval
-* Duplicate check
+* A problem linked to verified evidence identifiers
+* Separate `verified`, `inferred`, and `unknown` evidence collections
+* URL, publisher, retrieval date, and applicable version for every sourced claim
+* A measurable expected benefit, scope, non-goals, effort, risk, and dependencies
+* Acceptance criteria linked to concrete verification procedures and results
+* A Duplicate check with one stable deduplication identity and searches of
+  backlog, issues, pull requests, and history
+* Exact proposed paths and protected paths that require maintainer approval
+* The fixed proposal-only authority boundary
 
 Do not claim that research proves an improvement. State what evaluation would
-measure the expected benefit.
+measure the expected benefit. Do not emit a proposal when it is duplicate,
+uncited, untestable, or out of scope. Return a versioned refusal object with
+`schemaVersion: 1`, `status: "refused"`, the matching `duplicate`, `uncited`,
+`untestable`, or `out-of-scope` code, and specific reasons. A refusal does not
+create or update an issue or change queue state.
