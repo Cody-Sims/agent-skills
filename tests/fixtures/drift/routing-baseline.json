@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "suite": "held-out-routing",
+  "generatedAt": "2026-07-01T00:00:00.000Z",
+  "summary": {
+    "validation": {
+      "precision": 1,
+      "recall": 1,
+      "collisionRate": 0,
+      "durationMs": 80,
+      "tokens": { "input": 80, "output": 20, "total": 100 }
+    }
+  }
+}

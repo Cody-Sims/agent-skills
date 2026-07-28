@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "skills": {
+    "verification-before-completion": {
+      "status": "active",
+      "license": "MIT",
+      "lastReviewedAt": "2026-07-01",
+      "reviewDueAt": "2027-07-01",
+      "origin": {
+        "type": "external",
+        "repository": "https://github.com/example/source",
+        "ref": "2222222222222222222222222222222222222222",
+        "commit": "2222222222222222222222222222222222222222"
+      }
+    }
+  },
+  "removed": {}
+}

@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "suite": "portable-runtime-smoke",
+  "suiteSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "skillSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "generatedAt": "2026-07-27T00:00:00.000Z",
+  "runtimes": [
+    {
+      "runtime": "claude-code",
+      "status": "fail",
+      "adapter": {
+        "configured": true,
+        "id": "fixture-v1",
+        "kind": "fixture",
+        "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "policySha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "launchSha256": "1111111111111111111111111111111111111111111111111111111111111111"
+      }
+    },
+    {
+      "runtime": "github-copilot",
+      "status": "pass",
+      "adapter": {
+        "configured": true,
+        "id": "fixture-v1",
+        "kind": "fixture",
+        "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "policySha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "launchSha256": "1111111111111111111111111111111111111111111111111111111111111111"
+      }
+    },
+    {
+      "runtime": "openai-codex",
+      "status": "skip",
+      "adapter": {
+        "configured": false,
+        "id": null,
+        "kind": "none",
+        "sha256": null,
+        "policySha256": null,
+        "launchSha256": null
+      }
+    }
+  ]
+}

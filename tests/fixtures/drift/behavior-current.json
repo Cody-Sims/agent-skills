@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "suite": "held-out-behavior",
+  "skill": "verification-before-completion",
+  "suiteSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "skillSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "generatedAt": "2026-07-27T00:00:00.000Z",
+  "prompt": "RAW-PROMPT-MUST-NOT-SURVIVE",
+  "modelOutput": "RAW-OUTPUT-MUST-NOT-SURVIVE",
+  "summary": {
+    "candidate": {
+      "passRate": 0.75,
+      "durationMs": 125,
+      "tokens": { "input": 85, "output": 40, "total": 125 }
+    }
+  }
+}

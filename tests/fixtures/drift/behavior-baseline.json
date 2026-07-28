@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "suite": "held-out-behavior",
+  "skill": "verification-before-completion",
+  "suiteSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "skillSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "generatedAt": "2026-07-01T00:00:00.000Z",
+  "summary": {
+    "candidate": {
+      "passRate": 1,
+      "durationMs": 100,
+      "tokens": { "input": 70, "output": 30, "total": 100 }
+    }
+  }
+}

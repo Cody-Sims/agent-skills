@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cody-Sims/agent-skills/schemas/drift-report.schema.json",
+  "title": "Agent Skill Drift Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "asOf", "inputs", "findings", "fingerprint", "proposal"],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "asOf": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+    "inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "baselineBehavior",
+        "currentBehavior",
+        "baselineRouting",
+        "currentRouting",
+        "baselineRuntime",
+        "currentRuntime",
+        "lifecycle"
+      ],
+      "properties": {
+        "baselineBehavior": { "$ref": "#/$defs/input" },
+        "currentBehavior": { "$ref": "#/$defs/input" },
+        "baselineRouting": { "$ref": "#/$defs/input" },
+        "currentRouting": { "$ref": "#/$defs/input" },
+        "baselineRuntime": { "$ref": "#/$defs/input" },
+        "currentRuntime": { "$ref": "#/$defs/input" },
+        "lifecycle": { "$ref": "#/$defs/input" }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/finding" }
+    },
+    "fingerprint": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "proposal": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["title", "body"],
+      "properties": {
+        "title": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "body": { "type": "string", "minLength": 1, "maxLength": 20000 }
+      }
+    }
+  },
+  "$defs": {
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sha256"],
+      "properties": {
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      }
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "source", "metric", "subject", "baseline", "current", "delta"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["quality", "routing", "cost", "runtime-compatibility", "source-staleness"]
+        },
+        "source": {
+          "type": "string",
+          "enum": ["behavior", "routing", "runtime", "lifecycle"]
+        },
+        "metric": {
+          "type": "string",
+          "enum": [
+            "pass-rate",
+            "recall",
+            "precision",
+            "collision-rate",
+            "token-total",
+            "duration-ms",
+            "cost-usd",
+            "runtime-status",
+            "review-due"
+          ]
+        },
+        "subject": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9.-]{0,127}$"
+        },
+        "baseline": { "type": ["number", "string"] },
+        "current": { "type": ["number", "string"] },
+        "delta": { "type": ["number", "null"] }
+      }
+    }
+  }
+}
