@@ -86,6 +86,83 @@
       "prompt": "Implement this feature test-first by writing a failing behavior test, making it pass, and then refactoring.",
       "expected": ["test-driven-development"],
       "excluded": ["verification-discipline"]
+    },
+    {
+      "id": "explore-unfamiliar-repository",
+      "split": "training",
+      "prompt": "Map this unfamiliar repository's entry points, architecture boundaries, build commands, tests, and safest change site without editing files.",
+      "expected": ["codebase-exploration"],
+      "excluded": ["repository-agent-bootstrap", "systematic-debugging", "web-research-and-verification"]
+    },
+    {
+      "id": "maintain-change-documentation",
+      "split": "validation",
+      "prompt": "Update the README, command reference, and changelog so they remain accurate after this user-visible CLI change.",
+      "expected": ["documentation-maintenance"],
+      "excluded": ["requirements-and-spec-writing", "shadow-architecture"]
+    },
+    {
+      "id": "review-external-skill",
+      "split": "training",
+      "prompt": "Assess this third-party Agent Skill before adoption for provenance, licensing, instruction safety, overlap, and maintenance risk.",
+      "expected": ["external-skill-review"],
+      "excluded": ["skill-creator", "security-review"]
+    },
+    {
+      "id": "finish-feature-branch",
+      "split": "validation",
+      "prompt": "Rebase this completed feature branch, create an atomic commit, prepare the pull request, and clean up safely after merge.",
+      "expected": ["git-and-pr-workflow"],
+      "excluded": ["parallel-worktree-delivery", "verification-before-completion"]
+    },
+    {
+      "id": "refactor-without-behavior-change",
+      "split": "training",
+      "prompt": "Restructure this module and remove proven dead code without changing observable behavior, checking the baseline between mechanical steps.",
+      "expected": ["refactoring-and-dead-code-removal"],
+      "excluded": ["test-driven-development", "systematic-debugging"]
+    },
+    {
+      "id": "bootstrap-repository-agents",
+      "split": "validation",
+      "prompt": "Inspect this repository and create repository-specific agent instructions that capture its commands, conventions, and safety boundaries.",
+      "expected": ["repository-agent-bootstrap"],
+      "excluded": ["codebase-exploration", "skill-creator"]
+    },
+    {
+      "id": "record-architecture-decisions",
+      "split": "training",
+      "prompt": "Build and update the repository's evidence-linked decision graph so architecture claims remain anchored to code, tests, and commits.",
+      "expected": ["shadow-architecture"],
+      "excluded": ["documentation-maintenance", "repository-agent-bootstrap"]
+    },
+    {
+      "id": "author-agent-skill",
+      "split": "validation",
+      "prompt": "Create a new Agent Skill with valid frontmatter, routing triggers, progressive disclosure, and positive and negative activation prompts.",
+      "expected": ["skill-creator"],
+      "excluded": ["external-skill-review", "documentation-maintenance"]
+    },
+    {
+      "id": "diagnose-failing-test",
+      "split": "training",
+      "prompt": "Reproduce this failing test, isolate the root cause from the exact error output, and fix the defect rather than its symptom.",
+      "expected": ["systematic-debugging"],
+      "excluded": ["refactoring-and-dead-code-removal", "codebase-exploration"]
+    },
+    {
+      "id": "verify-completed-change",
+      "split": "validation",
+      "prompt": "Before reporting this implementation complete, run fresh targeted validation, inspect the diff, and confirm the original symptom is gone.",
+      "expected": ["verification-before-completion"],
+      "excluded": ["verification-discipline", "git-and-pr-workflow"]
+    },
+    {
+      "id": "research-current-api",
+      "split": "validation",
+      "prompt": "Research the current version of this external API using primary documentation, corroborate the claim, and cite authoritative URLs.",
+      "expected": ["web-research-and-verification"],
+      "excluded": ["codebase-exploration", "documentation-maintenance"]
     }
   ]
 }

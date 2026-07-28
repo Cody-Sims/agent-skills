@@ -127,7 +127,8 @@ before claiming uplift.
 The routing suite at `evals/routing.json` keeps training and validation prompts
 separate and repeats each prompt three times. It measures activation rate,
 precision, recall, collisions, duration, tokens, and catalog-wide confusion.
-The pilot covers the `code-review`/`security-review` and
+The fixture suite gives every active skill positive and near-miss coverage,
+including the `code-review`/`security-review` and
 `requirements-and-spec-writing`/`planning-and-task-breakdown` boundaries.
 
 The routing adapter receives `protocolVersion`, `caseId`, `prompt`, `trial`, and

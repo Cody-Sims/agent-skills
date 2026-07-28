@@ -111,37 +111,35 @@ test('committed routing pilot covers both required skill boundaries', () => {
   assert.ok(suite.trials >= 3);
 });
 
+test('committed routing pilot gives every active skill positive and near-miss coverage', () => {
+  const registry = JSON.parse(readFileSync(resolve(REPO_ROOT, 'registry/skills.json'), 'utf8'));
+  const suite = JSON.parse(readFileSync(resolve(REPO_ROOT, 'evals/routing.json'), 'utf8'));
+  const expected = new Set(suite.cases.flatMap((entry) => entry.expected));
+  const excluded = new Set(suite.cases.flatMap((entry) => entry.excluded));
+
+  for (const skill of registry.skills.filter((entry) => entry.lifecycle.status === 'active')) {
+    assert.ok(expected.has(skill.name), `${skill.name} has no positive routing case`);
+    assert.ok(excluded.has(skill.name), `${skill.name} has no near-miss routing case`);
+  }
+});
+
 test('routing CLI runs repeated adapter trials and writes a confusion artifact', () => {
   const temp = makeTempDir('routing-cli-');
   try {
-    const adapterPath = resolve(temp, 'adapter.mjs');
     const outputPath = resolve(temp, 'result.json');
-    writeFileSync(adapterPath, [
-      "let input = '';",
-      "for await (const chunk of process.stdin) input += chunk;",
-      'const request = JSON.parse(input);',
-      "let selectedSkills = ['requirements-and-spec-writing'];",
-      "if (/pull request|staged patch/i.test(request.prompt)) selectedSkills = ['code-review'];",
-      "if (/authentication|threat model/i.test(request.prompt)) selectedSkills = ['security-review'];",
-      "if (/approved specification|sequence the accepted/i.test(request.prompt)) selectedSkills = ['planning-and-task-breakdown'];",
-      "if (/approved migration|assigned in parallel/i.test(request.prompt)) selectedSkills = ['planning-and-task-breakdown'];",
-      "if (/separate git worktrees|dependency waves/i.test(request.prompt)) selectedSkills = ['parallel-worktree-delivery'];",
-      "if (/suspiciously green|production mutation/i.test(request.prompt)) selectedSkills = ['verification-discipline'];",
-      "if (/feature test-first|failing behavior test/i.test(request.prompt)) selectedSkills = ['test-driven-development'];",
-      "process.stdout.write(JSON.stringify({ selectedSkills, inputTokens: 5, outputTokens: 1 }));",
-    ].join('\n'));
+    const suite = JSON.parse(readFileSync(resolve(REPO_ROOT, 'evals/routing.json'), 'utf8'));
 
     const execution = spawnSync(process.execPath, [
       resolve(REPO_ROOT, 'scripts/run-routing-evaluations.mjs'),
       '--suite', resolve(REPO_ROOT, 'evals/routing.json'),
       '--adapter', process.execPath,
-      '--adapter-arg', adapterPath,
+      '--adapter-arg', resolve(REPO_ROOT, 'tests/fixtures/routing-adapter.mjs'),
       '--out', outputPath,
     ], { cwd: REPO_ROOT, encoding: 'utf8' });
 
     assert.equal(execution.status, 0, execution.stderr);
     const result = JSON.parse(readFileSync(outputPath, 'utf8'));
-    assert.equal(result.summary.overall.trials, 36);
+    assert.equal(result.summary.overall.trials, suite.cases.length * suite.trials);
     assert.equal(result.summary.overall.recall, 1);
     assert.equal(result.thresholds, null);
     assert.match(execution.stdout, /validation recall: 100\.0%/);

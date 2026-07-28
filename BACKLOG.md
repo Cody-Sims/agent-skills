@@ -115,8 +115,8 @@ approval gates live outside the canonical skill format.
 - **Result:** Added versioned routing suite and result schemas, repeated isolated
   adapter trials, training and validation splits, activation, precision, recall,
   collision, token, timing, and confusion reports, and both required boundary
-  pilots. Real model baselines, all-skill coverage, and measured thresholds
-  remain before this item is done.
+  pilots. Every active skill now has positive and near-miss fixture coverage.
+  Real model baselines and measured thresholds remain before this item is done.
 
 ### AS-003: Require demonstrated uplift for new skills
 

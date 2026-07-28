@@ -43,7 +43,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   token and duration metrics, safe fixtures, and a synthetic smoke command.
 - Versioned routing suite and result schemas, repeated isolated adapter trials,
   training and validation splits, activation, precision, recall, collision,
-  token, timing, and confusion reports for two adjacent-skill boundaries.
+  token, timing, catalog-wide active-skill coverage, and confusion reports.
 - Contribution evidence manifests and pull-request enforcement requiring real
   expertise sources plus measured uplift or an approved safety/compliance
   exception for every changed skill.
