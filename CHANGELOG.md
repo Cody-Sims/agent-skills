@@ -54,6 +54,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Versioned routing suite and result schemas, repeated isolated adapter trials,
   training and validation splits, activation, precision, recall, collision,
   token, timing, catalog-wide active-skill coverage, and confusion reports.
+- Provenance-bound measured routing threshold policies with explicit adapter and
+  model identity and nonzero failure on recall, precision, or collision
+  regressions.
 - Contribution evidence manifests and pull-request enforcement requiring real
   expertise sources plus measured uplift or an approved safety/compliance
   exception for every changed skill.

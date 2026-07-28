@@ -116,7 +116,10 @@ approval gates live outside the canonical skill format.
   adapter trials, training and validation splits, activation, precision, recall,
   collision, token, timing, and confusion reports, and both required boundary
   pilots. Every active skill now has positive and near-miss fixture coverage.
-  Real model baselines and measured thresholds remain before this item is done.
+  A strict policy can bind measured thresholds to suite, source-result,
+  adapter, model, date, and trial provenance and fail regressed runs. Real model
+  baselines and maintainer-approved threshold values remain before this item is
+  done.
 
 ### AS-003: Require demonstrated uplift for new skills
 

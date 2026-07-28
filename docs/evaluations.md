@@ -161,9 +161,26 @@ npm run routing -- \
   --out tmp/evaluations/routing.json
 ```
 
-The committed result schema leaves thresholds as `null`. Establish recall,
-precision, and collision thresholds only after repeated real-model baselines;
-the synthetic adapter cannot justify promotion criteria.
+Runs without an approved policy leave `thresholds` as `null`. After repeated
+real-model baselines, create a policy conforming to
+`schemas/routing-thresholds.schema.json`. It binds the suite and source-result
+hashes, measurement date, trial count, adapter and model identity, measured
+rates, and held-out recall, overall precision, and collision limits. Enforce it
+with:
+
+```bash
+npm run routing -- \
+  --suite evals/routing.json \
+  --adapter /absolute/path/to/routing-adapter \
+  --adapter-id <stable-adapter-id> \
+  --model <exact-model-version> \
+  --threshold-policy <measured-policy.json> \
+  --out tmp/evaluations/routing.json
+```
+
+The command rejects mismatched provenance and exits nonzero when measured
+results miss the policy. The synthetic adapter cannot justify or establish
+promotion thresholds.
 
 ## Pack Composition Evaluations
 
