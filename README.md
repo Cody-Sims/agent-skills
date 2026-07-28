@@ -87,6 +87,7 @@ command surface.
 |---|---|
 | `code-review` | Reviews a diff, PR, or staged changes for correctness, tests, edge cases, security, performance, readability, and architectural fit, and reports severity-ranked findings with file and line references. |
 | `codebase-exploration` | Builds an evidence-based map of an unfamiliar repository, its entry points, commands, conventions, and dependency graph before any change, staying read-only. |
+| `copilot-cloud-agent` | Launches and monitors GitHub-hosted Copilot tasks with explicit model selection, task and PR verification, and clear boundaries around unsupported reasoning and context controls. |
 | `documentation-maintenance` | Keeps README, API docs, architecture notes, ADRs, and changelogs accurate when code, configuration, commands, or behavior change. |
 | `external-skill-review` | Reviews third-party agent skills as untrusted code before installing or updating them, assessing provenance, scripts, hidden Unicode, network and secret access, and supply-chain risk. |
 | `git-and-pr-workflow` | Guides Git branching, atomic commits, rebasing, conflict resolution, worktrees, pull request descriptions, and safely finishing a branch. |
