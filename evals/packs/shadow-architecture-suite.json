@@ -3,8 +3,8 @@
   "name": "shadow-architecture-suite-composition",
   "version": "1.0.0",
   "source": {
-    "registrySha256": "1f7826df90987eeb1d44e1bf670758409e1ad2e658519053570558a925530f06",
-    "memberTreeSha256": "5e5adf9a5b1398860caf3ba40fd7ab2f709398c87b614c42975c42f536b47d28",
+    "registrySha256": "ef809274ef4cf856e543fb381bd0e0f358d61b138126ef7faf0aeed8d588d7a3",
+    "memberTreeSha256": "4b494ac91f6940ee83e49ff151a48875d5ee48e8d02203187038c3d8b9734895",
     "suitePath": "evals/packs/shadow-architecture-suite.json"
   },
   "pack": {

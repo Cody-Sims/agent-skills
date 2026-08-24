@@ -1237,7 +1237,7 @@
           {
             "type": "structural-validation",
             "reference": "tests/shadow-drift.test.mjs",
-            "sha256": "15c50024f90cfe3809cef6a4f7e480f76b74bb05b3cbb0b3283b1bf47501d214",
+            "sha256": "e2774e9b1a89461075ac0d326ce624a0ff178ca1b68604060627cbd0c6ab5af6",
             "recordedAt": "2026-08-23"
           },
           {
@@ -1336,7 +1336,7 @@
           {
             "type": "structural-validation",
             "reference": "tests/shadow-observe.test.mjs",
-            "sha256": "6320bbee2837aec245617ed29d7354ec087d072b61b8bb7864d38a255093a626",
+            "sha256": "54f77c51382c5405c7cbde66925dcd2e29a312fdc30a0d58fc21c21936286ad8",
             "recordedAt": "2026-08-23"
           },
           {
@@ -1416,7 +1416,7 @@
       },
       "path": "skills/shadow-observe",
       "skillFile": "skills/shadow-observe/SKILL.md",
-      "sha256": "5411dfff35c3b9a640f06a5c7ec50c646cd564c4c82b727ec07aa396741b5112",
+      "sha256": "b0b072310597d2a4bb579a73db12e0bbae4df5ccb1ee0716759c10c0e721225d",
       "resources": [
         "references/observation-records.md",
         "scripts/inventory.mjs"
