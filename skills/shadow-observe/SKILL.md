@@ -19,11 +19,12 @@ graph without promoting them to decisions.
 
 - Use `codebase-exploration` for broad orientation in an unfamiliar repository,
   build and test discovery, conventions, or locating a change site.
-- Use `shadow-architecture` to create or maintain the `.shadow` graph, decision
-  records, indexes, schemas, lifecycle state, or rendered views.
+- Use `shadow-architecture` to create, repair, or maintain the `.shadow` graph,
+  decision records, anchors, indexes, schemas, lifecycle state, or rendered
+  views.
 - Use `shadow-dream` for future-state architecture proposals.
-- Use `shadow-drift` to compare declared architecture with implementation and
-  repair or manage drift.
+- Use `shadow-drift` only to compare declared architecture with implementation
+  and report drift without changing the graph.
 - Do not invent rationale, historical intent, ownership, or decision status.
 - Do not create accepted decisions, future-state proposals, or drift repairs.
 - Default to a report only. Write candidate observation artifacts only when the

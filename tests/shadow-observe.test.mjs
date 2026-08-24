@@ -103,6 +103,27 @@ test('inventory enforces depth and entry bounds', () => {
   }
 });
 
+test('inventory reports depth-zero omission only for nonempty roots', () => {
+  const emptyRoot = makeTempDir('shadow-observe-depth-zero-empty-');
+  const nonemptyRoot = makeTempDir('shadow-observe-depth-zero-nonempty-');
+  try {
+    writeFileSync(resolve(nonemptyRoot, 'root.txt'), 'root');
+
+    const emptyResult = inventory(emptyRoot, { maxDepth: 0 });
+    assert.deepEqual(emptyResult.entries, []);
+    assert.equal(emptyResult.depthLimited, false);
+    assert.equal(emptyResult.truncated, false);
+
+    const nonemptyResult = inventory(nonemptyRoot, { maxDepth: 0 });
+    assert.deepEqual(nonemptyResult.entries, []);
+    assert.equal(nonemptyResult.depthLimited, true);
+    assert.equal(nonemptyResult.truncated, false);
+  } finally {
+    removeDir(emptyRoot);
+    removeDir(nonemptyRoot);
+  }
+});
+
 test('inventory records but never follows symlinks and rejects a symlink root', () => {
   const root = createFixture('shadow-observe-symlink-');
   const outside = makeTempDir('shadow-observe-outside-');
