@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "name": "shadow-dream-routing",
+  "trials": 3,
+  "cases": [
+    {
+      "id": "training-dream-options",
+      "split": "training",
+      "prompt": "Dream several evidence-linked future-state architecture options from our Shadow observations and accepted constraints, then recommend one.",
+      "expected": [
+        "shadow-dream"
+      ],
+      "excluded": [
+        "requirements-and-spec-writing",
+        "planning-and-task-breakdown"
+      ]
+    },
+    {
+      "id": "training-target-state",
+      "split": "training",
+      "prompt": "Explore architecture options for our target state, including tradeoffs, consequences, migration stages, rollback, risks, and open questions.",
+      "expected": [
+        "shadow-dream"
+      ],
+      "excluded": [
+        "requirements-and-spec-writing",
+        "planning-and-task-breakdown"
+      ]
+    },
+    {
+      "id": "validation-migration-path",
+      "split": "validation",
+      "prompt": "Use the accepted .shadow constraints and evidence-linked observations to propose a future-state architecture and reviewable migration path without implementing it.",
+      "expected": [
+        "shadow-dream"
+      ],
+      "excluded": [
+        "shadow-architecture",
+        "planning-and-task-breakdown"
+      ]
+    },
+    {
+      "id": "training-negative-product-requirements",
+      "split": "training",
+      "prompt": "Turn this vague product idea into agreed user requirements, non-goals, API contracts, acceptance criteria, and privacy constraints.",
+      "expected": [
+        "requirements-and-spec-writing"
+      ],
+      "excluded": [
+        "shadow-dream"
+      ]
+    },
+    {
+      "id": "validation-negative-implementation-plan",
+      "split": "validation",
+      "prompt": "Break the approved architecture proposal into dependency-aware implementation tasks with file ownership and verification commands.",
+      "expected": [
+        "planning-and-task-breakdown"
+      ],
+      "excluded": [
+        "shadow-dream"
+      ]
+    },
+    {
+      "id": "training-negative-shadow-observe",
+      "split": "training",
+      "prompt": "Inspect the current repository and record evidence-linked Shadow observations about architecture that already exists. Do not propose a target state.",
+      "expected": [
+        "shadow-observe"
+      ],
+      "excluded": [
+        "shadow-dream"
+      ]
+    },
+    {
+      "id": "validation-negative-shadow-drift",
+      "split": "validation",
+      "prompt": "Compare accepted Shadow decisions with the current code and report contradictions, stale anchors, and architecture drift without designing a replacement.",
+      "expected": [
+        "shadow-drift"
+      ],
+      "excluded": [
+        "shadow-dream"
+      ]
+    },
+    {
+      "id": "validation-negative-documentation",
+      "split": "validation",
+      "prompt": "Update the architecture guide and changelog so they accurately describe the system after an already implemented change.",
+      "expected": [
+        "documentation-maintenance"
+      ],
+      "excluded": [
+        "shadow-dream"
+      ]
+    },
+    {
+      "id": "validation-negative-decision-recording",
+      "split": "validation",
+      "prompt": "A human-approved proposal and its approval artifact exist. Record the accepted decision in the repository's .shadow graph without changing its substance.",
+      "expected": [
+        "shadow-architecture"
+      ],
+      "excluded": [
+        "shadow-dream"
+      ]
+    }
+  ]
+}
