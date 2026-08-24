@@ -232,7 +232,27 @@ export function inventoryRepository(options) {
     }
   };
 
-  if (options.maxDepth > 0) walk(root, []);
+  if (options.maxDepth > 0) {
+    walk(root, []);
+  } else {
+    let rootEntries;
+    try {
+      rootEntries = readdirSync(root, { withFileTypes: true })
+        .sort((left, right) => left.name < right.name ? -1 : left.name > right.name ? 1 : 0);
+    } catch (error) {
+      throw new InventoryError(`Cannot read .: ${error.message}`);
+    }
+
+    for (const entry of rootEntries) {
+      if (entry.isDirectory() && IGNORED_DIRECTORY_SET.has(entry.name)) {
+        summary.ignoredDirectories += 1;
+      } else if (shouldHide(entry.name, options.includeHidden)) {
+        summary.hiddenEntries += 1;
+      } else {
+        depthLimited = true;
+      }
+    }
+  }
 
   return {
     schemaVersion: 1,

@@ -86,12 +86,25 @@
     {
       "id": "validation-negative-shadow-drift",
       "split": "validation",
-      "prompt": "Compare the accepted .shadow decisions with the implementation, identify drift, and repair the stale records and anchors.",
+      "prompt": "Compare the accepted .shadow decisions with the implementation, identify drift, and report stale records and anchors without changing the graph.",
       "expected": [
         "shadow-drift"
       ],
       "excluded": [
-        "shadow-observe"
+        "shadow-observe",
+        "shadow-architecture"
+      ]
+    },
+    {
+      "id": "validation-negative-shadow-repair",
+      "split": "validation",
+      "prompt": "Repair the stale .shadow decision records and anchors identified by the latest drift report, then update the graph index.",
+      "expected": [
+        "shadow-architecture"
+      ],
+      "excluded": [
+        "shadow-observe",
+        "shadow-drift"
       ]
     }
   ]
