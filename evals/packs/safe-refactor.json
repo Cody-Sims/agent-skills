@@ -11,17 +11,44 @@
     "name": "safe-refactor",
     "version": "1.0.0",
     "members": [
-      { "name": "code-review", "version": "1.0.0" },
-      { "name": "codebase-exploration", "version": "1.0.1" },
-      { "name": "refactoring-and-dead-code-removal", "version": "1.0.0" },
-      { "name": "test-driven-development", "version": "1.0.0" },
-      { "name": "verification-before-completion", "version": "1.0.1" }
+      {
+        "name": "code-review",
+        "version": "1.0.0"
+      },
+      {
+        "name": "codebase-exploration",
+        "version": "1.0.1"
+      },
+      {
+        "name": "refactoring-and-dead-code-removal",
+        "version": "1.0.0"
+      },
+      {
+        "name": "test-driven-development",
+        "version": "1.0.0"
+      },
+      {
+        "name": "verification-before-completion",
+        "version": "1.0.1"
+      }
     ],
     "handoffs": [
-      { "from": "codebase-exploration", "to": "test-driven-development" },
-      { "from": "test-driven-development", "to": "refactoring-and-dead-code-removal" },
-      { "from": "refactoring-and-dead-code-removal", "to": "code-review" },
-      { "from": "code-review", "to": "verification-before-completion" }
+      {
+        "from": "codebase-exploration",
+        "to": "test-driven-development"
+      },
+      {
+        "from": "test-driven-development",
+        "to": "refactoring-and-dead-code-removal"
+      },
+      {
+        "from": "refactoring-and-dead-code-removal",
+        "to": "code-review"
+      },
+      {
+        "from": "code-review",
+        "to": "verification-before-completion"
+      }
     ]
   },
   "adapter": {
@@ -34,15 +61,164 @@
   "trials": 3,
   "thresholds": null,
   "cases": [
-    { "id": "refactor-c01", "split": "training", "kind": "positive", "prompt": "Map the unfamiliar caching subsystem, locate the controlling code path, conventions, tests, and cheapest validation command without editing.", "expected": ["codebase-exploration"], "excluded": ["test-driven-development"], "handoff": null },
-    { "id": "refactor-c02", "split": "validation", "kind": "positive", "prompt": "Write a failing behavior test that establishes the cache preservation boundary before changing structure.", "expected": ["test-driven-development"], "excluded": ["codebase-exploration", "refactoring-and-dead-code-removal"], "handoff": { "from": "codebase-exploration", "to": "test-driven-development" } },
-    { "id": "refactor-c03", "split": "validation", "kind": "positive", "prompt": "Perform the behavior-preserving refactor in mechanical steps and remove only code proven dead while tests remain green.", "expected": ["refactoring-and-dead-code-removal"], "excluded": ["test-driven-development", "code-review"], "handoff": { "from": "test-driven-development", "to": "refactoring-and-dead-code-removal" } },
-    { "id": "refactor-c04", "split": "validation", "kind": "positive", "prompt": "Review the completed patch for correctness, regressions, unsafe deletion, and missing tests.", "expected": ["code-review"], "excluded": ["refactoring-and-dead-code-removal", "verification-before-completion"], "handoff": { "from": "refactoring-and-dead-code-removal", "to": "code-review" } },
-    { "id": "refactor-c05", "split": "validation", "kind": "positive", "prompt": "Run the final verification commands and provide fresh evidence that the refactor preserved behavior.", "expected": ["verification-before-completion"], "excluded": ["code-review"], "handoff": { "from": "code-review", "to": "verification-before-completion" } },
-    { "id": "refactor-c06", "split": "validation", "kind": "near-miss", "prompt": "The controlling code path is still unknown; produce a read-only repository map before writing any failing behavior test.", "expected": ["codebase-exploration"], "excluded": ["test-driven-development"], "handoff": { "from": "codebase-exploration", "to": "test-driven-development" } },
-    { "id": "refactor-c07", "split": "validation", "kind": "near-miss", "prompt": "The failing behavior test does not yet prove the preservation boundary; stay in red-green-refactor and do not restructure code.", "expected": ["test-driven-development"], "excluded": ["refactoring-and-dead-code-removal"], "handoff": { "from": "test-driven-development", "to": "refactoring-and-dead-code-removal" } },
-    { "id": "refactor-c08", "split": "validation", "kind": "near-miss", "prompt": "The mechanical refactor is incomplete and suspected dead code is not proven unused; finish the behavior-preserving refactor before review.", "expected": ["refactoring-and-dead-code-removal"], "excluded": ["code-review"], "handoff": { "from": "refactoring-and-dead-code-removal", "to": "code-review" } },
-    { "id": "refactor-c09", "split": "validation", "kind": "near-miss", "prompt": "Review this implementation because required correctness findings remain unresolved; do not claim fresh evidence yet.", "expected": ["code-review"], "excluded": ["verification-before-completion"], "handoff": { "from": "code-review", "to": "verification-before-completion" } },
-    { "id": "refactor-c10", "split": "validation", "kind": "negative", "prompt": "Design a customer onboarding campaign and write the launch announcement.", "expected": [], "excluded": ["codebase-exploration", "test-driven-development", "refactoring-and-dead-code-removal", "code-review", "verification-before-completion"], "handoff": null }
+    {
+      "id": "refactor-c01",
+      "split": "training",
+      "kind": "positive",
+      "prompt": "Map the unfamiliar caching subsystem, locate the controlling code path, conventions, tests, and cheapest validation command without editing.",
+      "expected": [
+        "codebase-exploration"
+      ],
+      "excluded": [
+        "test-driven-development"
+      ],
+      "handoff": null
+    },
+    {
+      "id": "refactor-c02",
+      "split": "validation",
+      "kind": "positive",
+      "prompt": "Write a failing behavior test that establishes the cache preservation boundary before changing structure.",
+      "expected": [
+        "test-driven-development"
+      ],
+      "excluded": [
+        "codebase-exploration",
+        "refactoring-and-dead-code-removal"
+      ],
+      "handoff": {
+        "from": "codebase-exploration",
+        "to": "test-driven-development"
+      }
+    },
+    {
+      "id": "refactor-c03",
+      "split": "validation",
+      "kind": "positive",
+      "prompt": "Perform the behavior-preserving refactor in mechanical steps and remove only code proven dead while tests remain green.",
+      "expected": [
+        "refactoring-and-dead-code-removal"
+      ],
+      "excluded": [
+        "test-driven-development",
+        "code-review"
+      ],
+      "handoff": {
+        "from": "test-driven-development",
+        "to": "refactoring-and-dead-code-removal"
+      }
+    },
+    {
+      "id": "refactor-c04",
+      "split": "validation",
+      "kind": "positive",
+      "prompt": "Review the completed patch for correctness, regressions, unsafe deletion, and missing tests.",
+      "expected": [
+        "code-review"
+      ],
+      "excluded": [
+        "refactoring-and-dead-code-removal",
+        "verification-before-completion"
+      ],
+      "handoff": {
+        "from": "refactoring-and-dead-code-removal",
+        "to": "code-review"
+      }
+    },
+    {
+      "id": "refactor-c05",
+      "split": "validation",
+      "kind": "positive",
+      "prompt": "Run the final verification commands and provide fresh evidence that the refactor preserved behavior.",
+      "expected": [
+        "verification-before-completion"
+      ],
+      "excluded": [
+        "code-review"
+      ],
+      "handoff": {
+        "from": "code-review",
+        "to": "verification-before-completion"
+      }
+    },
+    {
+      "id": "refactor-c06",
+      "split": "validation",
+      "kind": "near-miss",
+      "prompt": "The controlling code path is still unknown; produce a read-only repository map before writing any failing behavior test.",
+      "expected": [
+        "codebase-exploration"
+      ],
+      "excluded": [
+        "test-driven-development"
+      ],
+      "handoff": {
+        "from": "codebase-exploration",
+        "to": "test-driven-development"
+      }
+    },
+    {
+      "id": "refactor-c07",
+      "split": "validation",
+      "kind": "near-miss",
+      "prompt": "The failing behavior test does not yet prove the preservation boundary; stay in red-green-refactor and do not restructure code.",
+      "expected": [
+        "test-driven-development"
+      ],
+      "excluded": [
+        "refactoring-and-dead-code-removal"
+      ],
+      "handoff": {
+        "from": "test-driven-development",
+        "to": "refactoring-and-dead-code-removal"
+      }
+    },
+    {
+      "id": "refactor-c08",
+      "split": "validation",
+      "kind": "near-miss",
+      "prompt": "The mechanical refactor is incomplete and suspected dead code is not proven unused; finish the behavior-preserving refactor before review.",
+      "expected": [
+        "refactoring-and-dead-code-removal"
+      ],
+      "excluded": [
+        "code-review"
+      ],
+      "handoff": {
+        "from": "refactoring-and-dead-code-removal",
+        "to": "code-review"
+      }
+    },
+    {
+      "id": "refactor-c09",
+      "split": "validation",
+      "kind": "near-miss",
+      "prompt": "Review this implementation because required correctness findings remain unresolved; do not claim fresh evidence yet.",
+      "expected": [
+        "code-review"
+      ],
+      "excluded": [
+        "verification-before-completion"
+      ],
+      "handoff": {
+        "from": "code-review",
+        "to": "verification-before-completion"
+      }
+    },
+    {
+      "id": "refactor-c10",
+      "split": "validation",
+      "kind": "negative",
+      "prompt": "Design a customer onboarding campaign and write the launch announcement.",
+      "expected": [],
+      "excluded": [
+        "codebase-exploration",
+        "test-driven-development",
+        "refactoring-and-dead-code-removal",
+        "code-review",
+        "verification-before-completion"
+      ],
+      "handoff": null
+    }
   ]
 }

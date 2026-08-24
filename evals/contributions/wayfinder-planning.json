@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "skill": "wayfinder-planning",
+  "expertiseSources": [
+    {
+      "type": "review-history",
+      "reference": "skills/wayfinder-planning/references/upstream-attribution.md",
+      "summary": "Records the immutable upstream repository and commit, MIT license, and the boundary of the original tracker-agnostic, plan-only adaptation."
+    },
+    {
+      "type": "specification",
+      "reference": "skills/wayfinder-planning/references/tracker-contract.md",
+      "summary": "Defines normalized revision, lease, external-action authorization, receipt idempotency, reclaim inspection, human reconciliation audit, and frontier semantics exercised by the deterministic recovery checker."
+    }
+  ],
+  "comparison": null,
+  "exception": {
+    "type": "safety",
+    "rationale": "The workflow prevents conflicting ticket claims, stale or partial tracker synchronization, and mutable tracker content from authorizing implementation, destructive actions, or privilege escalation. These concurrency and execution-boundary controls reduce operational risk directly and are better evaluated through adversarial behavior, routing, and maintainer review than average output-quality uplift at experimental entry."
+  }
+}

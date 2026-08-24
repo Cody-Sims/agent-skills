@@ -2,6 +2,7 @@
   "schemaVersion": 1,
   "suite": "held-out-routing",
   "generatedAt": "2026-07-01T00:00:00.000Z",
+  "adapter": { "id": "routing-host-v1", "model": "vendor/model-v1" },
   "summary": {
     "validation": {
       "precision": 1,

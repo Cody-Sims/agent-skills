@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-08-24
+
 ### Added
 
 - Experimental `shadow-observe`, `shadow-dream`, and `shadow-drift` skills with
@@ -15,6 +17,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Versioned `shadow-architecture-suite` composition pack with the linear
   observe-to-dream-to-architecture-to-drift lifecycle, explicit human approval
   before decision recording, and adjacent handoff and near-miss evaluation.
+- Experimental `agent-tool-interface-design` skill for choosing and benchmarking
+  CLI, direct MCP, constrained code-execution, and code-over-MCP interfaces,
+  with Wayfinder discovery, `.shadow` decision handoff, and explicit sandbox,
+  credential, state, recovery, and portability boundaries.
+- Experimental `wayfinder-planning` skill for charting, resuming, and replanning
+  long-running ambiguous work through claim-first Wayfinder maps, fog of war,
+  frontier decision tickets, and explicit handoffs to specification and task
+  planning without crossing into implementation or delivery.
+- Deterministic Wayfinder recovery trace conformance checker and fixtures for
+  revision, lease, durable-block, human-unblock, progress-idempotency, external
+  receipt, reclaim-inspection, duplicate-action, and frontier semantics.
 - Experimental `copilot-cloud-agent` skill for launching and monitoring genuine
   GitHub-hosted tasks, explicitly selecting GPT-5.6 Sol, verifying observed task
   metadata and pull-request artifacts, and distinguishing cloud model controls

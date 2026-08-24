@@ -4,6 +4,20 @@
   "trials": 3,
   "cases": [
     {
+      "id": "design-agent-tool-interface",
+      "split": "training",
+      "prompt": "Choose between an existing CLI, direct MCP tools, constrained code execution, and code-over-MCP for this agent integration, then define how to benchmark the candidates.",
+      "expected": ["agent-tool-interface-design"],
+      "excluded": ["skill-creator", "security-review", "shadow-architecture"]
+    },
+    {
+      "id": "security-review-existing-mcp",
+      "split": "validation",
+      "prompt": "Review this existing MCP implementation for OAuth confused-deputy attacks, SSRF, token passthrough, and secret exposure.",
+      "expected": ["security-review"],
+      "excluded": ["agent-tool-interface-design"]
+    },
+    {
       "id": "review-pull-request",
       "split": "training",
       "prompt": "Review this pull request diff for correctness bugs, edge cases, and missing tests.",
@@ -212,6 +226,48 @@
       "prompt": "The future-state Shadow proposal is complete but no human approval artifact exists yet; keep it proposed and do not record an accepted decision.",
       "expected": ["shadow-dream"],
       "excluded": ["shadow-architecture"]
+    },
+    {
+      "id": "chart-wayfinder-map",
+      "split": "training",
+      "prompt": "Use Wayfinder to chart this long-running ambiguous initiative as one decision map. Keep dependent uncertainty in fog of war and create only the currently sharp frontier tickets.",
+      "expected": ["wayfinder-planning"],
+      "excluded": ["requirements-and-spec-writing", "planning-and-task-breakdown", "parallel-worktree-delivery", "git-and-pr-workflow"]
+    },
+    {
+      "id": "resume-wayfinder-frontier",
+      "split": "validation",
+      "prompt": "Resume this Wayfinder decision map across sessions: claim one open, unblocked, unclaimed frontier ticket, resolve that decision, synchronize the map and fog, then stop.",
+      "expected": ["wayfinder-planning"],
+      "excluded": ["requirements-and-spec-writing", "planning-and-task-breakdown", "parallel-worktree-delivery", "git-and-pr-workflow"]
+    },
+    {
+      "id": "specify-cleared-wayfinder-map",
+      "split": "validation",
+      "prompt": "Decision discovery is complete and the Wayfinder fog is empty. Turn the cleared map and linked decisions into an agreed requirements specification with interfaces, non-goals, risks, and acceptance criteria.",
+      "expected": ["requirements-and-spec-writing"],
+      "excluded": ["wayfinder-planning", "planning-and-task-breakdown"]
+    },
+    {
+      "id": "plan-cleared-wayfinder-spec",
+      "split": "validation",
+      "prompt": "The Wayfinder handoff is complete and this specification is approved. Decompose it into ordered implementation tasks with dependencies, ownership, acceptance criteria, and verification commands.",
+      "expected": ["planning-and-task-breakdown"],
+      "excluded": ["wayfinder-planning", "requirements-and-spec-writing", "parallel-worktree-delivery"]
+    },
+    {
+      "id": "execute-cleared-wayfinder-plan",
+      "split": "validation",
+      "prompt": "Decision discovery and task planning are finished. Execute the approved tasks with agents in separate git worktrees, enforce non-overlapping ownership, integrate the branches, and verify the result.",
+      "expected": ["parallel-worktree-delivery"],
+      "excluded": ["wayfinder-planning", "planning-and-task-breakdown", "git-and-pr-workflow"]
+    },
+    {
+      "id": "deliver-cleared-wayfinder-change",
+      "split": "validation",
+      "prompt": "The Wayfinder decisions are settled and implementation is complete. Create the feature branch and atomic commit, rebase onto main, push, and open the pull request.",
+      "expected": ["git-and-pr-workflow"],
+      "excluded": ["wayfinder-planning", "parallel-worktree-delivery", "requirements-and-spec-writing"]
     }
   ]
 }

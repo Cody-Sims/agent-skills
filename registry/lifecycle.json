@@ -1,6 +1,13 @@
 {
   "schemaVersion": 1,
   "skills": {
+    "agent-tool-interface-design": {
+      "status": "active",
+      "license": "MIT",
+      "lastReviewedAt": "2026-08-23",
+      "reviewDueAt": "2027-08-23",
+      "origin": { "type": "first-party", "repository": "https://github.com/Cody-Sims/agent-skills", "ref": "7976e5f4fec34cbe2ec007f0bc8dfe6887f43aa9", "commit": "7976e5f4fec34cbe2ec007f0bc8dfe6887f43aa9" }
+    },
     "code-review": {
       "status": "active",
       "license": "MIT",
@@ -147,6 +154,13 @@
       "lastReviewedAt": "2026-07-27",
       "reviewDueAt": "2027-07-27",
       "origin": { "type": "external", "repository": "https://github.com/Cody-Sims/Pokemon-Web", "ref": "b1d5a0f395955450b984420622c235065ed59282", "commit": "b1d5a0f395955450b984420622c235065ed59282" }
+    },
+    "wayfinder-planning": {
+      "status": "active",
+      "license": "MIT",
+      "lastReviewedAt": "2026-08-23",
+      "reviewDueAt": "2027-08-23",
+      "origin": { "type": "external", "repository": "https://github.com/mattpocock/skills", "ref": "5b15a47f2d7150f545fbcacbfe381787fc0230dc", "commit": "5b15a47f2d7150f545fbcacbfe381787fc0230dc" }
     },
     "web-research-and-verification": {
       "status": "active",

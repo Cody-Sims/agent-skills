@@ -1,0 +1,588 @@
+{
+  "schemaVersion": 1,
+  "traces": {
+    "unknownExternalOutcome": {
+      "input": {
+        "schemaVersion": 1,
+        "now": "2026-08-23T20:00:00.000Z",
+        "initialState": {
+          "tickets": [
+            {
+              "id": "task-unknown",
+              "parent_map_id": "map-recovery",
+              "type": "task",
+              "status": "open",
+              "revision": 1,
+              "claim": {
+                "claim_token": "claim-unknown",
+                "owner_id": "agent-1",
+                "session_id": "session-1",
+                "acquired_at": "2026-08-23T19:30:00.000Z",
+                "expires_at": "2026-08-23T21:00:00.000Z"
+              }
+            }
+          ]
+        },
+        "operations": [
+          {
+            "operation": "record_task_intent",
+            "ticket_id": "task-unknown",
+            "expected_revision": 1,
+            "claim_token": "claim-unknown",
+            "owner_id": "agent-1",
+            "session_id": "session-1",
+            "intent": "Submit the vendor reconciliation request.",
+            "idempotency_key": "vendor-request-1",
+            "authorization_reference": "human-approval-17",
+            "reconciliation_method": "Lookup the vendor request by idempotency key."
+          },
+          {
+            "operation": "external_action",
+            "ticket_id": "task-unknown",
+            "expected_revision": 2,
+            "claim_token": "claim-unknown",
+            "owner_id": "agent-1",
+            "session_id": "session-1",
+            "idempotency_key": "vendor-request-1",
+            "external_system": "vendor-api",
+            "lookup_reference": "vendor:req-1",
+            "outcome": "unknown"
+          },
+          {
+            "operation": "record_task_receipt",
+            "ticket_id": "task-unknown",
+            "expected_revision": 2,
+            "claim_token": "claim-unknown",
+            "owner_id": "agent-1",
+            "session_id": "session-1",
+            "idempotency_key": "vendor-request-1",
+            "outcome": "unknown",
+            "receipt": {
+              "external_system": "vendor-api",
+              "idempotency_key": "vendor-request-1",
+              "result": "unknown",
+              "lookup_reference": "vendor:req-1"
+            }
+          },
+          {
+            "operation": "block_ticket",
+            "ticket_id": "task-unknown",
+            "expected_revision": 3,
+            "claim_token": "claim-unknown",
+            "owner_id": "agent-1",
+            "session_id": "session-1",
+            "confirmed": true,
+            "reason": "External outcome cannot be reconciled.",
+            "evidence_reference": "vendor:req-1",
+            "actor_id": "agent-1"
+          },
+          {
+            "operation": "get_ticket",
+            "ticket_id": "task-unknown",
+            "expected_revision": 4,
+            "full": true
+          },
+          {
+            "operation": "release_claim",
+            "ticket_id": "task-unknown",
+            "expected_revision": 4,
+            "claim_token": "claim-unknown",
+            "owner_id": "agent-1",
+            "session_id": "session-1"
+          }
+        ]
+      },
+      "expectedOperationOrder": [
+        "record_task_intent",
+        "external_action",
+        "record_task_receipt",
+        "block_ticket",
+        "get_ticket",
+        "release_claim"
+      ],
+      "expectedViolationCodes": [],
+      "expectedFrontier": [],
+      "expectedExternalActionCount": 1
+    },
+    "failedBlock": {
+      "input": {
+        "schemaVersion": 1,
+        "now": "2026-08-23T20:00:00.000Z",
+        "initialState": {
+          "tickets": [
+            {
+              "id": "task-failed-block",
+              "parent_map_id": "map-recovery",
+              "type": "task",
+              "status": "open",
+              "revision": 1,
+              "claim": {
+                "claim_token": "claim-failed",
+                "owner_id": "agent-2",
+                "session_id": "session-2",
+                "acquired_at": "2026-08-23T19:30:00.000Z",
+                "expires_at": "2026-08-23T21:00:00.000Z"
+              },
+              "task_action": {
+                "intent": "Submit the uncertain operation.",
+                "idempotency_key": "uncertain-action-1",
+                "authorization_reference": "human-approval-18",
+                "reconciliation_method": "Lookup by idempotency key.",
+                "state": "intended"
+              }
+            }
+          ]
+        },
+        "operations": [
+          {
+            "operation": "external_action",
+            "ticket_id": "task-failed-block",
+            "expected_revision": 1,
+            "claim_token": "claim-failed",
+            "owner_id": "agent-2",
+            "session_id": "session-2",
+            "idempotency_key": "uncertain-action-1",
+            "external_system": "vendor-api",
+            "lookup_reference": "vendor:uncertain-1",
+            "outcome": "unknown"
+          },
+          {
+            "operation": "record_task_receipt",
+            "ticket_id": "task-failed-block",
+            "expected_revision": 1,
+            "claim_token": "claim-failed",
+            "owner_id": "agent-2",
+            "session_id": "session-2",
+            "idempotency_key": "uncertain-action-1",
+            "outcome": "unknown",
+            "receipt": {
+              "external_system": "vendor-api",
+              "idempotency_key": "uncertain-action-1",
+              "result": "unknown",
+              "lookup_reference": "vendor:uncertain-1"
+            }
+          },
+          {
+            "operation": "block_ticket",
+            "ticket_id": "task-failed-block",
+            "expected_revision": 2,
+            "claim_token": "claim-failed",
+            "owner_id": "agent-2",
+            "session_id": "session-2",
+            "confirmed": false,
+            "reason": "Block write could not be confirmed.",
+            "evidence_reference": "vendor:uncertain-1",
+            "actor_id": "agent-2"
+          },
+          {
+            "operation": "release_claim",
+            "ticket_id": "task-failed-block",
+            "expected_revision": 2,
+            "claim_token": "claim-failed",
+            "owner_id": "agent-2",
+            "session_id": "session-2"
+          }
+        ]
+      },
+      "expectedOperationOrder": [
+        "external_action",
+        "record_task_receipt",
+        "block_ticket",
+        "release_claim"
+      ],
+      "expectedViolationCodes": [
+        "block-unconfirmed",
+        "release-before-confirmed-block"
+      ],
+      "expectedFrontier": [],
+      "expectedExternalActionCount": 1
+    },
+    "nonHumanUnblock": {
+      "input": {
+        "schemaVersion": 1,
+        "now": "2026-08-23T20:00:00.000Z",
+        "initialState": {
+          "tickets": [
+            {
+              "id": "task-blocked",
+              "parent_map_id": "map-recovery",
+              "type": "task",
+              "status": "blocked",
+              "revision": 9,
+              "block": {
+                "reason": "Unknown external result.",
+                "evidence_reference": "vendor:req-9",
+                "actor_id": "agent-9",
+                "blocked_at": "2026-08-23T19:00:00.000Z",
+                "blocked_revision": 9,
+                "requires_human_resolution": true
+              }
+            }
+          ]
+        },
+        "operations": [
+          {
+            "operation": "unblock_ticket",
+            "ticket_id": "task-blocked",
+            "expected_revision": 9,
+            "block_revision": 9,
+            "actor_type": "agent",
+            "actor_id": "agent-10",
+            "authorization_reference": "agent-output",
+            "reconciliation_evidence": "agent says the action probably failed"
+          }
+        ]
+      },
+      "expectedOperationOrder": [
+        "unblock_ticket"
+      ],
+      "expectedViolationCodes": [
+        "human-required-for-unblock"
+      ],
+      "expectedFrontier": [],
+      "expectedExternalActionCount": 0
+    },
+    "staleRevisions": {
+      "input": {
+        "schemaVersion": 1,
+        "now": "2026-08-23T20:00:00.000Z",
+        "initialState": {
+          "tickets": [
+            {
+              "id": "research-stale",
+              "parent_map_id": "map-recovery",
+              "type": "research",
+              "status": "open",
+              "revision": 5,
+              "claim": {
+                "claim_token": "claim-stale",
+                "owner_id": "agent-3",
+                "session_id": "session-3",
+                "acquired_at": "2026-08-23T19:30:00.000Z",
+                "expires_at": "2026-08-23T21:00:00.000Z"
+              }
+            }
+          ]
+        },
+        "operations": [
+          {
+            "operation": "get_ticket",
+            "ticket_id": "research-stale",
+            "expected_revision": 4,
+            "full": true
+          },
+          {
+            "operation": "record_progress",
+            "ticket_id": "research-stale",
+            "expected_revision": 4,
+            "claim_token": "claim-stale",
+            "owner_id": "agent-3",
+            "session_id": "session-3",
+            "progress_key": "research-stale:p1",
+            "payload": {
+              "summary": "Observed a stale source."
+            }
+          }
+        ]
+      },
+      "expectedOperationOrder": [
+        "get_ticket",
+        "record_progress"
+      ],
+      "expectedViolationCodes": [
+        "stale-revision"
+      ],
+      "expectedFrontier": [],
+      "expectedExternalActionCount": 0
+    },
+    "progressIdempotency": {
+      "input": {
+        "schemaVersion": 1,
+        "now": "2026-08-23T20:00:00.000Z",
+        "initialState": {
+          "tickets": [
+            {
+              "id": "research-progress",
+              "parent_map_id": "map-recovery",
+              "type": "research",
+              "status": "open",
+              "revision": 1,
+              "claim": {
+                "claim_token": "claim-progress",
+                "owner_id": "agent-4",
+                "session_id": "session-4",
+                "acquired_at": "2026-08-23T19:30:00.000Z",
+                "expires_at": "2026-08-23T21:00:00.000Z"
+              }
+            }
+          ]
+        },
+        "operations": [
+          {
+            "operation": "record_progress",
+            "ticket_id": "research-progress",
+            "expected_revision": 1,
+            "claim_token": "claim-progress",
+            "owner_id": "agent-4",
+            "session_id": "session-4",
+            "progress_key": "research-progress:p1",
+            "payload": {
+              "summary": "Read the primary source.",
+              "evidence_references": [
+                "source:primary-1"
+              ]
+            }
+          },
+          {
+            "operation": "record_progress",
+            "ticket_id": "research-progress",
+            "expected_revision": 2,
+            "claim_token": "claim-progress",
+            "owner_id": "agent-4",
+            "session_id": "session-4",
+            "progress_key": "research-progress:p1",
+            "payload": {
+              "summary": "Read the primary source.",
+              "evidence_references": [
+                "source:primary-1"
+              ]
+            }
+          },
+          {
+            "operation": "record_progress",
+            "ticket_id": "research-progress",
+            "expected_revision": 2,
+            "claim_token": "claim-progress",
+            "owner_id": "agent-4",
+            "session_id": "session-4",
+            "progress_key": "research-progress:p1",
+            "payload": {
+              "summary": "Conflicting replacement.",
+              "evidence_references": [
+                "source:other"
+              ]
+            }
+          }
+        ]
+      },
+      "expectedOperationOrder": [
+        "record_progress",
+        "record_progress",
+        "record_progress"
+      ],
+      "expectedViolationCodes": [
+        "progress-key-conflict"
+      ],
+      "expectedFrontier": [],
+      "expectedExternalActionCount": 0
+    },
+    "expiredLeaseReclaim": {
+      "input": {
+        "schemaVersion": 1,
+        "now": "2026-08-23T20:00:00.000Z",
+        "initialState": {
+          "tickets": [
+            {
+              "id": "task-reclaim",
+              "parent_map_id": "map-recovery",
+              "type": "task",
+              "status": "open",
+              "revision": 7,
+              "claim": {
+                "claim_token": "claim-expired",
+                "owner_id": "agent-old",
+                "session_id": "session-old",
+                "acquired_at": "2026-08-23T18:00:00.000Z",
+                "expires_at": "2026-08-23T19:00:00.000Z"
+              },
+              "comments": [
+                {
+                  "id": "comment-1",
+                  "body": "Prior session preserved the vendor response."
+                }
+              ],
+              "evidence": [
+                {
+                  "id": "evidence-1",
+                  "reference": "vendor:receipt-7"
+                }
+              ],
+              "progress_records": [
+                {
+                  "progress_key": "task-reclaim:p1",
+                  "payload": {
+                    "summary": "The external action already succeeded."
+                  },
+                  "recorded_at": "2026-08-23T18:30:00.000Z",
+                  "revision": 6
+                }
+              ],
+              "task_action": {
+                "intent": "Create the vendor request.",
+                "idempotency_key": "vendor-existing-7",
+                "authorization_reference": "human-approval-7",
+                "reconciliation_method": "Lookup by idempotency key.",
+                "state": "succeeded",
+                "external_receipt": {
+                  "external_system": "vendor-api",
+                  "idempotency_key": "vendor-existing-7",
+                  "result": "succeeded",
+                  "lookup_reference": "vendor:receipt-7"
+                }
+              }
+            }
+          ]
+        },
+        "operations": [
+          {
+            "operation": "reclaim_expired_claim",
+            "ticket_id": "task-reclaim",
+            "expected_revision": 7,
+            "observed_claim_token": "claim-expired",
+            "new_claim_token": "claim-reclaimed",
+            "owner_id": "agent-new",
+            "session_id": "session-new",
+            "lease_duration_seconds": 3600
+          },
+          {
+            "operation": "get_ticket",
+            "ticket_id": "task-reclaim",
+            "expected_revision": 8,
+            "full": true
+          },
+          {
+            "operation": "external_action",
+            "ticket_id": "task-reclaim",
+            "expected_revision": 8,
+            "claim_token": "claim-reclaimed",
+            "owner_id": "agent-new",
+            "session_id": "session-new",
+            "idempotency_key": "vendor-existing-7",
+            "external_system": "vendor-api",
+            "lookup_reference": "vendor:receipt-7",
+            "outcome": "succeeded"
+          },
+          {
+            "operation": "external_action",
+            "ticket_id": "task-reclaim",
+            "expected_revision": 8,
+            "claim_token": "claim-reclaimed",
+            "owner_id": "agent-new",
+            "session_id": "session-new",
+            "idempotency_key": "vendor-new-8",
+            "external_system": "vendor-api",
+            "lookup_reference": "vendor:new-8",
+            "outcome": "succeeded"
+          }
+        ]
+      },
+      "expectedOperationOrder": [
+        "reclaim_expired_claim",
+        "get_ticket",
+        "external_action",
+        "external_action"
+      ],
+      "expectedViolationCodes": [
+        "duplicate-external-action",
+        "new-action-key-after-receipt"
+      ],
+      "expectedFrontier": [],
+      "expectedExternalActionCount": 0
+    },
+    "frontierDerivation": {
+      "input": {
+        "schemaVersion": 1,
+        "now": "2026-08-23T20:00:00.000Z",
+        "initialState": {
+          "tickets": [
+            {
+              "id": "ticket-f",
+              "parent_map_id": "map-recovery",
+              "type": "research",
+              "status": "open",
+              "revision": 1,
+              "blocker_ids": [
+                "ticket-a"
+              ]
+            },
+            {
+              "id": "ticket-c",
+              "parent_map_id": "map-recovery",
+              "type": "prototype",
+              "status": "open",
+              "revision": 1,
+              "claim": {
+                "claim_token": "claim-active",
+                "owner_id": "agent-c",
+                "session_id": "session-c",
+                "acquired_at": "2026-08-23T19:30:00.000Z",
+                "expires_at": "2026-08-23T21:00:00.000Z"
+              }
+            },
+            {
+              "id": "ticket-a",
+              "parent_map_id": "map-recovery",
+              "type": "research",
+              "status": "open",
+              "revision": 1
+            },
+            {
+              "id": "ticket-g",
+              "parent_map_id": "map-recovery",
+              "type": "task",
+              "status": "open",
+              "revision": 1,
+              "claim": {
+                "claim_token": "claim-expired-frontier",
+                "owner_id": "agent-g",
+                "session_id": "session-g",
+                "acquired_at": "2026-08-23T18:00:00.000Z",
+                "expires_at": "2026-08-23T19:00:00.000Z"
+              }
+            },
+            {
+              "id": "ticket-e",
+              "parent_map_id": "map-recovery",
+              "type": "grilling",
+              "status": "open",
+              "revision": 1,
+              "blocker_ids": [
+                "ticket-d"
+              ]
+            },
+            {
+              "id": "ticket-d",
+              "parent_map_id": "map-recovery",
+              "type": "research",
+              "status": "closed",
+              "revision": 2
+            },
+            {
+              "id": "ticket-b",
+              "parent_map_id": "map-recovery",
+              "type": "task",
+              "status": "blocked",
+              "revision": 3,
+              "block": {
+                "reason": "Needs human reconciliation.",
+                "evidence_reference": "vendor:block-b",
+                "actor_id": "agent-b",
+                "blocked_at": "2026-08-23T19:00:00.000Z",
+                "blocked_revision": 3,
+                "requires_human_resolution": true
+              }
+            }
+          ]
+        },
+        "operations": []
+      },
+      "expectedOperationOrder": [],
+      "expectedViolationCodes": [],
+      "expectedFrontier": [
+        "ticket-a",
+        "ticket-e"
+      ],
+      "expectedExternalActionCount": 0
+    }
+  }
+}

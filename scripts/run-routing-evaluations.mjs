@@ -76,10 +76,14 @@ async function main() {
   const outputPath = resolve(requiredArgument('out'));
   const adapter = requiredArgument('adapter');
   const thresholdPolicyPath = argument('threshold-policy');
-  const adapterId = argument('adapter-id');
-  const model = argument('model');
-  if (thresholdPolicyPath && (!adapterId?.trim() || !model?.trim())) {
-    throw new Error('--threshold-policy requires explicit --adapter-id and --model arguments.');
+  const thresholdSourcePath = argument('threshold-source-result');
+  const adapterId = requiredArgument('adapter-id');
+  const model = requiredArgument('model');
+  if (thresholdPolicyPath && !thresholdSourcePath) {
+    throw new Error('--threshold-policy requires --threshold-source-result.');
+  }
+  if (thresholdSourcePath && !thresholdPolicyPath) {
+    throw new Error('--threshold-source-result requires --threshold-policy.');
   }
   const adapterArgs = argumentsFor('adapter-arg').map((value) => {
     const localPath = resolve(ROOT, value);
@@ -108,18 +112,29 @@ async function main() {
   const generatedAt = new Date().toISOString();
   let thresholdPolicy = null;
   let thresholdPolicySha256;
-  let adapterIdentity;
+  let sourceResult;
+  let sourceResultSha256;
+  const adapterIdentity = { id: adapterId, model };
   if (thresholdPolicyPath) {
     const policyFile = readJsonBytes(resolve(thresholdPolicyPath));
+    const sourceFile = readJsonBytes(resolve(thresholdSourcePath));
     thresholdPolicy = policyFile.value;
     thresholdPolicySha256 = sha256(policyFile.bytes);
-    adapterIdentity = { id: adapterId, model };
+    sourceResult = sourceFile.value;
+    sourceResultSha256 = sha256(sourceFile.bytes);
+    const resultSchema = readJson(resolve(ROOT, 'schemas/routing-result.schema.json'));
+    const sourceErrors = validateRoutingResult(resultSchema, sourceResult);
+    if (sourceErrors.length > 0) {
+      throw new Error(`Routing threshold source result is invalid:\n${sourceErrors.join('\n')}`);
+    }
     const thresholdSchema = readJson(resolve(ROOT, 'schemas/routing-thresholds.schema.json'));
     const thresholdErrors = validateRoutingThresholdPolicy(thresholdSchema, thresholdPolicy, {
       suite,
       suiteSha256,
       adapter: adapterIdentity,
       generatedAt,
+      sourceResult,
+      sourceResultSha256,
     });
     if (thresholdErrors.length > 0) {
       throw new Error(`Routing threshold policy is invalid:\n${thresholdErrors.join('\n')}`);
@@ -134,6 +149,8 @@ async function main() {
     thresholdPolicy,
     thresholdPolicySha256,
     adapter: adapterIdentity,
+    sourceResult,
+    sourceResultSha256,
     execute: createProcessAdapter({ command: adapter, args: adapterArgs, timeoutMs, environmentNames }),
   });
   const resultSchema = readJson(resolve(ROOT, 'schemas/routing-result.schema.json'));

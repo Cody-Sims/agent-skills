@@ -211,10 +211,15 @@ export async function runEvaluationSuite({
   skillRoot,
   skillContent,
   skillSha256 = sha256(skillContent),
+  adapter,
   execute,
   tempRoot = resolve('tmp', 'evaluations'),
   generatedAt = new Date().toISOString(),
 }) {
+  if (!adapter || typeof adapter.id !== 'string' || !adapter.id.trim()
+      || typeof adapter.model !== 'string' || !adapter.model.trim()) {
+    throw new Error('Evaluation runs require an explicit adapter and model identity.');
+  }
   mkdirSync(tempRoot, { recursive: true });
   const cases = [];
   for (const evaluationCase of suite.cases) {
@@ -254,12 +259,13 @@ export async function runEvaluationSuite({
   const baseline = summarize(cases, 'baseline');
   const candidate = summarize(cases, 'candidate');
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     suite: suite.name,
     skill: suite.skill,
     suiteSha256: sha256(JSON.stringify(suite)),
     skillSha256,
     generatedAt,
+    adapter: { ...adapter },
     cases,
     summary: {
       baseline,

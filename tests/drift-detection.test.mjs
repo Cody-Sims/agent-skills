@@ -58,7 +58,7 @@ test('detects quality, routing, cost, compatibility, and source-staleness regres
   ]));
   assert.deepEqual(
     report.findings.filter(({ type }) => type === 'routing').map(({ metric }) => metric),
-    ['recall', 'precision', 'collision-rate'],
+    ['collision-rate', 'precision', 'recall'],
   );
   assert.ok(report.findings.some(({ type, metric, source }) =>
     type === 'cost' && metric === 'token-total' && source === 'behavior'));
@@ -85,6 +85,18 @@ test('rejects unlike suite, skill, adapter, and model identities', () => {
   }
 });
 
+test('rejects artifacts without explicit comparable execution identity', () => {
+  const input = structuredClone(artifacts());
+  delete input.baselineBehavior.adapter;
+  delete input.currentBehavior.adapter;
+  assert.throws(() => detectDrift(input), /Behavior.*adapter.*required/i);
+
+  const routing = structuredClone(artifacts());
+  delete routing.baselineRouting.adapter;
+  delete routing.currentRouting.adapter;
+  assert.throws(() => detectDrift(routing), /Routing.*adapter.*required/i);
+});
+
 test('rejects malformed and impossible explicit dates', () => {
   for (const asOf of ['2026-7-27', '2026-02-30', 'tomorrow']) {
     assert.throws(() => detectDrift(artifacts({ asOf })), /valid calendar date.*YYYY-MM-DD/i);
@@ -104,6 +116,13 @@ test('uses stable semantic deduplication independent of timestamps and input has
   const second = detectDrift(changed);
   assert.equal(second.fingerprint, first.fingerprint);
   assert.notDeepEqual(second.inputs, first.inputs);
+
+  const reordered = structuredClone(artifacts());
+  reordered.baselineRuntime.runtimes.reverse();
+  reordered.currentRuntime.runtimes.reverse();
+  const third = detectDrift(reordered);
+  assert.equal(third.fingerprint, first.fingerprint);
+  assert.deepEqual(third.findings, first.findings);
 });
 
 test('sanitizes reports and retains only hashes, typed evidence, and proposal text', () => {

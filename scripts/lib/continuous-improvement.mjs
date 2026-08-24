@@ -584,11 +584,16 @@ export function planRecurringAction({ queue, policy, now = new Date().toISOStrin
   if (!queue || typeof queue !== 'object' || Array.isArray(queue)) {
     throw new Error('Recurring queue state must be an object.');
   }
+  for (const field of ['items', 'completedItemIds', 'activeRuns']) {
+    if (!Array.isArray(queue[field])) {
+      throw new Error(`Recurring queue ${field} must be an array.`);
+    }
+  }
   parseTime(now, 'Planner time');
   if (policy.recurringEnabled !== true) return plan('no-op', null, 'recurring-disabled');
 
-  const items = Array.isArray(queue.items) ? queue.items : [];
-  const activeRuns = Array.isArray(queue.activeRuns) ? queue.activeRuns : [];
+  const items = queue.items;
+  const activeRuns = queue.activeRuns;
   const activeLeases = items.filter((item) => (
     item?.status === 'in-progress'
     && item.lease

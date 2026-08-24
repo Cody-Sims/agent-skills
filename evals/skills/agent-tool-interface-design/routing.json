@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "name": "agent-tool-interface-design-routing",
+  "trials": 3,
+  "cases": [
+    {
+      "id": "training-positive-cli-versus-mcp",
+      "split": "training",
+      "prompt": "Decide whether this agent integration should use an existing CLI, a small local wrapper, an MCP server, or a hybrid code-execution adapter.",
+      "expected": ["agent-tool-interface-design"],
+      "excluded": []
+    },
+    {
+      "id": "training-positive-tool-sprawl",
+      "split": "training",
+      "prompt": "Our MCP setup exposes 80 tools and pushes huge intermediate results through model context. Redesign the agent-facing interface for progressive disclosure and composition.",
+      "expected": ["agent-tool-interface-design"],
+      "excluded": []
+    },
+    {
+      "id": "validation-positive-benchmark",
+      "split": "validation",
+      "prompt": "Benchmark direct MCP calls against CLI and code-over-MCP for token cost, round trips, success rate, latency, state, and security before choosing an agent tool architecture.",
+      "expected": ["agent-tool-interface-design"],
+      "excluded": []
+    },
+    {
+      "id": "training-negative-skill-authoring",
+      "split": "training",
+      "prompt": "Create a portable Agent Skill with valid frontmatter, routing fixtures, and progressive disclosure.",
+      "expected": ["skill-creator"],
+      "excluded": ["agent-tool-interface-design"]
+    },
+    {
+      "id": "validation-negative-wayfinder",
+      "split": "validation",
+      "prompt": "Chart this long-running ambiguous initiative as a Wayfinder map, keep dependent uncertainty in fog, and claim one frontier decision per session.",
+      "expected": ["wayfinder-planning"],
+      "excluded": ["agent-tool-interface-design"]
+    },
+    {
+      "id": "validation-negative-shadow",
+      "split": "validation",
+      "prompt": "Record this already accepted architecture decision in the repository's .shadow graph and check its evidence anchors for drift.",
+      "expected": ["shadow-architecture"],
+      "excluded": ["agent-tool-interface-design"]
+    },
+    {
+      "id": "validation-negative-security-review",
+      "split": "validation",
+      "prompt": "Threat model this existing MCP server for OAuth confused-deputy attacks, SSRF, token passthrough, and credential leakage.",
+      "expected": ["security-review"],
+      "excluded": ["agent-tool-interface-design"]
+    }
+  ]
+}

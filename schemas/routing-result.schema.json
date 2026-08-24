@@ -5,9 +5,16 @@
   "type": "object",
   "additionalProperties": false,
   "required": ["schemaVersion", "suite", "generatedAt", "thresholds", "cases", "confusion", "summary"],
+  "allOf": [
+    {
+      "if": { "properties": { "schemaVersion": { "const": 2 } } },
+      "then": { "required": ["suiteSha256", "adapter"] }
+    }
+  ],
   "properties": {
-    "schemaVersion": { "type": "integer", "const": 1 },
+    "schemaVersion": { "type": "integer", "enum": [1, 2] },
     "suite": { "type": "string", "minLength": 1 },
+    "suiteSha256": { "$ref": "#/$defs/hash" },
     "generatedAt": { "type": "string", "minLength": 1 },
     "adapter": { "$ref": "#/$defs/adapter" },
     "thresholds": {

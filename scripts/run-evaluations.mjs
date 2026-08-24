@@ -76,6 +76,8 @@ async function main() {
   const suitePath = resolve(requiredArgument('suite'));
   const outputPath = resolve(requiredArgument('out'));
   const adapter = requiredArgument('adapter');
+  const adapterId = requiredArgument('adapter-id');
+  const model = requiredArgument('model');
   const adapterArgs = argumentsFor('adapter-arg').map((value) => {
     const localPath = resolve(ROOT, value);
     return existsSync(localPath) ? localPath : value;
@@ -99,6 +101,7 @@ async function main() {
     skillRoot,
     skillContent,
     skillSha256: sha256Tree(skillRoot),
+    adapter: { id: adapterId, model },
     execute: createProcessAdapter({ command: adapter, args: adapterArgs, timeoutMs, environmentNames }),
   });
   const resultSchema = readJson(resolve(ROOT, 'schemas/eval-result.schema.json'));

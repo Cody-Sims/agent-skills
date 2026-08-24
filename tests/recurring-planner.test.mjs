@@ -119,6 +119,19 @@ test('planner refuses implementation while a lease or run is active', () => {
   assert.equal(plan.reason, 'concurrency-limit');
 });
 
+test('planner rejects malformed concurrency state instead of treating it as empty', () => {
+  assert.throws(() => improvement.planRecurringAction({
+    queue: queue({ activeRuns: { runId: 'run-1', finalState: 'active' } }),
+    policy,
+    now: NOW,
+  }), /activeRuns must be an array/);
+  assert.throws(() => improvement.planRecurringAction({
+    queue: queue({ items: { status: 'in-progress' } }),
+    policy,
+    now: NOW,
+  }), /items must be an array/);
+});
+
 test('planner stops at monthly budgets and cadence limits', () => {
   const item = readyItem('SI-200');
   for (const monthlyUsage of [

@@ -11,17 +11,44 @@
     "name": "release-readiness",
     "version": "1.0.0",
     "members": [
-      { "name": "code-review", "version": "1.0.0" },
-      { "name": "documentation-maintenance", "version": "1.0.0" },
-      { "name": "git-and-pr-workflow", "version": "1.0.0" },
-      { "name": "security-review", "version": "1.0.0" },
-      { "name": "verification-before-completion", "version": "1.0.1" }
+      {
+        "name": "code-review",
+        "version": "1.0.0"
+      },
+      {
+        "name": "documentation-maintenance",
+        "version": "1.0.0"
+      },
+      {
+        "name": "git-and-pr-workflow",
+        "version": "1.0.0"
+      },
+      {
+        "name": "security-review",
+        "version": "1.0.0"
+      },
+      {
+        "name": "verification-before-completion",
+        "version": "1.0.1"
+      }
     ],
     "handoffs": [
-      { "from": "code-review", "to": "security-review" },
-      { "from": "security-review", "to": "documentation-maintenance" },
-      { "from": "documentation-maintenance", "to": "verification-before-completion" },
-      { "from": "verification-before-completion", "to": "git-and-pr-workflow" }
+      {
+        "from": "code-review",
+        "to": "security-review"
+      },
+      {
+        "from": "security-review",
+        "to": "documentation-maintenance"
+      },
+      {
+        "from": "documentation-maintenance",
+        "to": "verification-before-completion"
+      },
+      {
+        "from": "verification-before-completion",
+        "to": "git-and-pr-workflow"
+      }
     ]
   },
   "adapter": {
@@ -34,15 +61,164 @@
   "trials": 3,
   "thresholds": null,
   "cases": [
-    { "id": "release-c01", "split": "training", "kind": "positive", "prompt": "Review the completed release patch for correctness, regressions, edge cases, and missing tests.", "expected": ["code-review"], "excluded": ["security-review"], "handoff": null },
-    { "id": "release-c02", "split": "validation", "kind": "positive", "prompt": "Perform a security review and threat model of the authentication release after functional review passed.", "expected": ["security-review"], "excluded": ["code-review", "documentation-maintenance"], "handoff": { "from": "code-review", "to": "security-review" } },
-    { "id": "release-c03", "split": "validation", "kind": "positive", "prompt": "Update the release-facing documentation and changelog after security findings were resolved.", "expected": ["documentation-maintenance"], "excluded": ["security-review", "verification-before-completion"], "handoff": { "from": "security-review", "to": "documentation-maintenance" } },
-    { "id": "release-c04", "split": "validation", "kind": "positive", "prompt": "Run the final verification commands and gather fresh evidence for release readiness.", "expected": ["verification-before-completion"], "excluded": ["documentation-maintenance", "git-and-pr-workflow"], "handoff": { "from": "documentation-maintenance", "to": "verification-before-completion" } },
-    { "id": "release-c05", "split": "validation", "kind": "positive", "prompt": "Prepare the branch, create atomic commits, and open the pull request now that release verification passed.", "expected": ["git-and-pr-workflow"], "excluded": ["verification-before-completion"], "handoff": { "from": "verification-before-completion", "to": "git-and-pr-workflow" } },
-    { "id": "release-c06", "split": "validation", "kind": "near-miss", "prompt": "Review this implementation because functional correctness findings remain unresolved; a threat model must wait.", "expected": ["code-review"], "excluded": ["security-review"], "handoff": { "from": "code-review", "to": "security-review" } },
-    { "id": "release-c07", "split": "validation", "kind": "near-miss", "prompt": "Security vulnerabilities remain open in the authentication flow; continue the security review before updating release notes.", "expected": ["security-review"], "excluded": ["documentation-maintenance"], "handoff": { "from": "security-review", "to": "documentation-maintenance" } },
-    { "id": "release-c08", "split": "validation", "kind": "near-miss", "prompt": "Release-facing documentation and the changelog are stale; update the README before running final evidence checks.", "expected": ["documentation-maintenance"], "excluded": ["verification-before-completion"], "handoff": { "from": "documentation-maintenance", "to": "verification-before-completion" } },
-    { "id": "release-c09", "split": "validation", "kind": "near-miss", "prompt": "The checks have not produced fresh evidence; run the final verification before starting any git workflow.", "expected": ["verification-before-completion"], "excluded": ["git-and-pr-workflow"], "handoff": { "from": "verification-before-completion", "to": "git-and-pr-workflow" } },
-    { "id": "release-c10", "split": "validation", "kind": "negative", "prompt": "Provision a new production database cluster and migrate all customer records.", "expected": [], "excluded": ["code-review", "security-review", "documentation-maintenance", "verification-before-completion", "git-and-pr-workflow"], "handoff": null }
+    {
+      "id": "release-c01",
+      "split": "training",
+      "kind": "positive",
+      "prompt": "Review the completed release patch for correctness, regressions, edge cases, and missing tests.",
+      "expected": [
+        "code-review"
+      ],
+      "excluded": [
+        "security-review"
+      ],
+      "handoff": null
+    },
+    {
+      "id": "release-c02",
+      "split": "validation",
+      "kind": "positive",
+      "prompt": "Perform a security review and threat model of the authentication release after functional review passed.",
+      "expected": [
+        "security-review"
+      ],
+      "excluded": [
+        "code-review",
+        "documentation-maintenance"
+      ],
+      "handoff": {
+        "from": "code-review",
+        "to": "security-review"
+      }
+    },
+    {
+      "id": "release-c03",
+      "split": "validation",
+      "kind": "positive",
+      "prompt": "Update the release-facing documentation and changelog after security findings were resolved.",
+      "expected": [
+        "documentation-maintenance"
+      ],
+      "excluded": [
+        "security-review",
+        "verification-before-completion"
+      ],
+      "handoff": {
+        "from": "security-review",
+        "to": "documentation-maintenance"
+      }
+    },
+    {
+      "id": "release-c04",
+      "split": "validation",
+      "kind": "positive",
+      "prompt": "Run the final verification commands and gather fresh evidence for release readiness.",
+      "expected": [
+        "verification-before-completion"
+      ],
+      "excluded": [
+        "documentation-maintenance",
+        "git-and-pr-workflow"
+      ],
+      "handoff": {
+        "from": "documentation-maintenance",
+        "to": "verification-before-completion"
+      }
+    },
+    {
+      "id": "release-c05",
+      "split": "validation",
+      "kind": "positive",
+      "prompt": "Prepare the branch, create atomic commits, and open the pull request now that release verification passed.",
+      "expected": [
+        "git-and-pr-workflow"
+      ],
+      "excluded": [
+        "verification-before-completion"
+      ],
+      "handoff": {
+        "from": "verification-before-completion",
+        "to": "git-and-pr-workflow"
+      }
+    },
+    {
+      "id": "release-c06",
+      "split": "validation",
+      "kind": "near-miss",
+      "prompt": "Review this implementation because functional correctness findings remain unresolved; a threat model must wait.",
+      "expected": [
+        "code-review"
+      ],
+      "excluded": [
+        "security-review"
+      ],
+      "handoff": {
+        "from": "code-review",
+        "to": "security-review"
+      }
+    },
+    {
+      "id": "release-c07",
+      "split": "validation",
+      "kind": "near-miss",
+      "prompt": "Security vulnerabilities remain open in the authentication flow; continue the security review before updating release notes.",
+      "expected": [
+        "security-review"
+      ],
+      "excluded": [
+        "documentation-maintenance"
+      ],
+      "handoff": {
+        "from": "security-review",
+        "to": "documentation-maintenance"
+      }
+    },
+    {
+      "id": "release-c08",
+      "split": "validation",
+      "kind": "near-miss",
+      "prompt": "Release-facing documentation and the changelog are stale; update the README before running final evidence checks.",
+      "expected": [
+        "documentation-maintenance"
+      ],
+      "excluded": [
+        "verification-before-completion"
+      ],
+      "handoff": {
+        "from": "documentation-maintenance",
+        "to": "verification-before-completion"
+      }
+    },
+    {
+      "id": "release-c09",
+      "split": "validation",
+      "kind": "near-miss",
+      "prompt": "The checks have not produced fresh evidence; run the final verification before starting any git workflow.",
+      "expected": [
+        "verification-before-completion"
+      ],
+      "excluded": [
+        "git-and-pr-workflow"
+      ],
+      "handoff": {
+        "from": "verification-before-completion",
+        "to": "git-and-pr-workflow"
+      }
+    },
+    {
+      "id": "release-c10",
+      "split": "validation",
+      "kind": "negative",
+      "prompt": "Provision a new production database cluster and migrate all customer records.",
+      "expected": [],
+      "excluded": [
+        "code-review",
+        "security-review",
+        "documentation-maintenance",
+        "verification-before-completion",
+        "git-and-pr-workflow"
+      ],
+      "handoff": null
+    }
   ]
 }

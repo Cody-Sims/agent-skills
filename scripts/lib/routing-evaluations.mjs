@@ -33,6 +33,8 @@ function thresholdContextErrors(policy, {
   suiteSha256,
   adapter,
   generatedAt,
+  sourceResult,
+  sourceResultSha256,
 } = {}) {
   const errors = [];
   if (suiteSha256 && policy?.suiteSha256 !== suiteSha256) {
@@ -43,6 +45,56 @@ function thresholdContextErrors(policy, {
   }
   if (adapter && !isDeepStrictEqual(policy?.adapter, adapter)) {
     errors.push('$.adapter: identity does not match the configured adapter and model.');
+  }
+  if (!sourceResult || !sourceResultSha256) {
+    errors.push('$: the exact measured source result and SHA-256 are required.');
+  } else {
+    if (policy?.sourceResultSha256 !== sourceResultSha256) {
+      errors.push('$.sourceResultSha256: does not match the measured source result.');
+    }
+    if (sourceResult.suite !== suite?.name
+        || sourceResult.suiteSha256 !== suiteSha256) {
+      errors.push('$.sourceResultSha256: source result does not match the routing suite.');
+    }
+    if (!isDeepStrictEqual(sourceResult.adapter, policy?.adapter)) {
+      errors.push('$.adapter: does not match the measured source result.');
+    }
+    if (sourceResult.thresholds !== null) {
+      errors.push('$.sourceResultSha256: source result must be an unthresholded baseline.');
+    }
+    const expectedCases = (suite?.cases ?? []).map((entry) => ({
+      id: entry.id,
+      split: entry.split,
+      promptSha256: sha256(entry.prompt),
+      expected: entry.expected,
+      excluded: entry.excluded,
+      trials: policy?.trials,
+    }));
+    const sourceCases = (sourceResult.cases ?? []).map((entry) => ({
+      id: entry.id,
+      split: entry.split,
+      promptSha256: entry.promptSha256,
+      expected: entry.expected,
+      excluded: entry.excluded,
+      trials: entry.trials?.length,
+    }));
+    if (!isDeepStrictEqual(sourceCases, expectedCases)) {
+      errors.push('$.sourceResultSha256: source result cases do not match the evaluated routing suite.');
+    }
+    const sourceTrials = new Set(
+      (sourceResult.cases ?? []).map((entry) => entry.trials?.length),
+    );
+    if (sourceTrials.size !== 1 || !sourceTrials.has(policy?.trials)) {
+      errors.push('$.trials: does not match the measured source result.');
+    }
+    const sourceMeasured = {
+      validationRecall: sourceResult.summary?.validation?.recall,
+      overallPrecision: sourceResult.summary?.overall?.precision,
+      overallCollisionRate: sourceResult.summary?.overall?.collisionRate,
+    };
+    if (!isDeepStrictEqual(policy?.measured, sourceMeasured)) {
+      errors.push('$.measured: does not match the measured source result.');
+    }
   }
   if (!isCalendarDate(policy?.measuredAt)) {
     errors.push('$.measuredAt: value must be a valid calendar date.');
@@ -179,8 +231,9 @@ export function validateRoutingResult(schema, result, context = {}) {
         errors.push(`$.cases[${caseIndex}].trials: count does not match threshold provenance.`);
       }
     }
-  } else if (result.adapter !== undefined) {
-    errors.push('$.adapter: adapter identity is only embedded when thresholds are evaluated.');
+  }
+  if (result.schemaVersion === 2 && !result.adapter) {
+    errors.push('$.adapter: explicit adapter and model identity is required.');
   }
   return errors;
 }
@@ -253,18 +306,25 @@ export async function runRoutingEvaluation({
   thresholdPolicySha256,
   suiteSha256 = sha256(JSON.stringify(suite)),
   adapter,
+  sourceResult,
+  sourceResultSha256,
 }) {
+  if (!adapter || typeof adapter.id !== 'string' || !adapter.id.trim()
+      || typeof adapter.model !== 'string' || !adapter.model.trim()) {
+    throw new Error('Routing evaluations require an explicit adapter and model identity.');
+  }
   if (thresholdPolicy) {
     const thresholdErrors = thresholdContextErrors(thresholdPolicy, {
       suite,
       suiteSha256,
       adapter,
       generatedAt,
+      sourceResult,
+      sourceResultSha256,
     });
     if (thresholdErrors.length > 0) {
       throw new Error(`Routing threshold policy is invalid:\n${thresholdErrors.join('\n')}`);
     }
-    if (!adapter) throw new Error('Routing thresholds require an explicit adapter and model identity.');
   }
   mkdirSync(tempRoot, { recursive: true });
   const catalogNames = new Set(catalog.map((skill) => skill.name));
@@ -362,10 +422,11 @@ export async function runRoutingEvaluation({
   } : null;
 
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     suite: suite.name,
+    suiteSha256,
     generatedAt,
-    ...(thresholdPolicy ? { adapter: { ...adapter } } : {}),
+    adapter: { ...adapter },
     thresholds,
     cases,
     confusion,

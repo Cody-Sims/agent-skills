@@ -1,6 +1,30 @@
 {
   "schemaVersion": 1,
   "skills": {
+    "agent-tool-interface-design": {
+      "category": "architecture",
+      "tags": ["agent-tools", "cli", "code-execution", "mcp"],
+      "inputs": [
+        { "type": "tooling-requirements", "description": "Agent workflows, supported hosts, trust boundaries, and operational constraints for an integration." },
+        { "type": "candidate-interfaces", "description": "Existing CLIs, SDKs, APIs, MCP servers, or code-execution environments to compare." }
+      ],
+      "outputs": [
+        { "type": "interface-decision", "description": "An evidence-backed CLI, direct MCP, code-execution, or hybrid interface decision with a bounded contract." },
+        { "type": "evaluation-plan", "description": "Representative benchmark cases and measurable success, context, latency, state, and security criteria." }
+      ],
+      "risk": { "level": "medium", "factors": ["code-execution", "network-access", "security-design"] },
+      "runtimeCompatibility": [
+        { "runtime": "claude-code", "status": "compatible", "notes": null },
+        { "runtime": "github-copilot", "status": "compatible", "notes": null },
+        { "runtime": "openai-codex", "status": "compatible", "notes": null }
+      ],
+      "relatedSkills": ["security-review", "shadow-architecture", "wayfinder-planning"],
+      "conflictingSkills": [],
+      "examplePrompts": [
+        "Decide whether this agent integration should use a CLI, MCP, or code-over-MCP and define the interface contract.",
+        "Reduce this MCP server's tool sprawl and benchmark the replacement against the current interface."
+      ]
+    },
     "code-review": {
       "category": "quality",
       "tags": ["correctness", "diff", "pull-request", "review"],
@@ -462,6 +486,32 @@
       "examplePrompts": [
         "Audit these suspiciously green tests for vacuous assertions.",
         "Harden this CI gate so it enforces the intended invariant."
+      ]
+    },
+    "wayfinder-planning": {
+      "category": "planning",
+      "tags": ["decision-map", "fog-of-war", "frontier", "uncertainty"],
+      "inputs": [
+        { "type": "ambiguous-effort", "description": "A long-running ambiguous effort to chart, resume, or replan across sessions." },
+        { "type": "tracker-adapter", "description": "A tracker adapter with snapshot, claim, revision, frontier, and atomic mutation support." },
+        { "type": "wayfinder-map", "description": "An optional existing parent map with child decision tickets and live frontier state." }
+      ],
+      "outputs": [
+        { "type": "decision-map", "description": "A verified Wayfinder map with linked decisions, current fog, blockers, and frontier." },
+        { "type": "decision-resolution", "description": "One claimed decision ticket resolved and atomically synchronized with its parent map." }
+      ],
+      "risk": { "level": "high", "factors": ["experimental-workflow", "remote-write", "untrusted-content"] },
+      "runtimeCompatibility": [
+        { "runtime": "claude-code", "status": "compatible", "notes": "Requires a tracker adapter implementing the concurrency, revision, and atomic-update contract." },
+        { "runtime": "github-copilot", "status": "compatible", "notes": "Requires a tracker adapter implementing the concurrency, revision, and atomic-update contract." },
+        { "runtime": "openai-codex", "status": "compatible", "notes": "Requires a tracker adapter implementing the concurrency, revision, and atomic-update contract." }
+      ],
+      "relatedSkills": ["git-and-pr-workflow", "parallel-worktree-delivery", "planning-and-task-breakdown", "requirements-and-spec-writing", "shadow-architecture"],
+      "conflictingSkills": [],
+      "examplePrompts": [
+        "Chart this ambiguous multi-session effort as a Wayfinder map with fog of war and frontier decision tickets.",
+        "Resume this Wayfinder map, claim one frontier ticket, resolve it, and synchronize the map.",
+        "Replan this Wayfinder map after the latest decision and hand the cleared map to requirements-and-spec-writing."
       ]
     },
     "web-research-and-verification": {

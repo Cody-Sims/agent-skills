@@ -5,6 +5,7 @@
   "suiteSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "skillSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
   "generatedAt": "2026-07-01T00:00:00.000Z",
+  "adapter": { "id": "behavior-host-v1", "model": "vendor/model-v1" },
   "summary": {
     "candidate": {
       "passRate": 1,

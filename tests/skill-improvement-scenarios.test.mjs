@@ -95,12 +95,15 @@ function activeRun(item, overrides = {}) {
     itemId: item.id,
     leaseId: item.lease.id,
     agent: 'skill-improvement',
+    headCommit: 'abcdef2',
     permissions: ['contents:read'],
     changedPaths: [...item.allowedPaths],
     checks: [{
       name: REQUIRED_CHECK,
       passed: true,
       evidence: '7 tests passed and 0 failed.',
+      headCommit: 'abcdef2',
+      regressed: false,
     }],
     ...overrides,
   };
@@ -290,6 +293,16 @@ test('refuses a failed evaluation or weakened independent gate', () => {
   const errors = validate(item, run, output).join('\n');
   assert.match(errors, /Check failed/);
   assert.match(errors, /Independent gate was not preserved/);
+});
+
+test('refuses regressed or stale check evidence for draft-ready output', () => {
+  const item = approvedItem();
+  const run = activeRun(item);
+  run.checks[0].regressed = true;
+  run.checks[0].headCommit = 'abcdef1';
+  const errors = validate(item, run, completeOutput(item, run)).join('\n');
+  assert.match(errors, /Check regressed/);
+  assert.match(errors, /not bound to the current head commit/);
 });
 
 test('refuses incomplete or non-draft pull request output', () => {

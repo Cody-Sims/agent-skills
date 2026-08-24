@@ -2,6 +2,115 @@
   "schemaVersion": 5,
   "skills": [
     {
+      "name": "agent-tool-interface-design",
+      "description": "Designs and evaluates agent-facing CLI tools, code-execution adapters, MCP servers, and hybrid code-over-MCP interfaces using context, composability, state, security, and portability trade-offs. Use when reducing MCP tool sprawl, wrapping APIs for agents, choosing CLI versus MCP, or benchmarking an agent tool interface.",
+      "version": "1.0.0",
+      "license": "MIT",
+      "tier": "experimental",
+      "maturity": {
+        "status": "verified",
+        "lastEvaluatedAt": "2026-08-24",
+        "evidence": [
+          {
+            "type": "structural-validation",
+            "reference": "evidence/agent-tool-interface-design/validation.json",
+            "sha256": "ff798ebbcf7fd1606dd5b09f2ef4a39e9f12726e1507ae0aae00490c4d065482",
+            "recordedAt": "2026-08-24"
+          },
+          {
+            "type": "maintainer-approval",
+            "reference": "evidence/agent-tool-interface-design/approval.json",
+            "sha256": "078c58e406fc5c9b7e2dfb47c1e9a4f763307151f2c886494b79f180a9696ed0",
+            "recordedAt": "2026-08-24"
+          }
+        ]
+      },
+      "discovery": {
+        "category": "architecture",
+        "tags": [
+          "agent-tools",
+          "cli",
+          "code-execution",
+          "mcp"
+        ],
+        "inputs": [
+          {
+            "type": "candidate-interfaces",
+            "description": "Existing CLIs, SDKs, APIs, MCP servers, or code-execution environments to compare."
+          },
+          {
+            "type": "tooling-requirements",
+            "description": "Agent workflows, supported hosts, trust boundaries, and operational constraints for an integration."
+          }
+        ],
+        "outputs": [
+          {
+            "type": "evaluation-plan",
+            "description": "Representative benchmark cases and measurable success, context, latency, state, and security criteria."
+          },
+          {
+            "type": "interface-decision",
+            "description": "An evidence-backed CLI, direct MCP, code-execution, or hybrid interface decision with a bounded contract."
+          }
+        ],
+        "risk": {
+          "level": "medium",
+          "factors": [
+            "code-execution",
+            "network-access",
+            "security-design"
+          ]
+        },
+        "runtimeCompatibility": [
+          {
+            "runtime": "claude-code",
+            "status": "compatible",
+            "notes": null
+          },
+          {
+            "runtime": "github-copilot",
+            "status": "compatible",
+            "notes": null
+          },
+          {
+            "runtime": "openai-codex",
+            "status": "compatible",
+            "notes": null
+          }
+        ],
+        "relatedSkills": [
+          "security-review",
+          "shadow-architecture",
+          "wayfinder-planning"
+        ],
+        "conflictingSkills": [],
+        "examplePrompts": [
+          "Decide whether this agent integration should use a CLI, MCP, or code-over-MCP and define the interface contract.",
+          "Reduce this MCP server's tool sprawl and benchmark the replacement against the current interface."
+        ]
+      },
+      "lifecycle": {
+        "status": "active",
+        "license": "MIT",
+        "lastReviewedAt": "2026-08-23",
+        "reviewDueAt": "2027-08-23",
+        "origin": {
+          "type": "first-party",
+          "repository": "https://github.com/Cody-Sims/agent-skills",
+          "ref": "7976e5f4fec34cbe2ec007f0bc8dfe6887f43aa9",
+          "commit": "7976e5f4fec34cbe2ec007f0bc8dfe6887f43aa9"
+        }
+      },
+      "path": "skills/agent-tool-interface-design",
+      "skillFile": "skills/agent-tool-interface-design/SKILL.md",
+      "sha256": "9fa6fd8a32dcabddf504a81eb98f28e473c7c1aa81faa5f9f52e50b4c256ab4b",
+      "resources": [
+        "assets/interface-evaluation-template.md",
+        "references/decision-matrix.md",
+        "references/foundations-and-evidence.md"
+      ]
+    },
+    {
       "name": "code-review",
       "description": "Reviews a diff, pull request, or set of staged changes for correctness, tests, error and edge cases, security, performance, readability, and architectural fit, then reports severity-ranked, actionable findings with file and line references. Use when reviewing a PR, examining staged or unstaged changes, giving feedback on a patch, or deciding whether a change is safe to merge.",
       "version": "1.0.0",
@@ -1855,6 +1964,124 @@
       "resources": [
         "references/invariant-and-gate-patterns.md",
         "references/red-green-proof.md"
+      ]
+    },
+    {
+      "name": "wayfinder-planning",
+      "description": "Navigates Wayfinder decision maps, fog of war, and frontier tickets for long-running ambiguous work through claim-first, one-decision-per-session replanning. Use when charting, resuming, or replanning uncertainty across sessions; not for writing a static specification, decomposing an approved spec, executing agents, Git or pull-request work, or recording durable architecture.",
+      "version": "1.0.0",
+      "license": "MIT",
+      "tier": "experimental",
+      "maturity": {
+        "status": "verified",
+        "lastEvaluatedAt": "2026-08-23",
+        "evidence": [
+          {
+            "type": "structural-validation",
+            "reference": "evidence/wayfinder-planning/validation.json",
+            "sha256": "4e84c1fef4190ef3b1c040c2b1805a3b8d47890ad5b5e615357e6af1fa1bbe9f",
+            "recordedAt": "2026-08-23"
+          },
+          {
+            "type": "maintainer-approval",
+            "reference": "evidence/wayfinder-planning/approval.json",
+            "sha256": "82e1b0f44c0b0587f08aa20fd70153ea9be807c2abeccce6b396dc46de4ab47c",
+            "recordedAt": "2026-08-23"
+          }
+        ]
+      },
+      "discovery": {
+        "category": "planning",
+        "tags": [
+          "decision-map",
+          "fog-of-war",
+          "frontier",
+          "uncertainty"
+        ],
+        "inputs": [
+          {
+            "type": "ambiguous-effort",
+            "description": "A long-running ambiguous effort to chart, resume, or replan across sessions."
+          },
+          {
+            "type": "tracker-adapter",
+            "description": "A tracker adapter with snapshot, claim, revision, frontier, and atomic mutation support."
+          },
+          {
+            "type": "wayfinder-map",
+            "description": "An optional existing parent map with child decision tickets and live frontier state."
+          }
+        ],
+        "outputs": [
+          {
+            "type": "decision-map",
+            "description": "A verified Wayfinder map with linked decisions, current fog, blockers, and frontier."
+          },
+          {
+            "type": "decision-resolution",
+            "description": "One claimed decision ticket resolved and atomically synchronized with its parent map."
+          }
+        ],
+        "risk": {
+          "level": "high",
+          "factors": [
+            "experimental-workflow",
+            "remote-write",
+            "untrusted-content"
+          ]
+        },
+        "runtimeCompatibility": [
+          {
+            "runtime": "claude-code",
+            "status": "compatible",
+            "notes": "Requires a tracker adapter implementing the concurrency, revision, and atomic-update contract."
+          },
+          {
+            "runtime": "github-copilot",
+            "status": "compatible",
+            "notes": "Requires a tracker adapter implementing the concurrency, revision, and atomic-update contract."
+          },
+          {
+            "runtime": "openai-codex",
+            "status": "compatible",
+            "notes": "Requires a tracker adapter implementing the concurrency, revision, and atomic-update contract."
+          }
+        ],
+        "relatedSkills": [
+          "git-and-pr-workflow",
+          "parallel-worktree-delivery",
+          "planning-and-task-breakdown",
+          "requirements-and-spec-writing",
+          "shadow-architecture"
+        ],
+        "conflictingSkills": [],
+        "examplePrompts": [
+          "Chart this ambiguous multi-session effort as a Wayfinder map with fog of war and frontier decision tickets.",
+          "Resume this Wayfinder map, claim one frontier ticket, resolve it, and synchronize the map.",
+          "Replan this Wayfinder map after the latest decision and hand the cleared map to requirements-and-spec-writing."
+        ]
+      },
+      "lifecycle": {
+        "status": "active",
+        "license": "MIT",
+        "lastReviewedAt": "2026-08-23",
+        "reviewDueAt": "2027-08-23",
+        "origin": {
+          "type": "external",
+          "repository": "https://github.com/mattpocock/skills",
+          "ref": "5b15a47f2d7150f545fbcacbfe381787fc0230dc",
+          "commit": "5b15a47f2d7150f545fbcacbfe381787fc0230dc"
+        }
+      },
+      "path": "skills/wayfinder-planning",
+      "skillFile": "skills/wayfinder-planning/SKILL.md",
+      "sha256": "4c0955b722d399483c19c9384e0a3be9097a95fa919df7633f3ddac60d9f2449",
+      "resources": [
+        "assets/map-template.md",
+        "assets/ticket-template.md",
+        "references/tracker-contract.md",
+        "references/upstream-attribution.md",
+        "scripts/recovery-contract.mjs"
       ]
     },
     {

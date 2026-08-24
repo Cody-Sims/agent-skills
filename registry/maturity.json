@@ -1,6 +1,24 @@
 {
   "schemaVersion": 1,
   "skills": {
+    "agent-tool-interface-design": {
+      "status": "verified",
+      "lastEvaluatedAt": "2026-08-24",
+      "evidence": [
+        {
+          "type": "structural-validation",
+          "reference": "evidence/agent-tool-interface-design/validation.json",
+          "sha256": "ff798ebbcf7fd1606dd5b09f2ef4a39e9f12726e1507ae0aae00490c4d065482",
+          "recordedAt": "2026-08-24"
+        },
+        {
+          "type": "maintainer-approval",
+          "reference": "evidence/agent-tool-interface-design/approval.json",
+          "sha256": "078c58e406fc5c9b7e2dfb47c1e9a4f763307151f2c886494b79f180a9696ed0",
+          "recordedAt": "2026-08-24"
+        }
+      ]
+    },
     "copilot-cloud-agent": {
       "status": "verified",
       "lastEvaluatedAt": "2026-07-27",
@@ -106,6 +124,24 @@
           "reference": "evidence/verification-discipline/approval.json",
           "sha256": "7ff79ad338e14d60e4a7da32db0df392cb6be15ef79a249edc7bc43d37f2c073",
           "recordedAt": "2026-07-27"
+        }
+      ]
+    },
+    "wayfinder-planning": {
+      "status": "verified",
+      "lastEvaluatedAt": "2026-08-23",
+      "evidence": [
+        {
+          "type": "structural-validation",
+          "reference": "evidence/wayfinder-planning/validation.json",
+          "sha256": "4e84c1fef4190ef3b1c040c2b1805a3b8d47890ad5b5e615357e6af1fa1bbe9f",
+          "recordedAt": "2026-08-23"
+        },
+        {
+          "type": "maintainer-approval",
+          "reference": "evidence/wayfinder-planning/approval.json",
+          "sha256": "82e1b0f44c0b0587f08aa20fd70153ea9be807c2abeccce6b396dc46de4ab47c",
+          "recordedAt": "2026-08-23"
         }
       ]
     }

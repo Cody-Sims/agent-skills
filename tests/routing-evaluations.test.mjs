@@ -5,11 +5,17 @@ import { resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
 import {
-  runRoutingEvaluation,
+  runRoutingEvaluation as runRoutingEvaluationWithIdentity,
   validateRoutingResult,
   validateRoutingSuite,
 } from '../scripts/lib/routing-evaluations.mjs';
 import { makeTempDir, removeDir, REPO_ROOT } from './helpers.mjs';
+
+const ADAPTER = { id: 'in-process-routing-test', model: 'test-model-v1' };
+
+function runRoutingEvaluation(options) {
+  return runRoutingEvaluationWithIdentity({ adapter: ADAPTER, ...options });
+}
 
 test('measures repeated activation, precision, recall, collisions, and confusion by split', async () => {
   const suite = {
@@ -96,7 +102,13 @@ test('validates routing suites and result artifacts with separate data splits', 
       durationMs: 1,
     }),
   });
+  assert.equal(result.schemaVersion, 2);
   assert.deepEqual(validateRoutingResult(resultSchema, result), []);
+  const legacy = structuredClone(result);
+  legacy.schemaVersion = 1;
+  delete legacy.adapter;
+  delete legacy.suiteSha256;
+  assert.deepEqual(validateRoutingResult(resultSchema, legacy), []);
   result.cases[0].promptSha256 = 'invalid';
   assert.match(validateRoutingResult(resultSchema, result).join('\n'), /does not match pattern/);
 });
@@ -134,6 +146,8 @@ test('routing CLI runs repeated adapter trials and writes a confusion artifact',
       '--suite', resolve(REPO_ROOT, 'evals/routing.json'),
       '--adapter', process.execPath,
       '--adapter-arg', resolve(REPO_ROOT, 'tests/fixtures/routing-adapter.mjs'),
+      '--adapter-id', ADAPTER.id,
+      '--model', ADAPTER.model,
       '--out', outputPath,
     ], { cwd: REPO_ROOT, encoding: 'utf8' });
 
@@ -142,7 +156,35 @@ test('routing CLI runs repeated adapter trials and writes a confusion artifact',
     assert.equal(result.summary.overall.trials, suite.cases.length * suite.trials);
     assert.equal(result.summary.overall.recall, 1);
     assert.equal(result.thresholds, null);
+    assert.deepEqual(result.adapter, ADAPTER);
     assert.match(execution.stdout, /validation recall: 100\.0%/);
+  } finally {
+    removeDir(temp);
+  }
+});
+
+test('agent tool interface routing suite is executable with the fixture adapter', () => {
+  const temp = makeTempDir('agent-tool-routing-cli-');
+  try {
+    const outputPath = resolve(temp, 'result.json');
+    const suitePath = resolve(
+      REPO_ROOT,
+      'evals/skills/agent-tool-interface-design/routing.json',
+    );
+    const execution = spawnSync(process.execPath, [
+      resolve(REPO_ROOT, 'scripts/run-routing-evaluations.mjs'),
+      '--suite', suitePath,
+      '--adapter', process.execPath,
+      '--adapter-arg', resolve(REPO_ROOT, 'tests/fixtures/routing-adapter.mjs'),
+      '--adapter-id', ADAPTER.id,
+      '--model', ADAPTER.model,
+      '--out', outputPath,
+    ], { cwd: REPO_ROOT, encoding: 'utf8' });
+
+    assert.equal(execution.status, 0, execution.stderr);
+    const result = JSON.parse(readFileSync(outputPath, 'utf8'));
+    assert.equal(result.summary.overall.recall, 1);
+    assert.equal(result.summary.overall.collisionRate, 0);
   } finally {
     removeDir(temp);
   }

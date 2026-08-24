@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "skill": "agent-tool-interface-design",
+  "skillSha256": "4be2fb36811c943dc75f9e61d8ed2343338733661b6ab523e27ac1aea5bd6b75",
+  "reviewedAt": "2026-08-24",
+  "reviewer": "Cody-Sims",
+  "decision": "approved-for-experimental-entry",
+  "rationale": "The skill selects among CLI, direct MCP, constrained code execution, and code-over-MCP from measured requirements rather than protocol preference. It preserves Wayfinder and shadow-architecture boundaries, requires explicit state handles and recovery, constrains generated-code authority, and includes executable positive and negative routing coverage."
+}

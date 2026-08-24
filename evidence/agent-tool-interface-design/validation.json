@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "skill": "agent-tool-interface-design",
+  "skillSha256": "4be2fb36811c943dc75f9e61d8ed2343338733661b6ab523e27ac1aea5bd6b75",
+  "evaluatedAt": "2026-08-24",
+  "profile": "experimental-entry",
+  "checks": [
+    {
+      "command": "node scripts/validate-skills.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/validate-skills.mjs --profile portable",
+      "status": "passed"
+    },
+    {
+      "command": "npm run contributions:validate -- --changed-skill agent-tool-interface-design",
+      "status": "passed"
+    },
+    {
+      "command": "node --test --test-name-pattern='agent tool interface routing suite' tests/routing-evaluations.test.mjs",
+      "status": "passed"
+    }
+  ]
+}

@@ -92,6 +92,7 @@ command surface.
 
 | Skill | Description |
 |---|---|
+| `agent-tool-interface-design` | Designs and evaluates CLI, direct MCP, constrained code-execution, and code-over-MCP interfaces using measured context, composition, state, security, and portability trade-offs. |
 | `code-review` | Reviews a diff, PR, or staged changes for correctness, tests, edge cases, security, performance, readability, and architectural fit, and reports severity-ranked findings with file and line references. |
 | `codebase-exploration` | Builds an evidence-based map of an unfamiliar repository, its entry points, commands, conventions, and dependency graph before any change, staying read-only. |
 | `copilot-cloud-agent` | Launches and monitors GitHub-hosted Copilot tasks with explicit model selection, task and PR verification, and clear boundaries around unsupported reasoning and context controls. |
@@ -113,6 +114,7 @@ command surface.
 | `test-driven-development` | Drives implementation with the red-green-refactor cycle: a failing behavior test first, minimum code to pass, then refactor while green. |
 | `verification-before-completion` | Requires fresh command evidence before any claim that work is done, fixed, passing, or ready. |
 | `verification-discipline` | Hardens tests and CI so green results are meaningful through red-green proof, independent assertions, bounded expensive checks, report-only adoption, and build-purity checks. |
+| `wayfinder-planning` | Navigates Wayfinder decision maps, fog of war, and frontier tickets for long-running ambiguous work through claim-first, one-decision-per-session replanning. |
 | `web-research-and-verification` | Answers questions that depend on current external information by detecting the version in use, preferring authoritative sources, corroborating, and citing URLs. |
 
 ## Implementation agent
@@ -234,9 +236,9 @@ agent-skills/
 | `npm run drift:detect -- [artifact pairs] --lifecycle <manifest> --as-of <date> [--out <report>]` | Drift detector | Compare behavior, routing, runtime, cost, and lifecycle evidence and emit a sanitized corrective proposal. |
 | `npm run eval:validate` | Evaluation suite validator | Validate the committed behavior suite without model execution. |
 | `npm run eval:smoke` | Synthetic evaluation smoke test | Exercise isolation, grading, metrics, and artifact generation. |
-| `npm run eval -- --suite <suite> --adapter <command> --out <result>` | Behavior evaluation runner | Compare baseline and candidate outputs through a model adapter. |
+| `npm run eval -- --suite <suite> --adapter <command> --adapter-id <id> --model <version> --out <result>` | Behavior evaluation runner | Compare baseline and candidate outputs through an identified model adapter. |
 | `npm run routing:smoke` | Synthetic routing smoke test | Exercise repeated trials and confusion reporting. |
-| `npm run routing -- --suite <suite> --adapter <command> --out <result>` | Routing evaluation runner | Measure activation, precision, recall, collisions, tokens, and duration. |
+| `npm run routing -- --suite <suite> --adapter <command> --adapter-id <id> --model <version> --out <result>` | Routing evaluation runner | Measure activation, precision, recall, collisions, tokens, and duration through an identified adapter. |
 | `npm run pack:validate [-- --result <artifact>]` | Structural pack validator | Run precommit structural validation without claiming source provenance. |
 | `npm run pack:validate:provenance -- --source-commit <40-hex>` | Provenance pack validator | Require exact committed registry, suite, and member bytes at HEAD or an explicitly allowed ancestor. |
 | `npm run pack:smoke` | Structural fixture pack smoke | Exercise every pack while labeling artifacts non-provenance precommit evidence. |

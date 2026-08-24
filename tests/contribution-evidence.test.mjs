@@ -40,6 +40,7 @@ function fixture() {
     suiteSha256: sha256(JSON.stringify(suite)),
     skillSha256: sha256(skillContent),
     generatedAt: '2026-07-25T12:00:00.000Z',
+    adapter: { id: 'comparison-adapter-v1', model: 'test-model-v1' },
     cases: [{
       id: 'case-1',
       promptSha256: sha256(suite.cases[0].prompt),

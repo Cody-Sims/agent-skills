@@ -11,19 +11,52 @@
     "name": "feature-delivery",
     "version": "1.0.0",
     "members": [
-      { "name": "code-review", "version": "1.0.0" },
-      { "name": "documentation-maintenance", "version": "1.0.0" },
-      { "name": "planning-and-task-breakdown", "version": "1.0.0" },
-      { "name": "requirements-and-spec-writing", "version": "1.0.0" },
-      { "name": "test-driven-development", "version": "1.0.0" },
-      { "name": "verification-before-completion", "version": "1.0.1" }
+      {
+        "name": "code-review",
+        "version": "1.0.0"
+      },
+      {
+        "name": "documentation-maintenance",
+        "version": "1.0.0"
+      },
+      {
+        "name": "planning-and-task-breakdown",
+        "version": "1.0.0"
+      },
+      {
+        "name": "requirements-and-spec-writing",
+        "version": "1.0.0"
+      },
+      {
+        "name": "test-driven-development",
+        "version": "1.0.0"
+      },
+      {
+        "name": "verification-before-completion",
+        "version": "1.0.1"
+      }
     ],
     "handoffs": [
-      { "from": "requirements-and-spec-writing", "to": "planning-and-task-breakdown" },
-      { "from": "planning-and-task-breakdown", "to": "test-driven-development" },
-      { "from": "test-driven-development", "to": "code-review" },
-      { "from": "code-review", "to": "documentation-maintenance" },
-      { "from": "documentation-maintenance", "to": "verification-before-completion" }
+      {
+        "from": "requirements-and-spec-writing",
+        "to": "planning-and-task-breakdown"
+      },
+      {
+        "from": "planning-and-task-breakdown",
+        "to": "test-driven-development"
+      },
+      {
+        "from": "test-driven-development",
+        "to": "code-review"
+      },
+      {
+        "from": "code-review",
+        "to": "documentation-maintenance"
+      },
+      {
+        "from": "documentation-maintenance",
+        "to": "verification-before-completion"
+      }
     ]
   },
   "adapter": {
@@ -36,17 +69,198 @@
   "trials": 3,
   "thresholds": null,
   "cases": [
-    { "id": "feature-c01", "split": "training", "kind": "positive", "prompt": "Turn this vague request for team notifications into an implementation-ready specification with users, constraints, and acceptance criteria.", "expected": ["requirements-and-spec-writing"], "excluded": ["planning-and-task-breakdown"], "handoff": null },
-    { "id": "feature-c02", "split": "validation", "kind": "positive", "prompt": "Decompose the approved notification specification into ordered tasks with dependencies, acceptance criteria, and verification commands.", "expected": ["planning-and-task-breakdown"], "excluded": ["requirements-and-spec-writing", "test-driven-development"], "handoff": { "from": "requirements-and-spec-writing", "to": "planning-and-task-breakdown" } },
-    { "id": "feature-c03", "split": "validation", "kind": "positive", "prompt": "Implement the first notification task test-first: write a failing behavior test and follow red-green-refactor.", "expected": ["test-driven-development"], "excluded": ["planning-and-task-breakdown", "code-review"], "handoff": { "from": "planning-and-task-breakdown", "to": "test-driven-development" } },
-    { "id": "feature-c04", "split": "validation", "kind": "positive", "prompt": "Review the completed patch for correctness regressions, edge cases, and actionable findings before it is merged.", "expected": ["code-review"], "excluded": ["test-driven-development", "documentation-maintenance"], "handoff": { "from": "test-driven-development", "to": "code-review" } },
-    { "id": "feature-c05", "split": "validation", "kind": "positive", "prompt": "Update the README, API documentation, and changelog now that the reviewed notification behavior has changed.", "expected": ["documentation-maintenance"], "excluded": ["code-review", "verification-before-completion"], "handoff": { "from": "code-review", "to": "documentation-maintenance" } },
-    { "id": "feature-c06", "split": "validation", "kind": "positive", "prompt": "Run the final verification commands and collect fresh evidence that the implementation and documentation checks pass.", "expected": ["verification-before-completion"], "excluded": ["documentation-maintenance"], "handoff": { "from": "documentation-maintenance", "to": "verification-before-completion" } },
-    { "id": "feature-c07", "split": "validation", "kind": "near-miss", "prompt": "Acceptance criteria are unclear and the notification scope is not agreed; resolve the specification boundary before any task sequencing.", "expected": ["requirements-and-spec-writing"], "excluded": ["planning-and-task-breakdown"], "handoff": { "from": "requirements-and-spec-writing", "to": "planning-and-task-breakdown" } },
-    { "id": "feature-c08", "split": "validation", "kind": "near-miss", "prompt": "The approved work still needs dependency-aware implementation tasks before anyone writes a failing behavior test.", "expected": ["planning-and-task-breakdown"], "excluded": ["test-driven-development"], "handoff": { "from": "planning-and-task-breakdown", "to": "test-driven-development" } },
-    { "id": "feature-c09", "split": "validation", "kind": "near-miss", "prompt": "The implementation is still in red-green-refactor and the failing behavior test has not passed; do not review it yet.", "expected": ["test-driven-development"], "excluded": ["code-review"], "handoff": { "from": "test-driven-development", "to": "code-review" } },
-    { "id": "feature-c10", "split": "validation", "kind": "near-miss", "prompt": "Review this implementation because required findings remain unresolved; documentation updates must wait.", "expected": ["code-review"], "excluded": ["documentation-maintenance"], "handoff": { "from": "code-review", "to": "documentation-maintenance" } },
-    { "id": "feature-c11", "split": "validation", "kind": "near-miss", "prompt": "The documentation and changelog are still stale; update the README before claiming fresh evidence.", "expected": ["documentation-maintenance"], "excluded": ["verification-before-completion"], "handoff": { "from": "documentation-maintenance", "to": "verification-before-completion" } },
-    { "id": "feature-c12", "split": "validation", "kind": "negative", "prompt": "Deploy the service to production and rotate the database credentials.", "expected": [], "excluded": ["requirements-and-spec-writing", "planning-and-task-breakdown", "test-driven-development", "code-review", "documentation-maintenance", "verification-before-completion"], "handoff": null }
+    {
+      "id": "feature-c01",
+      "split": "training",
+      "kind": "positive",
+      "prompt": "Turn this vague request for team notifications into an implementation-ready specification with users, constraints, and acceptance criteria.",
+      "expected": [
+        "requirements-and-spec-writing"
+      ],
+      "excluded": [
+        "planning-and-task-breakdown"
+      ],
+      "handoff": null
+    },
+    {
+      "id": "feature-c02",
+      "split": "validation",
+      "kind": "positive",
+      "prompt": "Decompose the approved notification specification into ordered tasks with dependencies, acceptance criteria, and verification commands.",
+      "expected": [
+        "planning-and-task-breakdown"
+      ],
+      "excluded": [
+        "requirements-and-spec-writing",
+        "test-driven-development"
+      ],
+      "handoff": {
+        "from": "requirements-and-spec-writing",
+        "to": "planning-and-task-breakdown"
+      }
+    },
+    {
+      "id": "feature-c03",
+      "split": "validation",
+      "kind": "positive",
+      "prompt": "Implement the first notification task test-first: write a failing behavior test and follow red-green-refactor.",
+      "expected": [
+        "test-driven-development"
+      ],
+      "excluded": [
+        "planning-and-task-breakdown",
+        "code-review"
+      ],
+      "handoff": {
+        "from": "planning-and-task-breakdown",
+        "to": "test-driven-development"
+      }
+    },
+    {
+      "id": "feature-c04",
+      "split": "validation",
+      "kind": "positive",
+      "prompt": "Review the completed patch for correctness regressions, edge cases, and actionable findings before it is merged.",
+      "expected": [
+        "code-review"
+      ],
+      "excluded": [
+        "test-driven-development",
+        "documentation-maintenance"
+      ],
+      "handoff": {
+        "from": "test-driven-development",
+        "to": "code-review"
+      }
+    },
+    {
+      "id": "feature-c05",
+      "split": "validation",
+      "kind": "positive",
+      "prompt": "Update the README, API documentation, and changelog now that the reviewed notification behavior has changed.",
+      "expected": [
+        "documentation-maintenance"
+      ],
+      "excluded": [
+        "code-review",
+        "verification-before-completion"
+      ],
+      "handoff": {
+        "from": "code-review",
+        "to": "documentation-maintenance"
+      }
+    },
+    {
+      "id": "feature-c06",
+      "split": "validation",
+      "kind": "positive",
+      "prompt": "Run the final verification commands and collect fresh evidence that the implementation and documentation checks pass.",
+      "expected": [
+        "verification-before-completion"
+      ],
+      "excluded": [
+        "documentation-maintenance"
+      ],
+      "handoff": {
+        "from": "documentation-maintenance",
+        "to": "verification-before-completion"
+      }
+    },
+    {
+      "id": "feature-c07",
+      "split": "validation",
+      "kind": "near-miss",
+      "prompt": "Acceptance criteria are unclear and the notification scope is not agreed; resolve the specification boundary before any task sequencing.",
+      "expected": [
+        "requirements-and-spec-writing"
+      ],
+      "excluded": [
+        "planning-and-task-breakdown"
+      ],
+      "handoff": {
+        "from": "requirements-and-spec-writing",
+        "to": "planning-and-task-breakdown"
+      }
+    },
+    {
+      "id": "feature-c08",
+      "split": "validation",
+      "kind": "near-miss",
+      "prompt": "The approved work still needs dependency-aware implementation tasks before anyone writes a failing behavior test.",
+      "expected": [
+        "planning-and-task-breakdown"
+      ],
+      "excluded": [
+        "test-driven-development"
+      ],
+      "handoff": {
+        "from": "planning-and-task-breakdown",
+        "to": "test-driven-development"
+      }
+    },
+    {
+      "id": "feature-c09",
+      "split": "validation",
+      "kind": "near-miss",
+      "prompt": "The implementation is still in red-green-refactor and the failing behavior test has not passed; do not review it yet.",
+      "expected": [
+        "test-driven-development"
+      ],
+      "excluded": [
+        "code-review"
+      ],
+      "handoff": {
+        "from": "test-driven-development",
+        "to": "code-review"
+      }
+    },
+    {
+      "id": "feature-c10",
+      "split": "validation",
+      "kind": "near-miss",
+      "prompt": "Review this implementation because required findings remain unresolved; documentation updates must wait.",
+      "expected": [
+        "code-review"
+      ],
+      "excluded": [
+        "documentation-maintenance"
+      ],
+      "handoff": {
+        "from": "code-review",
+        "to": "documentation-maintenance"
+      }
+    },
+    {
+      "id": "feature-c11",
+      "split": "validation",
+      "kind": "near-miss",
+      "prompt": "The documentation and changelog are still stale; update the README before claiming fresh evidence.",
+      "expected": [
+        "documentation-maintenance"
+      ],
+      "excluded": [
+        "verification-before-completion"
+      ],
+      "handoff": {
+        "from": "documentation-maintenance",
+        "to": "verification-before-completion"
+      }
+    },
+    {
+      "id": "feature-c12",
+      "split": "validation",
+      "kind": "negative",
+      "prompt": "Deploy the service to production and rotate the database credentials.",
+      "expected": [],
+      "excluded": [
+        "requirements-and-spec-writing",
+        "planning-and-task-breakdown",
+        "test-driven-development",
+        "code-review",
+        "documentation-maintenance",
+        "verification-before-completion"
+      ],
+      "handoff": null
+    }
   ]
 }

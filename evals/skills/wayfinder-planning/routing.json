@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "name": "wayfinder-planning-routing",
+  "trials": 3,
+  "cases": [
+    {
+      "id": "training-positive-chart",
+      "split": "training",
+      "prompt": "Use Wayfinder to create a decision map for this long-running ambiguous initiative. I can name the destination, but most of the route is still fog of war.",
+      "expected": [
+        "wayfinder-planning"
+      ],
+      "excluded": []
+    },
+    {
+      "id": "training-positive-resume",
+      "split": "training",
+      "prompt": "Resume this Wayfinder map, claim one ticket from the frontier, resolve it, update the fog and decisions, then stop.",
+      "expected": [
+        "wayfinder-planning"
+      ],
+      "excluded": []
+    },
+    {
+      "id": "validation-positive-replan",
+      "split": "validation",
+      "prompt": "Our multi-session decision map changed after new vendor research. Replan dynamically by graduating only the newly sharp questions from fog and recomputing the frontier.",
+      "expected": [
+        "wayfinder-planning"
+      ],
+      "excluded": []
+    },
+    {
+      "id": "training-negative-requirements",
+      "split": "training",
+      "prompt": "The decisions are settled. Write an agreed requirements specification with acceptance criteria, non-goals, interfaces, security, and open questions.",
+      "expected": [
+        "requirements-and-spec-writing"
+      ],
+      "excluded": [
+        "wayfinder-planning"
+      ]
+    },
+    {
+      "id": "validation-negative-task-breakdown",
+      "split": "validation",
+      "prompt": "Here is the approved specification. Break it into ordered implementation tasks with dependencies, file ownership, acceptance criteria, and verification commands.",
+      "expected": [
+        "planning-and-task-breakdown"
+      ],
+      "excluded": [
+        "wayfinder-planning"
+      ]
+    },
+    {
+      "id": "validation-negative-worktrees",
+      "split": "validation",
+      "prompt": "Run four implementation agents in parallel git worktrees, assign non-overlapping files, merge their branches, and verify the integrated change.",
+      "expected": [
+        "parallel-worktree-delivery"
+      ],
+      "excluded": [
+        "wayfinder-planning"
+      ]
+    },
+    {
+      "id": "validation-negative-git-pr",
+      "split": "validation",
+      "prompt": "Create a feature branch, commit these changes, rebase onto main, push it, and open a pull request.",
+      "expected": [
+        "git-and-pr-workflow"
+      ],
+      "excluded": [
+        "wayfinder-planning"
+      ]
+    },
+    {
+      "id": "validation-negative-shadow",
+      "split": "validation",
+      "prompt": "Record this accepted architecture decision in the repository's .shadow graph, link its code evidence, and check for drift.",
+      "expected": [
+        "shadow-architecture"
+      ],
+      "excluded": [
+        "wayfinder-planning"
+      ]
+    }
+  ]
+}

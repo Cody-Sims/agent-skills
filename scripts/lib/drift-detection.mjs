@@ -70,6 +70,15 @@ function comparableIdentity(label, baseline, current, paths) {
   }
 }
 
+function requireExecutionIdentity(label, artifact) {
+  const adapter = artifact?.adapter;
+  if (!adapter || typeof adapter !== 'object' || Array.isArray(adapter)
+      || typeof adapter.id !== 'string' || adapter.id.length === 0
+      || typeof adapter.model !== 'string' || adapter.model.length === 0) {
+    throw new Error(`${label} adapter and model identity is required.`);
+  }
+}
+
 function routingCaseIdentity(artifact) {
   if (!Array.isArray(artifact?.cases)) return undefined;
   return artifact.cases.map((entry) => ({
@@ -97,6 +106,8 @@ function runtimeMap(artifact, label) {
 }
 
 function assertComparableInputs(input) {
+  requireExecutionIdentity('Baseline Behavior', input.baselineBehavior);
+  requireExecutionIdentity('Current Behavior', input.currentBehavior);
   comparableIdentity('Behavior', input.baselineBehavior, input.currentBehavior, [
     'schemaVersion',
     'suite',
@@ -119,6 +130,8 @@ function assertComparableInputs(input) {
   requiredString(input.baselineBehavior, 'skill', 'Baseline behavior artifact');
   requiredString(input.currentBehavior, 'skill', 'Current behavior artifact');
 
+  requireExecutionIdentity('Baseline Routing', input.baselineRouting);
+  requireExecutionIdentity('Current Routing', input.currentRouting);
   comparableIdentity('Routing', input.baselineRouting, input.currentRouting, [
     'schemaVersion',
     'suite',
@@ -368,6 +381,25 @@ export function detectDrift(input) {
       throw new Error('Artifact identity cannot be represented safely in a drift report.');
     }
   }
+  findings.sort((left, right) => {
+    const leftKey = [
+      left.type,
+      left.source,
+      left.metric,
+      left.subject,
+      JSON.stringify(left.baseline),
+      JSON.stringify(left.current),
+    ].join('\0');
+    const rightKey = [
+      right.type,
+      right.source,
+      right.metric,
+      right.subject,
+      JSON.stringify(right.baseline),
+      JSON.stringify(right.current),
+    ].join('\0');
+    return leftKey.localeCompare(rightKey);
+  });
   const fingerprint = sha256(JSON.stringify(canonical(findings)));
   return {
     schemaVersion: 1,

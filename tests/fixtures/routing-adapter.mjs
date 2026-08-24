@@ -18,10 +18,10 @@ if (/restructure this module.*dead code|without changing observable behavior/i.t
 if (/repository-specific agent instructions|commands, conventions, and safety boundaries/i.test(request.prompt)) {
   selectedSkills = ['repository-agent-bootstrap'];
 }
-if (/evidence-linked decision graph|architecture claims.*code, tests, and commits/i.test(request.prompt)) {
+if (/evidence-linked decision graph|architecture claims.*code, tests, and commits|accepted architecture decision.*\.shadow graph/i.test(request.prompt)) {
   selectedSkills = ['shadow-architecture'];
 }
-if (/new Agent Skill.*valid frontmatter|progressive disclosure.*activation prompts/i.test(request.prompt)) {
+if (/new Agent Skill.*valid frontmatter|progressive disclosure.*activation prompts|portable Agent Skill.*valid frontmatter.*progressive disclosure/i.test(request.prompt)) {
   selectedSkills = ['skill-creator'];
 }
 if (/reproduce this failing test|root cause.*exact error output/i.test(request.prompt)) {
@@ -33,12 +33,23 @@ if (/before reporting.*complete|fresh targeted validation.*original symptom/i.te
 if (/current version of this external API|primary documentation.*authoritative URLs/i.test(request.prompt)) {
   selectedSkills = ['web-research-and-verification'];
 }
+if (/existing CLI, direct MCP tools|agent integration.*CLI.*code-execution adapter|MCP setup exposes.*tools.*agent-facing interface|Benchmark direct MCP calls.*code-over-MCP/i.test(request.prompt)) {
+  selectedSkills = ['agent-tool-interface-design'];
+}
+if (/Wayfinder.*decision map|claim one.*frontier.*decision/i.test(request.prompt)) {
+  selectedSkills = ['wayfinder-planning'];
+}
 if (/pull request|staged patch/i.test(request.prompt)) selectedSkills = ['code-review'];
 if (/rebase this completed feature branch|atomic commit.*pull request/i.test(request.prompt)) {
   selectedSkills = ['git-and-pr-workflow'];
 }
-if (/authentication|threat model/i.test(request.prompt)) selectedSkills = ['security-review'];
+if (/authentication|threat model|OAuth confused-deputy/i.test(request.prompt)) {
+  selectedSkills = ['security-review'];
+}
 if (/approved specification|sequence the accepted/i.test(request.prompt)) {
+  selectedSkills = ['planning-and-task-breakdown'];
+}
+if (/Wayfinder handoff.*specification is approved/i.test(request.prompt)) {
   selectedSkills = ['planning-and-task-breakdown'];
 }
 if (/approved migration|assigned in parallel/i.test(request.prompt)) {

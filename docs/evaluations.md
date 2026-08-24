@@ -24,6 +24,11 @@ They do not retain raw prompts or model outputs. Human-review questions remain
 `pending` until an independent reviewer records a judgment outside the
 automated run.
 
+New behavior and routing runs emit result schema version 2 with mandatory
+adapter and exact model identity; routing results also bind the suite hash.
+Validators continue accepting legacy version 1 artifacts, but identity-dependent
+comparison and drift workflows may reject them as non-comparable.
+
 ## Suite Format
 
 The committed pilot lives at `evals/evals.json` and is validated against
@@ -90,6 +95,8 @@ Opt into each required credential or configuration variable explicitly:
 npm run eval -- \
   --suite evals/evals.json \
   --adapter /absolute/path/to/model-adapter \
+  --adapter-id <stable-adapter-id> \
+  --model <exact-model-version> \
   --adapter-env MODEL_API_KEY \
   --out tmp/evaluations/result.json
 ```
@@ -121,6 +128,8 @@ Run a real adapter and write the result under the ignored `tmp/` directory:
 npm run eval -- \
   --suite evals/evals.json \
   --adapter /absolute/path/to/model-adapter \
+  --adapter-id <stable-adapter-id> \
+  --model <exact-model-version> \
   --out tmp/evaluations/result.json
 ```
 
@@ -158,6 +167,8 @@ Run a real routing adapter with:
 npm run routing -- \
   --suite evals/routing.json \
   --adapter /absolute/path/to/routing-adapter \
+  --adapter-id <stable-adapter-id> \
+  --model <exact-model-version> \
   --out tmp/evaluations/routing.json
 ```
 

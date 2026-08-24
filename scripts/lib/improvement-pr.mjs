@@ -177,8 +177,12 @@ function validateGates(item, run, output, errors) {
   const checks = new Map((run?.checks ?? []).map((check) => [check.name, check]));
   for (const check of run?.checks ?? []) {
     if (!check.passed) errors.push(`Check failed: ${check.name}.`);
+    if (check.regressed === true) errors.push(`Check regressed: ${check.name}.`);
     if (typeof check.evidence !== 'string' || check.evidence.trim().length === 0) {
       errors.push(`Check has no evidence: ${check.name}.`);
+    }
+    if (!run?.headCommit || check.headCommit !== run.headCommit) {
+      errors.push(`Check is not bound to the current head commit: ${check.name}.`);
     }
   }
   for (const required of item.requiredChecks ?? []) {

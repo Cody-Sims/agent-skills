@@ -11,11 +11,17 @@ import { resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
 import {
-  runEvaluationSuite,
+  runEvaluationSuite as runEvaluationSuiteWithIdentity,
   validateEvaluationResult,
   validateEvaluationSuite,
 } from '../scripts/lib/evaluations.mjs';
 import { makeTempDir, removeDir, REPO_ROOT } from './helpers.mjs';
+
+const ADAPTER = { id: 'in-process-evaluation-test', model: 'test-model-v1' };
+
+function runEvaluationSuite(options) {
+  return runEvaluationSuiteWithIdentity({ adapter: ADAPTER, ...options });
+}
 
 test('compares candidate and baseline in isolated workspaces with objective and human grading', async () => {
   const workspaces = [];
@@ -172,7 +178,12 @@ test('validates versioned suites and benchmark artifacts', async () => {
     generatedAt: '2026-07-25T12:00:00.000Z',
     execute: async () => ({ text: 'Exit code 0', inputTokens: 1, outputTokens: 2, durationMs: 3 }),
   });
+  assert.equal(result.schemaVersion, 2);
   assert.deepEqual(validateEvaluationResult(resultSchema, result), []);
+  const legacy = structuredClone(result);
+  legacy.schemaVersion = 1;
+  delete legacy.adapter;
+  assert.deepEqual(validateEvaluationResult(resultSchema, legacy), []);
   assert.match(validateEvaluationResult(resultSchema, { ...result, cases: [null] }).join('\n'), /expected type object/);
   result.cases[0].candidate.outputSha256 = 'invalid';
   assert.match(validateEvaluationResult(resultSchema, result).join('\n'), /does not match pattern/);
@@ -215,6 +226,8 @@ test('CLI runs a subprocess adapter and writes a benchmark artifact', () => {
       '--suite', suitePath,
       '--adapter', process.execPath,
       '--adapter-arg', adapterPath,
+      '--adapter-id', ADAPTER.id,
+      '--model', ADAPTER.model,
       '--out', outputPath,
     ], { cwd: REPO_ROOT, encoding: 'utf8' });
 
@@ -358,6 +371,8 @@ test('does not pass arbitrary parent secrets or echo adapter stderr', () => {
       '--suite', suitePath,
       '--adapter', process.execPath,
       '--adapter-arg', adapterPath,
+      '--adapter-id', ADAPTER.id,
+      '--model', ADAPTER.model,
       '--out', outputPath,
     ];
     const isolated = spawnSync(process.execPath, command, {

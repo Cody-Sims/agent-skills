@@ -534,7 +534,19 @@ test('overlapping packs retain shared skills until the final requiring selection
       }
     });
 
-    test('default-source CLI pack install, check, and uninstall lifecycle', () => {
+    test('default-source CLI pack install, check, and uninstall lifecycle', (t) => {
+      const dirtyCatalog = execFileSync(
+        'git',
+        ['status', '--porcelain=v1', '--untracked-files=all', '--', 'skills', 'registry'],
+        { cwd: resolve('.'), encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] },
+      ).trim();
+      if (dirtyCatalog) {
+        if (process.env.CI && process.env.CI !== 'false') {
+          assert.fail('CI must not skip default-source provenance because catalog paths are dirty.');
+        }
+        t.skip('Default-source provenance requires committed skills and registry bytes.');
+        return;
+      }
       const targetRoot = makeTempDir('pack-cli-');
       const cli = resolve('scripts/manage-skills.mjs');
       try {

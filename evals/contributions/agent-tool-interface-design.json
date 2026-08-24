@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "skill": "agent-tool-interface-design",
+  "expertiseSources": [
+    {
+      "type": "specification",
+      "reference": "skills/agent-tool-interface-design/references/foundations-and-evidence.md",
+      "summary": "Synthesizes the current MCP architecture and security specification with primary vendor code-execution guidance and source-specific CLI and hybrid interface experiments."
+    }
+  ],
+  "comparison": null,
+  "exception": {
+    "type": "safety",
+    "rationale": "The workflow prevents broad host code execution, ambient secret inheritance, unrestricted egress, unapproved authenticated-browser profile copying, and unknown remote side effects. These explicit authority and recovery controls provide direct risk reduction at experimental entry; behavior uplift remains required before promotion."
+  }
+}

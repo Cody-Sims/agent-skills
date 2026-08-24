@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "skill": "wayfinder-planning",
+  "skillSha256": "848efdfadf3cee2240d344b75141a0b3b91e74dd79ad1152285d1bcbdfcb74ef",
+  "evaluatedAt": "2026-08-23",
+  "profile": "experimental-entry",
+  "checks": [
+    {
+      "command": "node scripts/validate-skills.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "npm run validate:portable",
+      "status": "passed"
+    },
+    {
+      "command": "npm run contributions:validate -- --changed-skill wayfinder-planning",
+      "status": "passed"
+    },
+    {
+      "command": "node --test tests/wayfinder-planning-recovery.test.mjs",
+      "status": "passed"
+    }
+  ]
+}
