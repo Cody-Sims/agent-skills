@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "name": "shadow-architecture-routing",
+  "trials": 3,
+  "cases": [
+    {
+      "id": "training-positive-setup",
+      "split": "training",
+      "prompt": "Set up a repository-owned .shadow decision graph with a README-declared index and schema, keeping the format portable.",
+      "expected": [
+        "shadow-architecture"
+      ],
+      "excluded": []
+    },
+    {
+      "id": "training-positive-lifecycle",
+      "split": "training",
+      "prompt": "Record this human-approved architecture decision in .shadow and supersede the old accepted decision without rewriting its history.",
+      "expected": [
+        "shadow-architecture"
+      ],
+      "excluded": []
+    },
+    {
+      "id": "validation-positive-render",
+      "split": "validation",
+      "prompt": "Render the reviewed .shadow decision records into a derived graph without changing their statuses or evidence.",
+      "expected": [
+        "shadow-architecture"
+      ],
+      "excluded": []
+    },
+    {
+      "id": "training-negative-observe",
+      "split": "training",
+      "prompt": "Inspect the current codebase and autonomously collect evidence-backed candidate architecture observations for later review.",
+      "expected": [
+        "shadow-observe"
+      ],
+      "excluded": [
+        "shadow-architecture"
+      ]
+    },
+    {
+      "id": "training-negative-dream",
+      "split": "training",
+      "prompt": "Imagine three possible future architectures, compare their tradeoffs, and save them as future-state proposals.",
+      "expected": [
+        "shadow-dream"
+      ],
+      "excluded": [
+        "shadow-architecture"
+      ]
+    },
+    {
+      "id": "validation-negative-drift",
+      "split": "validation",
+      "prompt": "Compare the .shadow decisions with the current implementation, detect contradictions, and produce a drift report.",
+      "expected": [
+        "shadow-drift"
+      ],
+      "excluded": [
+        "shadow-architecture"
+      ]
+    },
+    {
+      "id": "validation-negative-exploration",
+      "split": "validation",
+      "prompt": "Map this unfamiliar repository's entry points, architecture boundaries, dependencies, tests, and likely change sites before I edit it.",
+      "expected": [
+        "codebase-exploration"
+      ],
+      "excluded": [
+        "shadow-architecture"
+      ]
+    },
+    {
+      "id": "validation-negative-docs",
+      "split": "validation",
+      "prompt": "Update the README and architecture documentation after this command-line interface change, and remove stale examples.",
+      "expected": [
+        "documentation-maintenance"
+      ],
+      "excluded": [
+        "shadow-architecture"
+      ]
+    }
+  ]
+}
