@@ -673,7 +673,6 @@ function applyBlockTicket(state, operation, now, violations) {
   if (!activeClaimMatches(ticket, operation, now, violations)) return;
   if (operation.confirmed !== true) {
     addViolation(violations, 'block-unconfirmed');
-    setUnknownOutcomeHold(ticket);
     return;
   }
   if (ticket.status !== 'open') {
@@ -711,7 +710,6 @@ function applyReleaseClaim(state, operation, now, context, violations) {
         || ticket.block?.requires_human_resolution !== true
         || context.lastFullInspectionRevision !== ticket.revision)) {
     addViolation(violations, 'release-before-confirmed-block');
-    setUnknownOutcomeHold(ticket);
     return;
   }
   ticket.claim = null;
@@ -898,19 +896,27 @@ function frontier(state) {
 
 export function evaluateRecoveryTrace(input) {
   const normalized = normalizeInput(input);
-  const state = clone(normalized.initialState);
+  let state = clone(normalized.initialState);
   const transitions = [];
   const violationCodes = [];
-  const contexts = new Map();
+  let contexts = new Map();
 
   for (const [index, operation] of normalized.operations.entries()) {
     const before = clone(state);
+    const candidateState = clone(state);
+    const candidateContexts = new Map(
+      [...contexts].map(([ticketId, context]) => [ticketId, clone(context)]),
+    );
     const transitionViolations = applyOperation(
-      state,
+      candidateState,
       operation,
       normalized.now,
-      contexts,
+      candidateContexts,
     );
+    if (transitionViolations.length === 0) {
+      state = candidateState;
+      contexts = candidateContexts;
+    }
     const context = contexts.get(operation.ticket_id) ?? {
       inspectionRequiredAtRevision: null,
       lastFullInspectionRevision: null,

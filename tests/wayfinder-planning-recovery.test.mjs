@@ -1970,6 +1970,299 @@ test('reordering release before durable block is a detected recovery regression'
   assert.deepEqual(result.frontier, []);
 });
 
+test('every semantic rejection is transactional across state and inspection context', async (t) => {
+  const activeClaim = claim({
+    claim_token: 'claim-transactional',
+    owner_id: 'agent-transactional',
+    session_id: 'session-transactional',
+    acquired_at: '2026-08-23T19:00:00.000Z',
+    expires_at: '2026-08-23T21:00:00.000Z',
+  });
+  const unknownAction = {
+    intent: 'Reconcile the transactional action.',
+    idempotency_key: 'transactional-action-1',
+    authorization_reference: 'human-approval-transactional',
+    reconciliation_method: 'Look up transactional-action-1.',
+    state: 'outcome_unknown',
+    external_receipt: {
+      external_system: 'vendor-api',
+      idempotency_key: 'transactional-action-1',
+      result: 'unknown',
+      lookup_reference: 'vendor:transactional-action-1',
+    },
+  };
+  const succeededReceipt = {
+    external_system: 'vendor-api',
+    idempotency_key: 'transactional-receipt-1',
+    result: 'succeeded',
+    lookup_reference: 'vendor:transactional-receipt-1',
+  };
+  const expiredClaim = claim({
+    claim_token: 'claim-expired-transactional',
+    owner_id: 'agent-expired-transactional',
+    session_id: 'session-expired-transactional',
+    acquired_at: '2026-08-23T18:00:00.000Z',
+    expires_at: '2026-08-23T19:00:00.000Z',
+  });
+  const blocked = {
+    reason: 'Requires a human.',
+    evidence_reference: 'evidence:transactional-block',
+    actor_id: 'agent-transactional',
+    blocked_at: '2026-08-23T19:15:00.000Z',
+    blocked_revision: 3,
+    requires_human_resolution: true,
+  };
+  const cases = [
+    {
+      name: 'unconfirmed block',
+      ticket: ticket({
+        id: 'task-transactional',
+        type: 'task',
+        claim: activeClaim,
+        task_action: unknownAction,
+      }),
+      operations: [{
+        operation: 'block_ticket',
+        ticket_id: 'task-transactional',
+        expected_revision: 1,
+        claim_token: activeClaim.claim_token,
+        owner_id: activeClaim.owner_id,
+        session_id: activeClaim.session_id,
+        confirmed: false,
+        reason: 'The block write was not confirmed.',
+        evidence_reference: 'evidence:unconfirmed',
+        actor_id: activeClaim.owner_id,
+      }],
+      transitionIndex: 0,
+      violation: 'block-unconfirmed',
+    },
+    {
+      name: 'release before confirmed block',
+      ticket: ticket({
+        id: 'task-transactional',
+        type: 'task',
+        claim: activeClaim,
+        task_action: unknownAction,
+      }),
+      operations: [{
+        operation: 'release_claim',
+        ticket_id: 'task-transactional',
+        expected_revision: 1,
+        claim_token: activeClaim.claim_token,
+        owner_id: activeClaim.owner_id,
+        session_id: activeClaim.session_id,
+      }],
+      transitionIndex: 0,
+      violation: 'release-before-confirmed-block',
+    },
+    {
+      name: 'stale revision',
+      ticket: ticket({
+        id: 'task-transactional',
+        type: 'task',
+        revision: 2,
+        claim: activeClaim,
+      }),
+      operations: [{
+        operation: 'record_progress',
+        ticket_id: 'task-transactional',
+        expected_revision: 1,
+        claim_token: activeClaim.claim_token,
+        owner_id: activeClaim.owner_id,
+        session_id: activeClaim.session_id,
+        progress_key: 'transactional:p1',
+        payload: { summary: 'Must not commit.' },
+      }],
+      transitionIndex: 0,
+      violation: 'stale-revision',
+    },
+    {
+      name: 'ownership mismatch',
+      ticket: ticket({
+        id: 'task-transactional',
+        type: 'task',
+        claim: activeClaim,
+      }),
+      operations: [{
+        operation: 'record_progress',
+        ticket_id: 'task-transactional',
+        expected_revision: 1,
+        claim_token: activeClaim.claim_token,
+        owner_id: 'agent-other',
+        session_id: activeClaim.session_id,
+        progress_key: 'transactional:p1',
+        payload: { summary: 'Must not commit.' },
+      }],
+      transitionIndex: 0,
+      violation: 'claim-conflict',
+    },
+    {
+      name: 'conflicting receipt',
+      ticket: ticket({
+        id: 'task-transactional',
+        type: 'task',
+        revision: 2,
+        claim: activeClaim,
+        task_action: {
+          intent: 'Perform the receipt action.',
+          idempotency_key: 'transactional-receipt-1',
+          authorization_reference: 'human-approval-transactional',
+          reconciliation_method: 'Look up transactional-receipt-1.',
+          state: 'succeeded',
+          external_receipt: succeededReceipt,
+        },
+      }),
+      operations: [{
+        operation: 'record_task_receipt',
+        ticket_id: 'task-transactional',
+        expected_revision: 2,
+        claim_token: activeClaim.claim_token,
+        owner_id: activeClaim.owner_id,
+        session_id: activeClaim.session_id,
+        idempotency_key: 'transactional-receipt-1',
+        outcome: 'unknown',
+        receipt: {
+          ...succeededReceipt,
+          result: 'unknown',
+        },
+      }],
+      transitionIndex: 0,
+      violation: 'task-receipt-conflict',
+    },
+    {
+      name: 'non-human unblock',
+      ticket: ticket({
+        id: 'task-transactional',
+        type: 'task',
+        status: 'blocked',
+        revision: 3,
+        block: blocked,
+      }),
+      operations: [{
+        operation: 'unblock_ticket',
+        ticket_id: 'task-transactional',
+        expected_revision: 3,
+        block_revision: 3,
+        actor_type: 'agent',
+        actor_id: 'agent-transactional',
+        authorization_reference: 'agent-output',
+        reconciliation_evidence: {
+          authority_reference: 'authority:agent-output',
+          conclusion: 'An agent cannot authorize unblock.',
+        },
+      }],
+      transitionIndex: 0,
+      violation: 'human-required-for-unblock',
+    },
+    {
+      name: 'pre-inspection work',
+      ticket: ticket({
+        id: 'task-transactional',
+        type: 'task',
+        claim: expiredClaim,
+      }),
+      operations: [
+        {
+          operation: 'reclaim_expired_claim',
+          ticket_id: 'task-transactional',
+          expected_revision: 1,
+          observed_claim_token: expiredClaim.claim_token,
+          new_claim_token: 'claim-fresh-transactional',
+          owner_id: expiredClaim.owner_id,
+          session_id: 'session-fresh-transactional',
+          lease_duration_seconds: 3600,
+        },
+        {
+          operation: 'record_progress',
+          ticket_id: 'task-transactional',
+          expected_revision: 2,
+          claim_token: 'claim-fresh-transactional',
+          owner_id: expiredClaim.owner_id,
+          session_id: 'session-fresh-transactional',
+          progress_key: 'transactional:p1',
+          payload: { summary: 'Must inspect first.' },
+        },
+      ],
+      transitionIndex: 1,
+      violation: 'work-before-full-inspection',
+    },
+    {
+      name: 'stale reclaim fencing',
+      ticket: ticket({
+        id: 'task-transactional',
+        type: 'task',
+        claim: expiredClaim,
+      }),
+      operations: [{
+        operation: 'reclaim_expired_claim',
+        ticket_id: 'task-transactional',
+        expected_revision: 1,
+        observed_claim_token: expiredClaim.claim_token,
+        new_claim_token: expiredClaim.claim_token,
+        owner_id: expiredClaim.owner_id,
+        session_id: 'session-fresh-transactional',
+        lease_duration_seconds: 3600,
+      }],
+      transitionIndex: 0,
+      violation: 'reclaim-token-not-fresh',
+    },
+    {
+      name: 'invalid external action',
+      ticket: ticket({
+        id: 'task-transactional',
+        type: 'task',
+        claim: activeClaim,
+        task_action: {
+          intent: 'Perform the invalid action.',
+          idempotency_key: 'transactional-invalid-1',
+          authorization_reference: 'human-approval-transactional',
+          reconciliation_method: 'Look up transactional-invalid-1.',
+          state: 'intended',
+        },
+      }),
+      operations: [{
+        operation: 'external_action',
+        ticket_id: 'task-transactional',
+        expected_revision: 1,
+        claim_token: activeClaim.claim_token,
+        owner_id: activeClaim.owner_id,
+        session_id: activeClaim.session_id,
+        idempotency_key: 'transactional-invalid-1',
+        external_system: 'vendor-api',
+        lookup_reference: 'vendor:transactional-invalid-1',
+        outcome: 'failed',
+      }],
+      transitionIndex: 0,
+      violation: 'invalid-task-outcome',
+    },
+  ];
+
+  for (const scenario of cases) {
+    await t.test(scenario.name, () => {
+      const result = evaluateRecoveryTrace({
+        schemaVersion: 1,
+        now: '2026-08-23T20:00:00.000Z',
+        initialState: { tickets: [scenario.ticket] },
+        operations: scenario.operations,
+      });
+      const transition = result.transitions[scenario.transitionIndex];
+      assert.deepEqual(transition.violationCodes, [scenario.violation]);
+      assert.deepEqual(transition.before, transition.after);
+      if (scenario.transitionIndex > 0) {
+        assert.deepEqual(
+          transition.inspection,
+          result.transitions[scenario.transitionIndex - 1].inspection,
+        );
+      } else {
+        assert.deepEqual(transition.inspection, {
+          requiredAtRevision: null,
+          lastFullInspectionRevision: null,
+        });
+      }
+    });
+  }
+});
+
 test('caller-supplied after states are ignored', () => {
   const baseline = evaluateRecoveryTrace(traces.unknownExternalOutcome.input);
   const spoofed = structuredClone(traces.unknownExternalOutcome.input);
