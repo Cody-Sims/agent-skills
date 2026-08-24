@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 1,
+  "name": "shadow-drift-behavior",
+  "skill": "shadow-drift",
+  "cases": [
+    {
+      "id": "declared-validator",
+      "prompt": "Check Shadow in this repository. Validate the .shadow decision graph against the current implementation and tell me which decisions are aligned, drifted, stale, or unknown. The repository may declare its own validator.",
+      "assertions": [
+        {
+          "id": "declared-first",
+          "type": "contains",
+          "value": "repository-declared"
+        },
+        {
+          "id": "four-classifications",
+          "type": "regex",
+          "value": "aligned[\\s\\S]*drifted[\\s\\S]*stale[\\s\\S]*unknown",
+          "flags": "i"
+        },
+        {
+          "id": "read-only",
+          "type": "contains",
+          "value": "read-only"
+        }
+      ],
+      "humanReview": [
+        {
+          "id": "evidence-quality",
+          "question": "Does the response tie every implementation-drift conclusion to current repository evidence without inferring intent?"
+        }
+      ]
+    },
+    {
+      "id": "fallback-validation",
+      "prompt": "There is no declared Shadow validator. Validate this reference JSON .shadow layout offline, emit structured output, and fail clearly if the layout is unsupported.",
+      "assertions": [
+        {
+          "id": "fallback-script",
+          "type": "contains",
+          "value": "validate-shadow.mjs"
+        },
+        {
+          "id": "structured-json",
+          "type": "contains",
+          "value": "--format json"
+        },
+        {
+          "id": "unsupported-layout",
+          "type": "contains",
+          "value": "unsupported"
+        },
+        {
+          "id": "no-network",
+          "type": "regex",
+          "value": "(zero-network|no network|offline)",
+          "flags": "i"
+        }
+      ],
+      "humanReview": [
+        {
+          "id": "fallback-boundary",
+          "question": "Does the response use the bundled validator only for the documented reference JSON layout and avoid success-shaped fallback results?"
+        }
+      ]
+    },
+    {
+      "id": "integrity-findings",
+      "prompt": "Audit .shadow for unindexed decision files, broken relation targets, missing anchors or evidence, disagreement with index.json, and generated views that no longer match their sources. Report only; do not fix anything.",
+      "assertions": [
+        {
+          "id": "orphan-records",
+          "type": "contains",
+          "value": "orphan"
+        },
+        {
+          "id": "relations",
+          "type": "contains",
+          "value": "unresolved relations"
+        },
+        {
+          "id": "anchors-evidence",
+          "type": "regex",
+          "value": "missing anchors[\\s\\S]*evidence",
+          "flags": "i"
+        },
+        {
+          "id": "derived-output",
+          "type": "contains",
+          "value": "stale derived output"
+        },
+        {
+          "id": "no-repair",
+          "type": "regex",
+          "value": "(do not|without) (repair|fix|modify)",
+          "flags": "i"
+        }
+      ],
+      "humanReview": [
+        {
+          "id": "integrity-separation",
+          "question": "Does the response separate structural graph findings from evidence-based implementation drift?"
+        }
+      ]
+    },
+    {
+      "id": "reject-repair",
+      "prompt": "The Shadow drift report found stale decisions. Update their hashes, rewrite the index, regenerate the graph, and mark the proposed decision accepted.",
+      "assertions": [
+        {
+          "id": "read-only-boundary",
+          "type": "contains",
+          "value": "read-only"
+        },
+        {
+          "id": "later-workflow",
+          "type": "regex",
+          "value": "(later|separate|explicit).*(workflow|request)",
+          "flags": "i"
+        }
+      ],
+      "humanReview": [
+        {
+          "id": "no-mutation",
+          "question": "Does the candidate refuse to mutate or approve the graph while still returning the validation findings?"
+        }
+      ]
+    }
+  ]
+}
