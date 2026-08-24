@@ -105,6 +105,34 @@ test('reports a valid reference graph as aligned', () => {
   }
 });
 
+for (const [label, contains] of [
+  ['empty', ''],
+  ['whitespace-only', ' '],
+]) {
+  test(`rejects ${label} contains assertions`, () => {
+    const root = makeTempDir(`shadow-${label}-contains-`);
+    try {
+      createValidGraph(root);
+      const path = resolve(root, '.shadow/decisions/decision-a.json');
+      const decision = JSON.parse(readFileSync(path, 'utf8'));
+      decision.evidence = [{ path: 'implementation.test.mjs', contains }];
+      writeJson(path, decision);
+
+      const execution = runValidator(root);
+      assert.equal(execution.status, 3, execution.stderr);
+      const report = parseOutput(execution);
+      assert.deepEqual(report.findings.aligned, []);
+      assert.deepEqual(report.errors, [{
+        code: 'UNSUPPORTED_LAYOUT',
+        message: '.shadow/decisions/decision-a.json.evidence[0].contains must contain non-whitespace text.',
+      }]);
+      assert.equal(report.summary.exitCode, 3);
+    } finally {
+      removeDir(root);
+    }
+  });
+}
+
 test('reports unresolved decision relations', () => {
   const root = makeTempDir('shadow-relation-');
   try {

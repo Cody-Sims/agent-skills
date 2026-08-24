@@ -178,6 +178,13 @@ function validateReference(reference, source, { requireDigest = false } = {}) {
     if (reference.contains !== undefined && typeof reference.contains !== 'string') {
       throw new ValidationError('UNSUPPORTED_LAYOUT', `${source}.contains must be a string.`, 3);
     }
+    if (reference.contains !== undefined && reference.contains.trim().length === 0) {
+      throw new ValidationError(
+        'UNSUPPORTED_LAYOUT',
+        `${source}.contains must contain non-whitespace text.`,
+        3,
+      );
+    }
     if (requireDigest && reference.sha256 === undefined) {
       throw new ValidationError('UNSUPPORTED_LAYOUT', `${source}.sha256 is required.`, 3);
     }
