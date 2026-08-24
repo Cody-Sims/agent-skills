@@ -53,6 +53,7 @@ exact-version forms:
 
 ```bash
 npm run install:pack -- feature-delivery@1.0.0
+npm run install:pack -- shadow-architecture-suite@1.0.0
 npm run check:pack -- feature-delivery
 npm run uninstall:pack -- feature-delivery
 ```
@@ -62,6 +63,12 @@ catalog or pack selections; pack uninstall removes only that selection and
 retains shared skills required elsewhere. See
 [`docs/lifecycle-and-provenance.md`](docs/lifecycle-and-provenance.md) for safe
 migration and rollback behavior.
+
+`shadow-architecture-suite@1.0.0` provides the full linear Shadow lifecycle:
+observe current architecture, dream future-state options, record an explicitly
+human-approved decision, then check for drift after decisions and implementation
+are updated. Invoke `shadow-architecture` independently when the task only needs
+to record or maintain current-state decisions.
 
 To install a single skill from GitHub CLI (version 2.90.0 or later), without
 cloning:
@@ -97,7 +104,10 @@ command surface.
 | `repository-agent-bootstrap` | Audits and bootstraps repository-owned agent customization: `AGENTS.md`, repository and path-scoped instructions, custom agents, and skills. |
 | `requirements-and-spec-writing` | Turns an ambiguous or large request into an agreed written specification covering objective, requirements, non-goals, interfaces, acceptance criteria, and rollout. |
 | `security-review` | Performs threat-focused security review of a change or component using STRIDE, checking authentication, authorization, injection, secrets, dependencies, and untrusted data. |
-| `shadow-architecture` | Builds and maintains a `.shadow` decision graph as durable, evidence-linked architecture memory and detects drift between decisions and implementation. |
+| `shadow-architecture` | Sets up and maintains a `.shadow` graph, records human-approved decisions, preserves accepted history through supersession, and renders reviewed records. |
+| `shadow-dream` | Generates evidence-linked future-state architecture options, tradeoffs, migration paths, rollback plans, and a proposal that remains subject to explicit human approval. |
+| `shadow-drift` | Checks a `.shadow` graph read-only for integrity, stale decisions, unresolved relations, missing evidence, stale derived output, and implementation drift. |
+| `shadow-observe` | Runs bounded, read-only repository analysis to produce evidence-linked candidate architecture observations without creating decisions or proposing future state. |
 | `skill-creator` | Creates, audits, and improves Agent Skills in this catalog: intent capture, overlap checks, trigger prompts, routing descriptions, progressive disclosure, and frontmatter validation. |
 | `systematic-debugging` | Reproduces failures, captures exact error output, isolates the root cause, and fixes the cause rather than the symptom. |
 | `test-driven-development` | Drives implementation with the red-green-refactor cycle: a failing behavior test first, minimum code to pass, then refactor while green. |

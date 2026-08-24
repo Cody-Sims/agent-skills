@@ -1044,8 +1044,8 @@
     },
     {
       "name": "shadow-architecture",
-      "description": "Builds, inspects, checks, updates, or renders a repository's .shadow decision graph as durable, evidence-linked architecture memory. Use to record durable architecture decisions, anchor claims to code, tests, docs, and commits, detect drift between decisions and implementation, or maintain the .shadow directory convention.",
-      "version": "1.0.1",
+      "description": "Sets up and maintains a repository-owned .shadow graph, manages approved decision lifecycles and index or schema compatibility, supersedes accepted history, and renders reviewed records. Use when creating or migrating .shadow, recording approved architecture decisions, maintaining its index or schema, superseding accepted decisions, or generating derived views from reviewed records; not for discovering observations, imagining future states, or checking drift.",
+      "version": "2.0.0",
       "license": "MIT",
       "tier": "core",
       "maturity": {
@@ -1058,19 +1058,19 @@
         "tags": [
           "architecture",
           "decision-graph",
-          "drift",
+          "governance",
           "shadow"
         ],
         "inputs": [
           {
-            "type": "decision-graph",
-            "description": "A repository .shadow graph or architecture decision to record and check."
+            "type": "approved-decision",
+            "description": "A .shadow graph or human-approved architecture decision to record, maintain, supersede, or render."
           }
         ],
         "outputs": [
           {
             "type": "decision-graph",
-            "description": "An evidence-linked architecture graph or drift report."
+            "description": "A maintained evidence-linked .shadow graph or derived view of reviewed records."
           }
         ],
         "risk": {
@@ -1098,20 +1098,22 @@
           }
         ],
         "relatedSkills": [
-          "codebase-exploration",
-          "documentation-maintenance"
+          "documentation-maintenance",
+          "shadow-dream",
+          "shadow-drift",
+          "shadow-observe"
         ],
         "conflictingSkills": [],
         "examplePrompts": [
-          "Record this architecture decision in the .shadow graph.",
-          "Check whether the implementation has drifted from recorded decisions."
+          "Record this human-approved architecture decision in the .shadow graph.",
+          "Migrate this .shadow graph to the v2 contract without rewriting accepted history."
         ]
       },
       "lifecycle": {
         "status": "active",
         "license": "MIT",
-        "lastReviewedAt": "2026-07-27",
-        "reviewDueAt": "2027-07-27",
+        "lastReviewedAt": "2026-08-23",
+        "reviewDueAt": "2027-08-23",
         "origin": {
           "type": "first-party",
           "repository": "https://github.com/Cody-Sims/agent-skills",
@@ -1121,9 +1123,264 @@
       },
       "path": "skills/shadow-architecture",
       "skillFile": "skills/shadow-architecture/SKILL.md",
-      "sha256": "5e359b152381b2a713f0b5b3ba7498a12f051f0486130819685c3c1db99f9584",
+      "sha256": "c63ef395e52091f3ac1663370b9f64f1ee9ff2850082bdc64311e6523ba800fc",
       "resources": [
         "references/shadow-conventions.md"
+      ]
+    },
+    {
+      "name": "shadow-dream",
+      "description": "Generates evidence-linked future-state architecture options and a reviewable proposal from Shadow observations and accepted constraints, including target states, tradeoffs, migration paths, rollback, risks, and a recommendation. Use when asked to dream, explore architecture options, compare future-state architecture, define a target state, or propose a migration path; excludes product requirements and specifications handled by requirements-and-spec-writing and implementation task planning handled by planning-and-task-breakdown.",
+      "version": "1.0.0",
+      "license": "MIT",
+      "tier": "experimental",
+      "maturity": {
+        "status": "unverified",
+        "lastEvaluatedAt": null,
+        "evidence": []
+      },
+      "discovery": {
+        "category": "architecture",
+        "tags": [
+          "architecture",
+          "future-state",
+          "proposal",
+          "shadow"
+        ],
+        "inputs": [
+          {
+            "type": "shadow-observations",
+            "description": "Evidence-linked current-state observations and accepted constraints for a future-state architecture question."
+          }
+        ],
+        "outputs": [
+          {
+            "type": "architecture-proposal",
+            "description": "Reviewable future-state options, tradeoffs, recommendation, migration stages, rollback, and approval gate."
+          }
+        ],
+        "risk": {
+          "level": "medium",
+          "factors": [
+            "architecture-proposal",
+            "file-write"
+          ]
+        },
+        "runtimeCompatibility": [
+          {
+            "runtime": "claude-code",
+            "status": "compatible",
+            "notes": null
+          },
+          {
+            "runtime": "github-copilot",
+            "status": "compatible",
+            "notes": null
+          },
+          {
+            "runtime": "openai-codex",
+            "status": "compatible",
+            "notes": null
+          }
+        ],
+        "relatedSkills": [
+          "requirements-and-spec-writing",
+          "shadow-architecture",
+          "shadow-observe"
+        ],
+        "conflictingSkills": [],
+        "examplePrompts": [
+          "Dream two future-state architectures from these Shadow observations and compare their migration risks.",
+          "Propose a target architecture and rollback path without treating it as approved."
+        ]
+      },
+      "lifecycle": {
+        "status": "active",
+        "license": "MIT",
+        "lastReviewedAt": "2026-08-23",
+        "reviewDueAt": "2027-08-23",
+        "origin": {
+          "type": "first-party",
+          "repository": "https://github.com/Cody-Sims/agent-skills",
+          "ref": "612052e7e3291f6cfdaa0973b25878fb88a0a8f6",
+          "commit": "612052e7e3291f6cfdaa0973b25878fb88a0a8f6"
+        }
+      },
+      "path": "skills/shadow-dream",
+      "skillFile": "skills/shadow-dream/SKILL.md",
+      "sha256": "942f9aab639f79f55388b1a464bcb0a6e3c167563e8e164a299eb6b49334e85e",
+      "resources": []
+    },
+    {
+      "name": "shadow-drift",
+      "description": "Checks repository-owned .shadow decision graphs read-only, validates architecture drift, stale decisions, relations, evidence, indexes, and derived output, and reports aligned, drifted, stale, and unknown findings. Use when asked to check Shadow, validate .shadow, investigate architecture drift, or identify stale decisions; not for general completion verification, pull-request review, documentation maintenance, observation capture, speculative architecture, or repairing the graph.",
+      "version": "1.0.0",
+      "license": "MIT",
+      "tier": "experimental",
+      "maturity": {
+        "status": "unverified",
+        "lastEvaluatedAt": null,
+        "evidence": []
+      },
+      "discovery": {
+        "category": "architecture",
+        "tags": [
+          "architecture",
+          "drift",
+          "read-only",
+          "shadow"
+        ],
+        "inputs": [
+          {
+            "type": "decision-graph",
+            "description": "A repository-owned .shadow graph and current implementation evidence to validate read-only."
+          }
+        ],
+        "outputs": [
+          {
+            "type": "drift-report",
+            "description": "Evidence-linked aligned, drifted, stale, unknown, and graph-integrity findings."
+          }
+        ],
+        "risk": {
+          "level": "low",
+          "factors": [
+            "local-execution",
+            "read-only"
+          ]
+        },
+        "runtimeCompatibility": [
+          {
+            "runtime": "claude-code",
+            "status": "compatible",
+            "notes": null
+          },
+          {
+            "runtime": "github-copilot",
+            "status": "compatible",
+            "notes": null
+          },
+          {
+            "runtime": "openai-codex",
+            "status": "compatible",
+            "notes": null
+          }
+        ],
+        "relatedSkills": [
+          "shadow-architecture",
+          "shadow-observe",
+          "verification-before-completion"
+        ],
+        "conflictingSkills": [],
+        "examplePrompts": [
+          "Check this .shadow graph for architecture drift without repairing it.",
+          "Validate decision relations, evidence, and derived output against the implementation."
+        ]
+      },
+      "lifecycle": {
+        "status": "active",
+        "license": "MIT",
+        "lastReviewedAt": "2026-08-23",
+        "reviewDueAt": "2027-08-23",
+        "origin": {
+          "type": "first-party",
+          "repository": "https://github.com/Cody-Sims/agent-skills",
+          "ref": "4c7ef5b78d163765a3d7edec4fb2197794567e97",
+          "commit": "4c7ef5b78d163765a3d7edec4fb2197794567e97"
+        }
+      },
+      "path": "skills/shadow-drift",
+      "skillFile": "skills/shadow-drift/SKILL.md",
+      "sha256": "e3a64f9f1ca7185f59a41622327f9d15343a86905fba370251842101cdb054f4",
+      "resources": [
+        "references/reference-json-layout.md",
+        "scripts/validate-shadow.mjs"
+      ]
+    },
+    {
+      "name": "shadow-observe",
+      "description": "Runs bounded, read-only Shadow repository analysis to generate evidence-linked candidate architecture observations, map boundaries and dependencies, and separate verified claims, inference, and unknowns. Use when asked to run Shadow, scan architecture, generate observations, or map boundaries or dependencies for a repository-owned .shadow graph; unlike codebase-exploration, it does not orient an unfamiliar codebase or locate change sites, and it does not create decisions, propose future state, or repair drift.",
+      "version": "1.0.0",
+      "license": "MIT",
+      "tier": "experimental",
+      "maturity": {
+        "status": "unverified",
+        "lastEvaluatedAt": null,
+        "evidence": []
+      },
+      "discovery": {
+        "category": "architecture",
+        "tags": [
+          "architecture",
+          "current-state",
+          "observation",
+          "shadow"
+        ],
+        "inputs": [
+          {
+            "type": "repository-scope",
+            "description": "A bounded repository scope and architecture question for read-only current-state analysis."
+          }
+        ],
+        "outputs": [
+          {
+            "type": "candidate-observations",
+            "description": "Evidence-linked candidate observations separated into verified claims, inferences, and unknowns."
+          }
+        ],
+        "risk": {
+          "level": "low",
+          "factors": [
+            "local-execution",
+            "read-only"
+          ]
+        },
+        "runtimeCompatibility": [
+          {
+            "runtime": "claude-code",
+            "status": "compatible",
+            "notes": null
+          },
+          {
+            "runtime": "github-copilot",
+            "status": "compatible",
+            "notes": null
+          },
+          {
+            "runtime": "openai-codex",
+            "status": "compatible",
+            "notes": null
+          }
+        ],
+        "relatedSkills": [
+          "codebase-exploration",
+          "shadow-architecture",
+          "shadow-dream"
+        ],
+        "conflictingSkills": [],
+        "examplePrompts": [
+          "Run Shadow on the authentication boundary and return candidate observations.",
+          "Map current API and persistence dependencies without creating decisions."
+        ]
+      },
+      "lifecycle": {
+        "status": "active",
+        "license": "MIT",
+        "lastReviewedAt": "2026-08-23",
+        "reviewDueAt": "2027-08-23",
+        "origin": {
+          "type": "first-party",
+          "repository": "https://github.com/Cody-Sims/agent-skills",
+          "ref": "c397eae2e63276fff311dd80fa99b3cb0e7a0a93",
+          "commit": "c397eae2e63276fff311dd80fa99b3cb0e7a0a93"
+        }
+      },
+      "path": "skills/shadow-observe",
+      "skillFile": "skills/shadow-observe/SKILL.md",
+      "sha256": "5411dfff35c3b9a640f06a5c7ec50c646cd564c4c82b727ec07aa396741b5112",
+      "resources": [
+        "references/observation-records.md",
+        "scripts/inventory.mjs"
       ]
     },
     {
@@ -1821,6 +2078,56 @@
           "from": "code-review",
           "to": "verification-before-completion",
           "when": "The refactor review has no unresolved required findings."
+        }
+      ],
+      "conflicts": [],
+      "installPolicy": {
+        "versionMatch": "exact",
+        "conflictAction": "reject",
+        "requiredRuntimes": [
+          "claude-code",
+          "github-copilot",
+          "openai-codex"
+        ]
+      }
+    },
+    {
+      "name": "shadow-architecture-suite",
+      "version": "1.0.0",
+      "description": "Carries a full Shadow architecture lifecycle from current-state observations through approved decision recording and read-only drift validation.",
+      "skills": [
+        {
+          "name": "shadow-architecture",
+          "version": "2.0.0"
+        },
+        {
+          "name": "shadow-dream",
+          "version": "1.0.0"
+        },
+        {
+          "name": "shadow-drift",
+          "version": "1.0.0"
+        },
+        {
+          "name": "shadow-observe",
+          "version": "1.0.0"
+        }
+      ],
+      "handoffs": [
+        {
+          "from": "shadow-observe",
+          "to": "shadow-dream",
+          "when": "Candidate observations are ready for future-state exploration."
+        },
+        {
+          "from": "shadow-dream",
+          "to": "shadow-architecture",
+          "when": "A human has explicitly approved the future-state proposal for decision recording."
+        },
+        {
+          "from": "shadow-architecture",
+          "to": "shadow-drift",
+          "when": "Architecture decisions and implementation are updated and ready for read-only drift validation."
         }
       ],
       "conflicts": [],

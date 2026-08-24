@@ -187,7 +187,7 @@ approval gates live outside the canonical skill format.
 
 ### AS-006: Bundle deterministic helpers selectively
 
-- **Priority / status / scope:** P1 / proposed / M
+- **Priority / status / scope:** P1 / done / M
 - **Purpose:** Stop agents from repeatedly recreating fragile mechanical logic.
 - **Dependencies:** AS-001, so a script is added only when traces show repeated
   work or measurable reliability gain.
@@ -203,6 +203,10 @@ approval gates live outside the canonical skill format.
     approved.
 - **Verification:** Each helper has direct tests and improves at least one eval
   without an unacceptable token, time, or security cost.
+- **Result:** Added bounded, dependency-free, no-network helpers for Shadow
+  repository inventory and reference-layout graph validation. Both expose
+  non-interactive help, structured output, useful exit codes, safe read-only
+  defaults, direct tests, and behavior evaluation coverage.
 
 ### AS-007: Add cross-runtime smoke tests
 
