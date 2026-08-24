@@ -56,6 +56,18 @@ if (/feature test-first|failing behavior test/i.test(request.prompt)) {
 if (/GitHub-hosted Copilot cloud-agent task|observed session model.*task URL/i.test(request.prompt)) {
   selectedSkills = ['copilot-cloud-agent'];
 }
+if (/bounded read-only Shadow scan|candidate observations still contain unsupported claims/i.test(request.prompt)) {
+  selectedSkills = ['shadow-observe'];
+}
+if (/candidate observations.*compare (future-state|target) architectures|future-state Shadow? proposal.*no human approval|future-state proposal.*human approval.*missing/i.test(request.prompt)) {
+  selectedSkills = ['shadow-dream'];
+}
+if (/explicit human approval.*record.*\.shadow|already reviewed current-state architecture decision|approved decision still needs to be recorded and indexed/i.test(request.prompt)) {
+  selectedSkills = ['shadow-architecture'];
+}
+if (/read-only validate the \.shadow graph|approved decisions and implementation are updated.*read-only check/i.test(request.prompt)) {
+  selectedSkills = ['shadow-drift'];
+}
 
 process.stdout.write(JSON.stringify({
   selectedSkills,

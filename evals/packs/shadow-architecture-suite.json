@@ -3,7 +3,7 @@
   "name": "shadow-architecture-suite-composition",
   "version": "1.0.0",
   "source": {
-    "registrySha256": "434ac1e2c682ad1cc976529941d9a1ebe500ad3cc694c5c5197e6150212495bc",
+    "registrySha256": "1f7826df90987eeb1d44e1bf670758409e1ad2e658519053570558a925530f06",
     "memberTreeSha256": "5e5adf9a5b1398860caf3ba40fd7ab2f709398c87b614c42975c42f536b47d28",
     "suitePath": "evals/packs/shadow-architecture-suite.json"
   },
@@ -25,7 +25,7 @@
   "adapter": {
     "id": "deterministic-pack-fixture-v1",
     "kind": "fixture",
-    "entrypointSha256": "503cad68a1395771aff028756933f7b8ee2843e960e877d044ea1a8c4bf7a3e1",
+    "entrypointSha256": "f6a5a32dc30f827056775878082795e76922f35ce6fd3584f9eb01b117cb66cb",
     "policySha256": "00aedb8508949b1740c12d07135f27deac65a9f7657699a405d1ed5dfa9b4971",
     "launchPolicySha256": "54fcd0e8eb7ac56d027031e65150a9a7592264a6e1e97fd67aae548b30226a81"
   },

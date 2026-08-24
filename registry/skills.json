@@ -1135,9 +1135,22 @@
       "license": "MIT",
       "tier": "experimental",
       "maturity": {
-        "status": "unverified",
-        "lastEvaluatedAt": null,
-        "evidence": []
+        "status": "verified",
+        "lastEvaluatedAt": "2026-08-23",
+        "evidence": [
+          {
+            "type": "structural-validation",
+            "reference": "evals/skills/shadow-dream/evals.json",
+            "sha256": "7364c090032fea88ff330b75146eb15a6efe75c6373aaf18882432b60fc5a849",
+            "recordedAt": "2026-08-23"
+          },
+          {
+            "type": "maintainer-approval",
+            "reference": "registry/lifecycle.json",
+            "sha256": "62b68a0bc7b47e38bd6873fae6c90a2b4da75115fb3946c16a9b9800995d429d",
+            "recordedAt": "2026-08-23"
+          }
+        ]
       },
       "discovery": {
         "category": "architecture",
@@ -1218,9 +1231,22 @@
       "license": "MIT",
       "tier": "experimental",
       "maturity": {
-        "status": "unverified",
-        "lastEvaluatedAt": null,
-        "evidence": []
+        "status": "verified",
+        "lastEvaluatedAt": "2026-08-23",
+        "evidence": [
+          {
+            "type": "structural-validation",
+            "reference": "tests/shadow-drift.test.mjs",
+            "sha256": "15c50024f90cfe3809cef6a4f7e480f76b74bb05b3cbb0b3283b1bf47501d214",
+            "recordedAt": "2026-08-23"
+          },
+          {
+            "type": "maintainer-approval",
+            "reference": "registry/lifecycle.json",
+            "sha256": "62b68a0bc7b47e38bd6873fae6c90a2b4da75115fb3946c16a9b9800995d429d",
+            "recordedAt": "2026-08-23"
+          }
+        ]
       },
       "discovery": {
         "category": "architecture",
@@ -1304,9 +1330,22 @@
       "license": "MIT",
       "tier": "experimental",
       "maturity": {
-        "status": "unverified",
-        "lastEvaluatedAt": null,
-        "evidence": []
+        "status": "verified",
+        "lastEvaluatedAt": "2026-08-23",
+        "evidence": [
+          {
+            "type": "structural-validation",
+            "reference": "tests/shadow-observe.test.mjs",
+            "sha256": "6320bbee2837aec245617ed29d7354ec087d072b61b8bb7864d38a255093a626",
+            "recordedAt": "2026-08-23"
+          },
+          {
+            "type": "maintainer-approval",
+            "reference": "registry/lifecycle.json",
+            "sha256": "62b68a0bc7b47e38bd6873fae6c90a2b4da75115fb3946c16a9b9800995d429d",
+            "recordedAt": "2026-08-23"
+          }
+        ]
       },
       "discovery": {
         "category": "architecture",

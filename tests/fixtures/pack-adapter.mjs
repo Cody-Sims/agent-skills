@@ -4,6 +4,10 @@ const request = JSON.parse(input);
 const prompt = request.prompt.toLowerCase();
 
 const routes = [
+  ['bounded read-only shadow scan|candidate observations still contain unsupported claims', 'shadow-observe'],
+  ['candidate observations are ready for future-state exploration|future-state proposal is complete but human approval is still missing', 'shadow-dream'],
+  ['human explicitly approved the future-state proposal|approved decision still needs to be recorded and indexed', 'shadow-architecture'],
+  ['approved decisions and implementation are updated.*read-only check', 'shadow-drift'],
   ['turn this vague request|implementation-ready specification|acceptance criteria are unclear', 'requirements-and-spec-writing'],
   ['decompose the approved|ordered tasks|dependency-aware implementation tasks', 'planning-and-task-breakdown'],
   ['map the unfamiliar|locate the controlling code path|read-only repository map', 'codebase-exploration'],

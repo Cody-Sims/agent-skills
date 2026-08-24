@@ -299,7 +299,7 @@ test('removed pack replacements must identify a distinct active pack', () => {
   );
 });
 
-test('committed manifest defines exactly the three valid initial packs', () => {
+test('committed manifest defines the complete valid pack catalog', () => {
   const committed = JSON.parse(readFileSync(resolve('registry/packs.json'), 'utf8'));
   const registry = JSON.parse(readFileSync(resolve('registry/skills.json'), 'utf8'));
   assert.deepEqual(committed, {
@@ -323,6 +323,28 @@ test('committed manifest defines exactly the three valid initial packs', () => {
           { from: 'test-driven-development', to: 'code-review', when: 'The implementation has completed its red-green-refactor cycle.' },
           { from: 'code-review', to: 'documentation-maintenance', when: 'The implementation review has no unresolved required findings.' },
           { from: 'documentation-maintenance', to: 'verification-before-completion', when: 'Directly affected documentation and changelog entries are current.' },
+        ],
+        conflicts: [],
+        installPolicy: {
+          versionMatch: 'exact',
+          conflictAction: 'reject',
+          requiredRuntimes: ['claude-code', 'github-copilot', 'openai-codex'],
+        },
+      },
+      {
+        name: 'shadow-architecture-suite',
+        version: '1.0.0',
+        description: 'Carries a full Shadow architecture lifecycle from current-state observations through approved decision recording and read-only drift validation.',
+        skills: [
+          { name: 'shadow-observe', version: '1.0.0' },
+          { name: 'shadow-dream', version: '1.0.0' },
+          { name: 'shadow-architecture', version: '2.0.0' },
+          { name: 'shadow-drift', version: '1.0.0' },
+        ],
+        handoffs: [
+          { from: 'shadow-observe', to: 'shadow-dream', when: 'Candidate observations are ready for future-state exploration.' },
+          { from: 'shadow-dream', to: 'shadow-architecture', when: 'A human has explicitly approved the future-state proposal for decision recording.' },
+          { from: 'shadow-architecture', to: 'shadow-drift', when: 'Architecture decisions and implementation are updated and ready for read-only drift validation.' },
         ],
         conflicts: [],
         installPolicy: {
