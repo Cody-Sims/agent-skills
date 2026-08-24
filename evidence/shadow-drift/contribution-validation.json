@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "skill": "shadow-drift",
+  "evidenceKind": "contribution-safety-exception",
+  "recordedAt": "2026-08-23",
+  "repository": "https://github.com/Cody-Sims/agent-skills",
+  "sourceRevision": "978978fb835525fb19b7bd83d9e0f7e77941ea13",
+  "skillOriginCommit": "4c7ef5b78d163765a3d7edec4fb2197794567e97",
+  "inputs": [
+    {
+      "kind": "behavior-suite",
+      "reference": "evals/skills/shadow-drift/evals.json",
+      "sha256": "fc523bdba9e908174318eeb6e6d062a8b567ea8fbcc7de4a2bbf515277abcb09"
+    },
+    {
+      "kind": "routing-suite",
+      "reference": "evals/skills/shadow-drift/routing.json",
+      "sha256": "f74f4e4605e94eeb0872f7a6fa04264acda59d1a7bca673660604e1dfa80a17e"
+    },
+    {
+      "kind": "deterministic-test",
+      "reference": "tests/shadow-drift.test.mjs",
+      "sha256": "15c50024f90cfe3809cef6a4f7e480f76b74bb05b3cbb0b3283b1bf47501d214"
+    },
+    {
+      "kind": "deterministic-script",
+      "reference": "skills/shadow-drift/scripts/validate-shadow.mjs",
+      "sha256": "140d768ac84655a9d10343fc6e53cdaae5ef1ef8373c97a2479b259a3a98f1fc"
+    },
+    {
+      "kind": "research",
+      "reference": "docs/research/community-skills.md",
+      "sha256": "ea10e03211dac0d0f626256afa412b75355531c9c34fbc7f41be294fc6fd64ab"
+    },
+    {
+      "kind": "research",
+      "reference": "docs/research/repo-tooling.md",
+      "sha256": "4f463c257eccc873703c3bb1e5eef1b622b42837fe5a11a118f506097a0bf1b1"
+    }
+  ],
+  "validation": [
+    {
+      "command": "node scripts/validate-evaluations.mjs",
+      "status": "passed",
+      "result": "17 behavior cases and 70 routing cases across 12 committed suite files were structurally valid."
+    },
+    {
+      "command": "node --test tests/shadow-drift.test.mjs",
+      "status": "passed",
+      "result": "10 tests passed with 0 failures."
+    }
+  ],
+  "limitations": [
+    "No hosted or model-backed baseline-versus-candidate evaluation was run.",
+    "No positive behavior uplift or independent human review is claimed.",
+    "The deterministic tests cover the fallback validator, not end-to-end model behavior.",
+    "The safety exception supports experimental entry only and does not satisfy extended or core promotion evidence."
+  ]
+}

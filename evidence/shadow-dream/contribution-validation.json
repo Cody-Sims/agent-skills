@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "skill": "shadow-dream",
+  "evidenceKind": "contribution-safety-exception",
+  "recordedAt": "2026-08-23",
+  "repository": "https://github.com/Cody-Sims/agent-skills",
+  "sourceRevision": "978978fb835525fb19b7bd83d9e0f7e77941ea13",
+  "skillOriginCommit": "612052e7e3291f6cfdaa0973b25878fb88a0a8f6",
+  "inputs": [
+    {
+      "kind": "behavior-suite",
+      "reference": "evals/skills/shadow-dream/evals.json",
+      "sha256": "7364c090032fea88ff330b75146eb15a6efe75c6373aaf18882432b60fc5a849"
+    },
+    {
+      "kind": "routing-suite",
+      "reference": "evals/skills/shadow-dream/routing.json",
+      "sha256": "065acb4aafe86832b2c2bb6c6008f711848bb0d9e4afeba9445fb0d1717a9cd4"
+    },
+    {
+      "kind": "research",
+      "reference": "docs/research/community-skills.md",
+      "sha256": "ea10e03211dac0d0f626256afa412b75355531c9c34fbc7f41be294fc6fd64ab"
+    },
+    {
+      "kind": "research",
+      "reference": "docs/research/repo-tooling.md",
+      "sha256": "4f463c257eccc873703c3bb1e5eef1b622b42837fe5a11a118f506097a0bf1b1"
+    }
+  ],
+  "validation": [
+    {
+      "command": "node scripts/validate-evaluations.mjs",
+      "status": "passed",
+      "result": "17 behavior cases and 70 routing cases across 12 committed suite files were structurally valid."
+    }
+  ],
+  "limitations": [
+    "No hosted or model-backed baseline-versus-candidate evaluation was run.",
+    "No positive behavior uplift or independent human review is claimed.",
+    "Shadow Dream has no bundled deterministic script, so no script comparison is claimed.",
+    "The safety exception supports experimental entry only and does not satisfy extended or core promotion evidence."
+  ]
+}

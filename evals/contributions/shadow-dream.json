@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "skill": "shadow-dream",
+  "expertiseSources": [
+    {
+      "type": "specification",
+      "reference": "evals/skills/shadow-dream/evals.json",
+      "summary": "Defines committed behavior cases for evidence-grounded option comparison, preservation of unknown rationale, proposal-only status, rollback planning, and refusal to accept or implement a proposal."
+    },
+    {
+      "type": "specification",
+      "reference": "evals/skills/shadow-dream/routing.json",
+      "summary": "Defines committed routing boundaries against requirements writing, implementation planning, observation, drift checking, documentation maintenance, and approved decision recording."
+    },
+    {
+      "type": "specification",
+      "reference": "docs/research/community-skills.md",
+      "summary": "Surveys prior art for evidence-before-action workflows, approval boundaries, behavioral evaluation, routing tests, and provenance in reusable agent skills."
+    },
+    {
+      "type": "specification",
+      "reference": "docs/research/repo-tooling.md",
+      "summary": "Documents repository evaluation, routing, review-gate, validation, and provenance patterns used by the catalog."
+    },
+    {
+      "type": "other",
+      "reference": "evidence/shadow-dream/contribution-validation.json",
+      "summary": "Pins the committed suites, research inputs, origin commit, structural validation result, and evidence limitations for this contribution."
+    }
+  ],
+  "comparison": null,
+  "exception": {
+    "type": "safety",
+    "rationale": "The workflow reduces architecture-governance risk by keeping future-state work proposal-only, preserving missing rationale as unknown, requiring an external human approval artifact before decision recording, and refusing acceptance, history rewriting, or implementation. This exception supports experimental entry only: the committed behavior and routing suites are structurally validated, but no hosted/model baseline comparison, independently reviewed uplift, deterministic script comparison, or promotion evidence is claimed."
+  }
+}
