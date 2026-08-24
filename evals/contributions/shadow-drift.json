@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "skill": "shadow-drift",
+  "expertiseSources": [
+    {
+      "type": "specification",
+      "reference": "evals/skills/shadow-drift/evals.json",
+      "summary": "Defines committed behavior cases for repository-declared validation, bounded fallback validation, integrity findings, evidence-linked drift classifications, and refusal to repair the graph."
+    },
+    {
+      "type": "specification",
+      "reference": "evals/skills/shadow-drift/routing.json",
+      "summary": "Defines committed routing boundaries against completion verification, pull-request review, documentation maintenance, observation capture, and future-state design."
+    },
+    {
+      "type": "other",
+      "reference": "tests/shadow-drift.test.mjs",
+      "summary": "Exercises the bundled fallback validator for aligned and failing graphs, relation and index integrity, drift and unknown evidence, path containment, deterministic output, malformed data, and documented exit codes."
+    },
+    {
+      "type": "specification",
+      "reference": "docs/research/community-skills.md",
+      "summary": "Surveys prior art for deterministic validation, evidence-before-completion, architecture review boundaries, behavioral evaluation, routing tests, and provenance."
+    },
+    {
+      "type": "specification",
+      "reference": "docs/research/repo-tooling.md",
+      "summary": "Documents repository validation, deterministic tooling, routing, evaluation, security, and provenance patterns used by the catalog."
+    },
+    {
+      "type": "other",
+      "reference": "evidence/shadow-drift/contribution-validation.json",
+      "summary": "Pins the committed suites, deterministic test and validator, research inputs, origin commit, validation results, and evidence limitations for this contribution."
+    }
+  ],
+  "comparison": null,
+  "exception": {
+    "type": "safety",
+    "rationale": "The workflow reduces architecture-governance risk by validating read-only, refusing automatic repair or approval, preserving unsupported conclusions as unknown, enforcing contained paths, and failing clearly for unsupported layouts. This exception supports experimental entry only: the committed behavior and routing suites are structurally validated and the deterministic fallback-validator tests pass, but no hosted/model baseline comparison, independently reviewed uplift, or promotion evidence is claimed."
+  }
+}

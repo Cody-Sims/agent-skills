@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "skill": "shadow-observe",
+  "expertiseSources": [
+    {
+      "type": "specification",
+      "reference": "evals/skills/shadow-observe/evals.json",
+      "summary": "Defines committed behavior cases for bounded read-only observation, evidence classification, declared candidate layouts, and refusal to create or promote decisions."
+    },
+    {
+      "type": "specification",
+      "reference": "evals/skills/shadow-observe/routing.json",
+      "summary": "Defines committed positive, negative, and near-boundary routing cases against codebase exploration and the other Shadow skills."
+    },
+    {
+      "type": "other",
+      "reference": "tests/shadow-observe.test.mjs",
+      "summary": "Exercises the bundled inventory helper for deterministic ordering, ignored paths, traversal bounds, symlink safety, argument validation, and read-only CLI behavior."
+    },
+    {
+      "type": "specification",
+      "reference": "docs/research/community-skills.md",
+      "summary": "Surveys prior art for structural validation, deterministic routing tests, behavioral evaluations, workflow boundaries, and provenance in reusable agent skills."
+    },
+    {
+      "type": "specification",
+      "reference": "docs/research/repo-tooling.md",
+      "summary": "Documents repository evaluation, routing, deterministic tooling, validation, and provenance patterns used by the catalog."
+    },
+    {
+      "type": "other",
+      "reference": "evidence/shadow-observe/contribution-validation.json",
+      "summary": "Pins the committed suites, deterministic test and helper, research inputs, origin commit, validation results, and evidence limitations for this contribution."
+    }
+  ],
+  "comparison": null,
+  "exception": {
+    "type": "safety",
+    "rationale": "The workflow reduces architecture-governance risk by remaining bounded and read-only, separating verified claims from inference and unknowns, refusing to invent a .shadow layout, and preventing unreviewed observations from becoming accepted decisions. This exception supports experimental entry only: the committed behavior and routing suites are structurally validated and the deterministic inventory tests pass, but no hosted/model baseline comparison, independently reviewed uplift, or promotion evidence is claimed."
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "skill": "shadow-observe",
+  "evidenceKind": "contribution-safety-exception",
+  "recordedAt": "2026-08-23",
+  "repository": "https://github.com/Cody-Sims/agent-skills",
+  "sourceRevision": "978978fb835525fb19b7bd83d9e0f7e77941ea13",
+  "skillOriginCommit": "c397eae2e63276fff311dd80fa99b3cb0e7a0a93",
+  "inputs": [
+    {
+      "kind": "behavior-suite",
+      "reference": "evals/skills/shadow-observe/evals.json",
+      "sha256": "f7ebc9c653a31f34e14beb3dbe038c0ae5179e6022c0bd5297e788204da0da1f"
+    },
+    {
+      "kind": "routing-suite",
+      "reference": "evals/skills/shadow-observe/routing.json",
+      "sha256": "6a79f2d1e9eb00b6f9f84722f7d4f2a629fc9d1b4b8dd0e0e91d28c9ad6f9e34"
+    },
+    {
+      "kind": "deterministic-test",
+      "reference": "tests/shadow-observe.test.mjs",
+      "sha256": "6320bbee2837aec245617ed29d7354ec087d072b61b8bb7864d38a255093a626"
+    },
+    {
+      "kind": "deterministic-script",
+      "reference": "skills/shadow-observe/scripts/inventory.mjs",
+      "sha256": "8c17d6460dc212dcd1894c2bea4968575df7ea4b9414436958123c975a488a74"
+    },
+    {
+      "kind": "research",
+      "reference": "docs/research/community-skills.md",
+      "sha256": "ea10e03211dac0d0f626256afa412b75355531c9c34fbc7f41be294fc6fd64ab"
+    },
+    {
+      "kind": "research",
+      "reference": "docs/research/repo-tooling.md",
+      "sha256": "4f463c257eccc873703c3bb1e5eef1b622b42837fe5a11a118f506097a0bf1b1"
+    }
+  ],
+  "validation": [
+    {
+      "command": "node scripts/validate-evaluations.mjs",
+      "status": "passed",
+      "result": "17 behavior cases and 70 routing cases across 12 committed suite files were structurally valid."
+    },
+    {
+      "command": "node --test tests/shadow-observe.test.mjs",
+      "status": "passed",
+      "result": "6 tests passed with 0 failures."
+    }
+  ],
+  "limitations": [
+    "No hosted or model-backed baseline-versus-candidate evaluation was run.",
+    "No positive behavior uplift or independent human review is claimed.",
+    "The deterministic tests cover the inventory helper, not end-to-end model behavior.",
+    "The safety exception supports experimental entry only and does not satisfy extended or core promotion evidence."
+  ]
+}
