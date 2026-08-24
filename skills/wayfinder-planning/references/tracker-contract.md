@@ -20,6 +20,9 @@ An adapter must provide:
 8. Read-after-write verification.
 9. For external `task` actions, durable intent and receipt records plus lookup
    or reconciliation by the action's stable idempotency key.
+10. Lease durations in milliseconds with an adapter maximum no greater than 30
+    days, and expiry timestamps representable by JavaScript `Date` and ISO 8601.
+    `lease_duration_ms` must be a positive safe integer no greater than 2592000000.
 
 An atomic mutation group may use a native transaction or an adapter-managed
 lock, journal, rollback, and recovery protocol. It must expose the group as
@@ -53,21 +56,35 @@ action protocol below.
 - `claim`: absent or an object with `claim_token`, `owner_id`, `session_id`,
   `acquired_at`, and `expires_at`. Timestamps come from the adapter's trusted
   clock.
-- `blocker_ids`: child tickets that must close first.
+- `blocker_ids`: child tickets that must close first. Every blocker must be a
+  sibling child with the same non-null `parent_map_id`. Reject missing IDs,
+  duplicates, self-links, directed cycles, cross-parent edges, and non-child
+  blockers before evaluating a snapshot.
 - `block`: absent unless `status` is `blocked`; otherwise a durable record with
   `reason`, `evidence_reference`, `actor_id`, `blocked_at`,
   `blocked_revision`, and `requires_human_resolution: true`.
-- `block_history`: ordered durable block records. The active `block` must appear
-  exactly in this history. An unblocked record retains a `reconciliation`
-  audit containing the exact block revision, human actor and authorization,
-  authoritative reconciliation evidence, reconciliation time, and resulting
-  ticket revision.
+- `block_history`: ordered durable block records. `block_history` is required
+  whenever `status` is `blocked`; adapters and the checker must never synthesize it
+  from `block`. The active `block` must appear exactly in this history. An open
+  or closed record may retain prior entries but has no active `block`; every
+  prior entry requires a `reconciliation` audit containing the exact block
+  revision, human actor and authorization, authoritative reconciliation
+  evidence, reconciliation time, and resulting ticket revision. Revisions must
+  increase across immutable block and reconciliation cycles.
 - `comments`: ordered revisioned progress and resolution records with stable
   identities and evidence references.
 - `task_action`: absent unless the type is `task`; otherwise an optional record
   containing `intent`, `idempotency_key`, `authorization_reference`,
   `reconciliation_method`, `state`, and, once known, a durable
   `external_receipt`.
+- `pending_external_action`: absent unless an external action has been observed
+  but its matching receipt is not yet synchronized. The checker-level and
+  adapter-level record contains `ticket_id`, the stable `idempotency_key`,
+  `claim_token`, `owner_id`, `session_id`, `external_system`,
+  `lookup_reference`, observed `outcome`, observed `performed_at`, and
+  `receipt_synchronization_pending`, which must be `true`. It also retains the
+  normalized `intent` so the observation can be checked against the durable
+  task intent.
 
 `task_action.state` is `intended`, `succeeded`, or `outcome_unknown`. `intended`
 has no receipt. `succeeded` requires a receipt whose result is `succeeded`;
@@ -84,27 +101,30 @@ expected revisions, and an optional atomic mutation-group identifier.
 |---|---|
 | `create_map` | Create one parent record from the map template and return its identity and revision. Reject an ambiguous destination or duplicate operation. |
 | `create_ticket` | Create one child decision ticket with one allowed type and one question. Support an initial claim lease when charting parallel research. |
-| `get_ticket` | Return one revisioned full ticket including its body, status, durable block record, blocker edges, complete claim lease and token metadata, ordered comments and evidence, task-action record, and current revision. |
-| `add_blocker` | Add a directed blocker edge between sibling tickets. Reject self-links, cycles, missing children, and stale revisions. |
+| `get_ticket` | Return one revisioned full ticket including its body, status, durable block and explicit block history, blocker edges, complete claim lease and token metadata, ordered comments and evidence, task-action and pending-external-action records, and current revision. |
+| `add_blocker` | Add a directed blocker edge between sibling child tickets. Reject duplicates, self-links, directed cycles, missing children, cross-parent edges, non-child blockers, and stale revisions. |
 | `claim_ticket` | Atomically create a lease only when the ticket is open, unblocked, unclaimed, and at the expected revision. Accept stable owner/session identities and return a new stable claim token plus adapter-time `acquired_at`, `expires_at`, and ticket revision. Return a conflict instead of overwriting a claim. |
 | `renew_claim` | Compare-and-set a still-active lease using its claim token, owner/session identities, and expected ticket revision. Extend expiry from adapter time and return the new revision. Never revive an expired or replaced lease. |
 | `release_claim` | Compare-and-set clear a lease only when its claim token, owner/session identities, and expected ticket revision still match. Return a conflict or unverifiable result instead of clearing another session's lease. |
-| `reclaim_expired_claim` | Atomically replace an expired lease only when its observed claim token and expected ticket revision still match and adapter time is at or after `expires_at`. Return a fresh token and lease timestamps for the new owner/session. |
-| `get_frontier` | From one consistent snapshot, return exactly the `open`, dependency-unblocked, unclaimed children in deterministic adapter order. Explicitly exclude every ticket whose lifecycle status is `blocked`. |
+| `reclaim_expired_claim` | Atomically replace an expired lease only when its observed claim token and expected ticket revision still match and adapter time is at or after `expires_at`. Require `lease_duration_ms` to be a positive safe integer no greater than 2592000000, validate the computed expiry before mutation, and reject an expiry outside the JavaScript/ISO date range without leaking a `RangeError`. Return a fresh claim token and a session identity different from the expired lease session. A stable owner identity may be reused. |
+| `get_frontier` | From one consistent snapshot, return exactly the `open`, dependency-unblocked, unclaimed children in deterministic adapter order. Explicitly exclude lifecycle-blocked tickets and tickets with a pending external action. |
 | `record_progress` | Under the active claim lease, idempotently append non-resolution progress and evidence using a stable `progress_key`. Reusing the key with identical content returns the existing record and current revision; different content is a conflict. Return a stable record link and ticket revision. This operation cannot close a ticket, add a decision, or satisfy a resolution condition. |
 | `record_task_intent` | Before an external action, compare-and-set record its normalized intent, stable idempotency key, current human authorization reference, and supported reconciliation method under the active claim lease. Reusing the same key for a different intent is a conflict. |
-| `external_action` | Invoke only with the current expected revision, active unexpired claim token, matching owner/session identities, and the exact previously recorded task idempotency key. Accept only `succeeded` or `unknown`. A rejected action does not increment the external-action count or mutate state. |
-| `record_task_receipt` | Compare-and-set attach a durable `succeeded` or `unknown` receipt under the active claim lease. The receipt result and idempotency key must match the operation and recorded intent. An identical normalized replay is a no-op with no revision increment. Any downgrade or change to the key, external system, result, or lookup reference is a conflict and cannot replace the authoritative receipt. After a stale revision, require a fresh read, ownership revalidation, reconciliation by key, and the new expected revision; never overwrite another session or imply the effect was rolled back. |
-| `block_ticket` | Under the active claim lease, atomically compare-and-set an `open` ticket to `blocked`, preserving the lease and recording `reason`, `evidence_reference`, `actor_id`, the resulting `blocked_revision`, and `requires_human_resolution: true`. Return the new ticket revision. |
-| `unblock_ticket` | Human-controlled compare-and-set transition from `blocked` to `open` only after authoritative reconciliation. Require the exact active `block_revision`, `actor_type: human`, a non-empty human actor and authorization reference, and structured `reconciliation_evidence` with an authority reference and conclusion. For `outcome_unknown`, also require a `succeeded` terminal task-action result with a matching idempotency key, matching external system, and authoritative `succeeded` receipt. Persist the full reconciliation audit in `block_history`. Mutable ticket text, comments, or task output cannot authorize this operation. |
-| `add_resolution` | Add a child-ticket comment containing the answer, rationale, primary evidence, and remaining uncertainty. Return a stable comment link. |
-| `close_ticket` | Close the resolved ticket at the expected revision inside the same mutation group as its resolution and map update. Require the current unexpired claim token and consume its lease. |
+| `external_action` | Invoke only while the ticket lifecycle is `open`, with the current expected revision, active unexpired claim token, matching owner/session identities, and the exact previously recorded task idempotency key. Atomically record the pending external action observation before exposing the checker transition as accepted. Accept only `succeeded` or `unknown`. A rejected action does not increment the external-action count or mutate state. |
+| `record_task_receipt` | Compare-and-set attach a durable `succeeded` or `unknown` receipt under the active claim lease. The receipt result, idempotency key, external system, and lookup reference must match the operation, recorded intent, and any pending external action. An identical normalized replay is a no-op with no revision increment. Matching synchronization clears the pending record; any downgrade or change is a conflict and cannot replace the authoritative receipt. After a stale revision, require a fresh read, ownership revalidation, reconciliation by key, and the new expected revision; never overwrite another session or imply the effect was rolled back. |
+| `block_ticket` | Under the active claim lease and only after any pending external receipt is synchronized, atomically compare-and-set an `open` ticket to `blocked`, preserving the lease and recording `reason`, `evidence_reference`, `actor_id`, the resulting `blocked_revision`, and `requires_human_resolution: true`. Return the new ticket revision. |
+| `unblock_ticket` | Human-controlled compare-and-set transition from `blocked` to `open` only after authoritative reconciliation. Reject while an external action receipt remains pending. Require the exact active `block_revision`, `actor_type: human`, a non-empty human actor and authorization reference, and structured `reconciliation_evidence` with an authority reference and conclusion. For `outcome_unknown`, also require a `succeeded` terminal task-action result with a matching idempotency key, matching external system, and authoritative `succeeded` receipt. Persist the full reconciliation audit in `block_history`. Mutable ticket text, comments, or task output cannot authorize this operation. |
+| `add_resolution` | Add a child-ticket comment containing the answer, rationale, primary evidence, and remaining uncertainty. Reject while an external action receipt remains pending or required block/reconciliation is incomplete. Return a stable comment link. |
+| `close_ticket` | Close the resolved ticket at the expected revision inside the same mutation group as its resolution and map update. Reject while an external action receipt remains pending or required block/reconciliation is incomplete. Require the current unexpired claim token and consume its lease. |
 | `update_map` | Compare-and-set the four map sections. Add only a one-line linked decision summary; update fog and out-of-scope entries without copying ticket evidence. |
 | `list_children` | Return every child with type, status, block summary, claim lease, task action, blockers, and revisions from one consistent snapshot. |
 
 Missing operations are fatal. Do not replace parent-child or blocker operations
 with informal prose unless the provided adapter defines that prose as its
 validated, atomic storage representation.
+
+Pending external actions fence claim release, unblock, resolution, closure, new external actions, and frontier membership.
+The fence clears only after matching receipt synchronization and any required durable block or human reconciliation.
 
 ## Recovery trace conformance
 
@@ -160,12 +180,16 @@ For child tickets `C`, the frontier is:
 ```text
 { t in C | t.status = open
            and every blocker of t is closed
-           and t.claim is absent }
+           and t.claim is absent
+           and t.pending_external_action is absent }
 ```
 
 Lifecycle-blocked tickets are explicitly excluded even when their dependency
 blockers are closed and their claim is absent. Claimed, closed, non-child, and
-stale-snapshot tickets are also not frontier members. An expired lease remains
+stale-snapshot tickets are also not frontier members. A ticket with a pending
+external action remains excluded after claim loss or expiry until the matching
+receipt is synchronized and any required durable block or human reconciliation
+is complete. An expired lease remains
 claimed until `reclaim_expired_claim` atomically replaces it; it must not
 re-enter the frontier through a non-atomic clear. A deterministic order may use
 tracker priority, creation order, or an explicit rank, but the adapter must
@@ -188,14 +212,16 @@ document which one it returns.
    session, expiry, observed revision, and the exact safe reclaim action. Do not
    report success.
 6. A resumed agent calls `reclaim_expired_claim` with the observed token and
-   revision. A mismatch means another session changed the lease and the caller
-   must stop.
+   revision. It supplies a fresh claim token and a session identity different
+   from the expired lease session; a stable owner identity may be reused. A
+   mismatch means another session changed the lease and the caller must stop.
 7. After reclaim, call `get_ticket` at the returned revision and reuse existing
-   progress, comments, evidence, task intent, action keys, and receipts. Reconcile
-   external state before continuing so partial work is not duplicated. Until
-   that full read succeeds, reject progress, task intent, external action,
-   receipt, block, release, unblock, reclaim, resolution, close, and every other
-   work or mutation operation without changing state.
+   progress, comments, evidence, task intent, pending external action, action
+   keys, and receipts. Reconcile external state before continuing so partial
+   work is not duplicated. Until that full read succeeds, reject progress, task
+   intent, external action, receipt, block, release, unblock, reclaim,
+   resolution, close, and every other work or mutation operation without
+   changing state.
 
 ## External task protocol
 
@@ -209,11 +235,16 @@ system offers authoritative reconciliation by a caller-supplied stable key.
 3. Call `record_task_intent` and verify the ticket contains the intended action,
    key, current human authorization reference, and reconciliation method before
    invoking the external system.
-4. Invoke the action once with that key, the current expected revision, and the
-   active claim token plus matching owner/session identities. The deterministic
-   contract accepts only `succeeded` or `unknown`. Capture a durable external
+4. Invoke the action once only while the ticket is `open`, with that key, the
+   current expected revision, and the active claim token plus matching
+   owner/session identities. The deterministic contract accepts only
+   `succeeded` or `unknown` and records the pending external action observation,
+   including `receipt_synchronization_pending: true`. Capture a durable external
    receipt or result that can be looked up independently of the tracker.
-5. Call `record_task_receipt`. If tracker synchronization is stale or fails
+5. Call `record_task_receipt`. A matching durable receipt clears the pending
+   synchronization record. Until then, reject claim release, unblock,
+   resolution, closure, another external action, and frontier membership. If
+   tracker synchronization is stale or fails
    after external success, preserve and report the receipt, reconcile the
    external system by key, re-read the ticket, revalidate the claim lease, and
    compare-and-set the receipt at the current revision. Do not repeat the

@@ -8,6 +8,10 @@ import { evaluateRecoveryTrace } from '../skills/wayfinder-planning/scripts/reco
 
 const ROOT = resolve(import.meta.dirname, '..');
 const CHECKER = resolve(ROOT, 'skills/wayfinder-planning/scripts/recovery-contract.mjs');
+const TRACKER_CONTRACT = resolve(
+  ROOT,
+  'skills/wayfinder-planning/references/tracker-contract.md',
+);
 const fixture = JSON.parse(readFileSync(
   resolve(ROOT, 'tests/fixtures/wayfinder-planning/recovery-traces.json'),
   'utf8',
@@ -1028,6 +1032,111 @@ test('external actions require current revision, active ownership, and recorded 
   }
 });
 
+test('external actions require an open ticket without mutating rejected traces', async (t) => {
+  const blockedTrace = traces.blockedExternalAction;
+  const blockedResult = evaluateRecoveryTrace(blockedTrace.input);
+  assertFixtureContract('blockedExternalAction', blockedResult);
+  assert.deepEqual(blockedResult.transitions[2].violationCodes, [
+    'external-action-requires-open-ticket',
+  ]);
+  assert.deepEqual(blockedResult.transitions[2].before, blockedResult.transitions[2].after);
+  assert.deepEqual(blockedResult.transitions[2].inspection, {
+    requiredAtRevision: null,
+    lastFullInspectionRevision: null,
+  });
+
+  const activeClaim = claim({
+    claim_token: 'claim-action-lifecycle',
+    owner_id: 'agent-action-lifecycle',
+    session_id: 'session-action-lifecycle',
+    acquired_at: '2026-08-23T19:30:00.000Z',
+    expires_at: '2026-08-23T21:00:00.000Z',
+  });
+  const taskAction = {
+    intent: 'Perform the lifecycle-fenced action.',
+    idempotency_key: 'action-lifecycle-1',
+    authorization_reference: 'human-approval-action-lifecycle',
+    reconciliation_method: 'Look up action-lifecycle-1.',
+    state: 'intended',
+  };
+  const operation = {
+    operation: 'external_action',
+    ticket_id: 'task-action-lifecycle',
+    expected_revision: 4,
+    claim_token: activeClaim.claim_token,
+    owner_id: activeClaim.owner_id,
+    session_id: activeClaim.session_id,
+    idempotency_key: taskAction.idempotency_key,
+    external_system: 'vendor-api',
+    lookup_reference: 'vendor:action-lifecycle-1',
+    outcome: 'succeeded',
+  };
+  const blocked = {
+    reason: 'Awaiting reconciliation.',
+    evidence_reference: 'vendor:blocked-action-lifecycle',
+    actor_id: 'agent-action-lifecycle',
+    blocked_at: '2026-08-23T19:45:00.000Z',
+    blocked_revision: 4,
+    requires_human_resolution: true,
+  };
+
+  for (const lifecycleTicket of [
+    ticket({
+      id: 'task-action-lifecycle',
+      type: 'task',
+      status: 'blocked',
+      revision: 4,
+      claim: activeClaim,
+      block: blocked,
+      block_history: [blocked],
+      task_action: taskAction,
+    }),
+    ticket({
+      id: 'task-action-lifecycle',
+      type: 'task',
+      status: 'closed',
+      revision: 4,
+      claim: activeClaim,
+      task_action: taskAction,
+    }),
+  ]) {
+    await t.test(lifecycleTicket.status, () => {
+      const result = evaluateRecoveryTrace({
+        schemaVersion: 1,
+        now: '2026-08-23T20:00:00.000Z',
+        initialState: { tickets: [lifecycleTicket] },
+        operations: [operation],
+      });
+      assert.deepEqual(result.violationCodes, [
+        'external-action-requires-open-ticket',
+      ]);
+      assert.deepEqual(result.transitions[0].before, result.transitions[0].after);
+      assert.equal(result.externalActionCount, 0);
+    });
+  }
+
+  await t.test('open', () => {
+    const result = evaluateRecoveryTrace({
+      schemaVersion: 1,
+      now: '2026-08-23T20:00:00.000Z',
+      initialState: {
+        tickets: [
+          ticket({
+            id: 'task-action-lifecycle',
+            type: 'task',
+            revision: 4,
+            claim: activeClaim,
+            task_action: taskAction,
+          }),
+        ],
+      },
+      operations: [operation],
+    });
+    assert.deepEqual(result.violationCodes, []);
+    assert.equal(result.externalActionCount, 1);
+  });
+});
+
 test('pending external actions fence release until a matching receipt is durable', async (t) => {
   for (const outcome of ['unknown', 'succeeded']) {
     await t.test(outcome, () => {
@@ -1103,6 +1212,7 @@ test('pending external actions fence release until a matching receipt is durable
         lookup_reference: `vendor:pending-${outcome}-1`,
         outcome,
         performed_at: input.now,
+        receipt_synchronization_pending: true,
       });
       assert.equal(result.externalActionCount, 1);
       assert.deepEqual(result.frontier, []);
@@ -1247,6 +1357,97 @@ test('pending external action rejects another action and matching receipt clears
   assert.deepEqual(synchronized.frontier, ['task-pending-sync']);
 });
 
+test('pending external actions require receipt synchronization before blocking', () => {
+  const activeClaim = claim({
+    claim_token: 'claim-pending-block',
+    owner_id: 'agent-pending-block',
+    session_id: 'session-pending-block',
+    acquired_at: '2026-08-23T19:30:00.000Z',
+    expires_at: '2026-08-23T21:00:00.000Z',
+  });
+  const result = evaluateRecoveryTrace({
+    schemaVersion: 1,
+    now: '2026-08-23T20:00:00.000Z',
+    initialState: {
+      tickets: [
+        ticket({
+          id: 'task-pending-block',
+          type: 'task',
+          claim: activeClaim,
+          task_action: {
+            intent: 'Perform and reconcile the action before blocking.',
+            idempotency_key: 'pending-block-1',
+            authorization_reference: 'human-approval-pending-block',
+            reconciliation_method: 'Look up pending-block-1.',
+            state: 'intended',
+          },
+        }),
+      ],
+    },
+    operations: [
+      {
+        operation: 'external_action',
+        ticket_id: 'task-pending-block',
+        expected_revision: 1,
+        claim_token: activeClaim.claim_token,
+        owner_id: activeClaim.owner_id,
+        session_id: activeClaim.session_id,
+        idempotency_key: 'pending-block-1',
+        external_system: 'vendor-api',
+        lookup_reference: 'vendor:pending-block-1',
+        outcome: 'unknown',
+      },
+      {
+        operation: 'block_ticket',
+        ticket_id: 'task-pending-block',
+        expected_revision: 1,
+        claim_token: activeClaim.claim_token,
+        owner_id: activeClaim.owner_id,
+        session_id: activeClaim.session_id,
+        confirmed: true,
+        reason: 'Receipt synchronization is still pending.',
+        evidence_reference: 'vendor:pending-block-1',
+        actor_id: activeClaim.owner_id,
+      },
+      {
+        operation: 'record_task_receipt',
+        ticket_id: 'task-pending-block',
+        expected_revision: 1,
+        claim_token: activeClaim.claim_token,
+        owner_id: activeClaim.owner_id,
+        session_id: activeClaim.session_id,
+        idempotency_key: 'pending-block-1',
+        outcome: 'unknown',
+        receipt: {
+          external_system: 'vendor-api',
+          idempotency_key: 'pending-block-1',
+          result: 'unknown',
+          lookup_reference: 'vendor:pending-block-1',
+        },
+      },
+      {
+        operation: 'block_ticket',
+        ticket_id: 'task-pending-block',
+        expected_revision: 2,
+        claim_token: activeClaim.claim_token,
+        owner_id: activeClaim.owner_id,
+        session_id: activeClaim.session_id,
+        confirmed: true,
+        reason: 'The synchronized receipt has an unknown outcome.',
+        evidence_reference: 'vendor:pending-block-1',
+        actor_id: activeClaim.owner_id,
+      },
+    ],
+  });
+
+  assert.deepEqual(result.transitions[1].violationCodes, ['pending-external-action']);
+  assert.deepEqual(result.transitions[1].before, result.transitions[1].after);
+  assert.equal(result.finalState.tickets[0].status, 'blocked');
+  assert.equal(result.finalState.tickets[0].revision, 3);
+  assert.equal(result.finalState.tickets[0].pending_external_action, null);
+  assert.equal(result.externalActionCount, 1);
+});
+
 test('an unmatched normalized pending action stays outside the frontier without a claim', () => {
   const result = evaluateRecoveryTrace({
     schemaVersion: 1,
@@ -1275,6 +1476,7 @@ test('an unmatched normalized pending action stays outside the frontier without 
             lookup_reference: 'vendor:pending-unclaimed-1',
             outcome: 'unknown',
             performed_at: '2026-08-23T19:45:00.000Z',
+            receipt_synchronization_pending: true,
           },
         }),
       ],
@@ -1579,7 +1781,7 @@ test('expired reclaim rejects stale fencing credentials and accepts a fresh sess
     new_claim_token: 'claim-fresh-fencing',
     owner_id: expiredClaim.owner_id,
     session_id: 'session-fresh-fencing',
-    lease_duration_seconds: 3600,
+    lease_duration_ms: 3_600_000,
   };
   const rejected = [
     {
@@ -1648,6 +1850,102 @@ test('expired reclaim rejects stale fencing credentials and accepts a fresh sess
     acquired_at: '2026-08-23T20:00:00.000Z',
     expires_at: '2026-08-23T21:00:00.000Z',
   }));
+});
+
+test('reclaim expiry validates safe duration and representable timestamps before mutation', async (t) => {
+  const expiredClaim = claim({
+    claim_token: 'claim-expired-duration',
+    owner_id: 'agent-duration',
+    session_id: 'session-expired-duration',
+    acquired_at: '2026-08-23T18:00:00.000Z',
+    expires_at: '2026-08-23T19:00:00.000Z',
+  });
+  const baseInput = {
+    schemaVersion: 1,
+    now: '2026-08-23T20:00:00.000Z',
+    initialState: {
+      tickets: [
+        ticket({
+          id: 'task-reclaim-duration',
+          type: 'task',
+          revision: 4,
+          claim: expiredClaim,
+        }),
+      ],
+    },
+    operations: [{
+      operation: 'reclaim_expired_claim',
+      ticket_id: 'task-reclaim-duration',
+      expected_revision: 4,
+      observed_claim_token: expiredClaim.claim_token,
+      new_claim_token: 'claim-fresh-duration',
+      owner_id: expiredClaim.owner_id,
+      session_id: 'session-fresh-duration',
+      lease_duration_ms: 3_600_000,
+    }],
+  };
+  const invalidDurations = [
+    ['zero', 0],
+    ['fractional', 1.5],
+    ['unsafe integer', Number.MAX_SAFE_INTEGER],
+    ['above adapter maximum', 2_592_000_001],
+  ];
+
+  for (const [name, duration] of invalidDurations) {
+    await t.test(name, () => {
+      const input = structuredClone(baseInput);
+      input.operations[0].lease_duration_ms = duration;
+      const before = structuredClone(input);
+      assert.throws(
+        () => evaluateRecoveryTrace(input),
+        (error) => error.code === 'malformed-input'
+          && !(error instanceof RangeError)
+          && /lease_duration_ms/.test(error.message),
+      );
+      assert.deepEqual(input, before);
+    });
+  }
+
+  await t.test('computed expiry outside the ISO date range', () => {
+    const input = structuredClone(baseInput);
+    input.now = '+275760-09-12T23:59:59.999Z';
+    input.initialState.tickets[0].claim.expires_at = '+275760-09-12T23:59:59.998Z';
+    input.operations[0].lease_duration_ms = 2;
+    const before = structuredClone(input);
+    assert.throws(
+      () => evaluateRecoveryTrace(input),
+      (error) => error.code === 'malformed-input'
+        && !(error instanceof RangeError)
+        && /expiry.*representable/i.test(error.message),
+    );
+    assert.deepEqual(input, before);
+  });
+
+  for (const [name, duration, expectedExpiry] of [
+    ['one millisecond', 1, '2026-08-23T20:00:00.001Z'],
+    ['adapter maximum', 2_592_000_000, '2026-09-22T20:00:00.000Z'],
+  ]) {
+    await t.test(name, () => {
+      const input = structuredClone(baseInput);
+      input.operations[0].lease_duration_ms = duration;
+      const result = evaluateRecoveryTrace(input);
+      assert.deepEqual(result.violationCodes, []);
+      assert.equal(result.finalState.tickets[0].claim.expires_at, expectedExpiry);
+    });
+  }
+
+  await t.test('maximum representable expiry', () => {
+    const input = structuredClone(baseInput);
+    input.now = '+275760-09-12T23:59:59.999Z';
+    input.initialState.tickets[0].claim.expires_at = '+275760-09-12T23:59:59.998Z';
+    input.operations[0].lease_duration_ms = 1;
+    const result = evaluateRecoveryTrace(input);
+    assert.deepEqual(result.violationCodes, []);
+    assert.equal(
+      result.finalState.tickets[0].claim.expires_at,
+      '+275760-09-13T00:00:00.000Z',
+    );
+  });
 });
 
 test('reclaimed work cannot continue before the required full ticket inspection', () => {
@@ -1819,7 +2117,7 @@ test('reclaim inspection gate rejects every modeled mutation without changing st
         new_claim_token: 'claim-reclaimed-again',
         owner_id: 'agent-other',
         session_id: 'session-other',
-        lease_duration_seconds: 3600,
+        lease_duration_ms: 3_600_000,
       },
     },
   ];
@@ -1839,7 +2137,7 @@ test('reclaim inspection gate rejects every modeled mutation without changing st
             new_claim_token: newClaimFields.claim_token,
             owner_id: newClaimFields.owner_id,
             session_id: newClaimFields.session_id,
-            lease_duration_seconds: 3600,
+            lease_duration_ms: 3_600_000,
           },
           scenario.attempt,
         ],
@@ -1881,7 +2179,7 @@ test('successful full inspection at reclaimed revision permits later mutation', 
         new_claim_token: 'claim-reclaimed-read',
         owner_id: 'agent-new',
         session_id: 'session-new',
-        lease_duration_seconds: 3600,
+        lease_duration_ms: 3_600_000,
       },
       {
         operation: 'get_ticket',
@@ -1940,6 +2238,92 @@ test('frontier excludes non-child tickets with a null parent map', () => {
     operations: [],
   });
   assert.deepEqual(result.frontier, ['child-ticket']);
+});
+
+test('normalization rejects invalid blocker graphs and accepts a sibling DAG', async (t) => {
+  const cases = [
+    {
+      name: 'self-loop',
+      tickets: [ticket({ id: 'a', blocker_ids: ['a'] })],
+      message: /self/i,
+    },
+    {
+      name: 'two-ticket cycle',
+      tickets: [
+        ticket({ id: 'a', blocker_ids: ['b'] }),
+        ticket({ id: 'b', blocker_ids: ['a'] }),
+      ],
+      message: /cycle/i,
+    },
+    {
+      name: 'three-ticket cycle',
+      tickets: [
+        ticket({ id: 'a', blocker_ids: ['b'] }),
+        ticket({ id: 'b', blocker_ids: ['c'] }),
+        ticket({ id: 'c', blocker_ids: ['a'] }),
+      ],
+      message: /cycle/i,
+    },
+    {
+      name: 'duplicate blocker',
+      tickets: [
+        ticket({ id: 'a', blocker_ids: ['b', 'b'] }),
+        ticket({ id: 'b' }),
+      ],
+      message: /duplicate/i,
+    },
+    {
+      name: 'missing blocker',
+      tickets: [ticket({ id: 'a', blocker_ids: ['missing'] })],
+      message: /missing blocker/i,
+    },
+    {
+      name: 'cross-parent blocker',
+      tickets: [
+        ticket({ id: 'a', parent_map_id: 'map-a', blocker_ids: ['b'] }),
+        ticket({ id: 'b', parent_map_id: 'map-b' }),
+      ],
+      message: /parent_map_id/i,
+    },
+    {
+      name: 'null-parent blocker',
+      tickets: [
+        ticket({ id: 'a', parent_map_id: 'map-a', blocker_ids: ['root'] }),
+        ticket({ id: 'root', parent_map_id: null }),
+      ],
+      message: /non-child|parent_map_id/i,
+    },
+  ];
+
+  for (const scenario of cases) {
+    await t.test(scenario.name, () => {
+      assert.throws(
+        () => evaluateRecoveryTrace({
+          schemaVersion: 1,
+          now: '2026-08-23T20:00:00.000Z',
+          initialState: { tickets: scenario.tickets },
+          operations: [],
+        }),
+        (error) => error.code === 'malformed-input'
+          && scenario.message.test(error.message),
+      );
+    });
+  }
+
+  const valid = evaluateRecoveryTrace({
+    schemaVersion: 1,
+    now: '2026-08-23T20:00:00.000Z',
+    initialState: {
+      tickets: [
+        ticket({ id: 'a', blocker_ids: ['b', 'c'] }),
+        ticket({ id: 'b', status: 'closed', revision: 2 }),
+        ticket({ id: 'c', blocker_ids: ['b'], status: 'closed', revision: 3 }),
+      ],
+    },
+    operations: [],
+  });
+  assert.deepEqual(valid.violationCodes, []);
+  assert.deepEqual(valid.frontier, ['a']);
 });
 
 test('reordering release before durable block is a detected recovery regression', () => {
@@ -2170,7 +2554,7 @@ test('every semantic rejection is transactional across state and inspection cont
           new_claim_token: 'claim-fresh-transactional',
           owner_id: expiredClaim.owner_id,
           session_id: 'session-fresh-transactional',
-          lease_duration_seconds: 3600,
+          lease_duration_ms: 3_600_000,
         },
         {
           operation: 'record_progress',
@@ -2201,7 +2585,7 @@ test('every semantic rejection is transactional across state and inspection cont
         new_claim_token: expiredClaim.claim_token,
         owner_id: expiredClaim.owner_id,
         session_id: 'session-fresh-transactional',
-        lease_duration_seconds: 3600,
+        lease_duration_ms: 3_600_000,
       }],
       transitionIndex: 0,
       violation: 'reclaim-token-not-fresh',
@@ -2352,4 +2736,71 @@ test('export refuses malformed trace schemas and unknown operations', () => {
     }),
     (error) => error.code === 'malformed-input' && /unknown operation/.test(error.message),
   );
+});
+
+test('blocked normalization requires explicit durable history without fabrication', () => {
+  const block = {
+    reason: 'The active block must be supplied in durable history.',
+    evidence_reference: 'evidence:explicit-block-history',
+    actor_id: 'agent-explicit-block-history',
+    blocked_at: '2026-08-23T19:00:00.000Z',
+    blocked_revision: 4,
+    requires_human_resolution: true,
+  };
+  assert.throws(
+    () => evaluateRecoveryTrace({
+      schemaVersion: 1,
+      now: '2026-08-23T20:00:00.000Z',
+      initialState: {
+        tickets: [{
+          id: 'task-explicit-block-history',
+          parent_map_id: 'map-recovery',
+          type: 'task',
+          status: 'blocked',
+          revision: 4,
+          blocker_ids: [],
+          claim: null,
+          block,
+          comments: [],
+          evidence: [],
+          progress_records: [],
+          task_action: null,
+        }],
+      },
+      operations: [],
+    }),
+    (error) => error.code === 'malformed-input'
+      && /block_history.*required.*blocked/i.test(error.message),
+  );
+});
+
+test('tracker contract pins pending-action, reclaim, blocker, and lease guarantees', () => {
+  const contract = readFileSync(TRACKER_CONTRACT, 'utf8');
+  const normalizedContract = contract.replace(/\s+/g, ' ');
+  for (const field of [
+    '`ticket_id`',
+    '`idempotency_key`',
+    '`claim_token`',
+    '`session_id`',
+    '`external_system`',
+    '`lookup_reference`',
+    '`outcome`',
+    '`performed_at`',
+    '`receipt_synchronization_pending`',
+  ]) {
+    assert.ok(contract.includes(field), `missing contract field: ${field}`);
+  }
+  for (const phrase of [
+    'Pending external actions fence claim release, unblock, resolution, closure, new external actions, and frontier membership.',
+    'The fence clears only after matching receipt synchronization and any required durable block or human reconciliation.',
+    'a fresh claim token and a session identity different from the expired lease session',
+    '`block_history` is required whenever `status` is `blocked`; adapters and the checker must never synthesize it',
+    '`lease_duration_ms` must be a positive safe integer no greater than 2592000000',
+    'Every blocker must be a sibling child with the same non-null `parent_map_id`.',
+  ]) {
+    assert.ok(
+      normalizedContract.includes(phrase),
+      `missing contract phrase: ${phrase}`,
+    );
+  }
 });

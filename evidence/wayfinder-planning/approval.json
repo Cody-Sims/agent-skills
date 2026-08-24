@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
   "skill": "wayfinder-planning",
-  "skillSha256": "848efdfadf3cee2240d344b75141a0b3b91e74dd79ad1152285d1bcbdfcb74ef",
-  "reviewedAt": "2026-08-23",
+  "skillSha256": "0ebf6f07bcb0ce38a44526529f9960f3abf3bfb6de34db2039cd904071e33267",
+  "reviewedAt": "2026-08-24",
   "reviewer": "Cody-Sims",
   "decision": "approved-for-experimental-entry",
-  "rationale": "The workflow is plan-only, maintains explicit boundaries from specification writing and execution, uses claim-first revision-aware tracker operations, rejects untrusted tracker instructions that cross its safety boundary, and includes deterministic recovery checks for external-action authorization, post-reclaim inspection, human reconciliation, receipt idempotency, and locale-independent ordering."
+  "rationale": "The workflow is plan-only, maintains explicit boundaries from specification writing and execution, uses claim-first revision-aware tracker operations, rejects untrusted tracker instructions that cross its safety boundary, and includes deterministic recovery checks for pending external-action fencing, fresh reclaim credentials, child-only frontiers, immutable reconciliation audits, transactional rejection, receipt idempotency, and locale-independent ordering."
 }

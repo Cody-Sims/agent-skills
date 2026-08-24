@@ -7,6 +7,8 @@ const SCHEMA_VERSION = 1;
 const TICKET_TYPES = new Set(['research', 'prototype', 'grilling', 'task']);
 const TICKET_STATUSES = new Set(['open', 'blocked', 'closed']);
 const TASK_OUTCOMES = new Set(['succeeded', 'unknown']);
+const MAX_LEASE_DURATION_MS = 2_592_000_000;
+const MAX_DATE_MILLISECONDS = 8_640_000_000_000_000;
 const OPERATIONS = new Set([
   'block_ticket',
   'external_action',
@@ -168,6 +170,9 @@ function normalizePendingExternalAction(value, path) {
   if (!TASK_OUTCOMES.has(outcome)) {
     fail(`${path}.outcome must be succeeded or unknown.`);
   }
+  if (value.receipt_synchronization_pending !== true) {
+    fail(`${path}.receipt_synchronization_pending must be true.`);
+  }
   return {
     ticket_id: requiredString(value.ticket_id, `${path}.ticket_id`),
     intent: requiredString(value.intent, `${path}.intent`),
@@ -182,6 +187,7 @@ function normalizePendingExternalAction(value, path) {
     ),
     outcome,
     performed_at: timestamp(value.performed_at, `${path}.performed_at`),
+    receipt_synchronization_pending: true,
   };
 }
 
@@ -290,11 +296,17 @@ function normalizeTicket(value, path) {
       || blockerIds.some((entry) => typeof entry !== 'string' || entry.length === 0)) {
     fail(`${path}.blocker_ids must contain non-empty strings.`);
   }
+  if (new Set(blockerIds).size !== blockerIds.length) {
+    fail(`${path}.blocker_ids contains duplicate blocker IDs.`);
+  }
   const block = normalizeBlock(value.block, `${path}.block`);
   if (status === 'blocked' && !block) fail(`${path}.block is required for blocked tickets.`);
   if (status !== 'blocked' && block) fail(`${path}.block requires blocked status.`);
+  if (status === 'blocked' && value.block_history === undefined) {
+    fail(`${path}.block_history is required for blocked tickets.`);
+  }
   const history = value.block_history === undefined
-    ? block ? [block] : []
+    ? []
     : normalizeArray(value.block_history, `${path}.block_history`)
       .map((entry, index) => normalizeBlock(entry, `${path}.block_history[${index}]`));
   const blockRevisions = history.map(({ blocked_revision: revision }) => revision);
@@ -399,10 +411,51 @@ function normalizeInitialState(value) {
     normalizeTicket(entry, `initialState.tickets[${index}]`));
   const ids = normalizedTickets.map(({ id }) => id);
   if (new Set(ids).size !== ids.length) fail('initialState.tickets contains duplicate IDs.');
+  const ticketsById = new Map(normalizedTickets.map((ticket) => [ticket.id, ticket]));
   for (const ticket of normalizedTickets) {
+    if (ticket.parent_map_id === null && ticket.blocker_ids.length > 0) {
+      fail(`initialState ticket ${ticket.id} is a non-child and cannot have blockers.`);
+    }
     for (const blockerId of ticket.blocker_ids) {
-      if (!ids.includes(blockerId)) {
+      if (blockerId === ticket.id) {
+        fail(`initialState ticket ${ticket.id} has a self blocker link.`);
+      }
+      const blocker = ticketsById.get(blockerId);
+      if (!blocker) {
         fail(`initialState ticket ${ticket.id} references missing blocker ${blockerId}.`);
+      }
+      if (blocker.parent_map_id === null) {
+        fail(`initialState ticket ${ticket.id} references non-child blocker ${blockerId}.`);
+      }
+      if (ticket.parent_map_id !== blocker.parent_map_id) {
+        fail(
+          `initialState blocker edge ${ticket.id} -> ${blockerId} crosses parent_map_id boundaries.`,
+        );
+      }
+    }
+  }
+  const visitState = new Map();
+  for (const ticket of [...normalizedTickets].sort((left, right) =>
+    compareStrings(left.id, right.id))) {
+    if (visitState.get(ticket.id) === 2) continue;
+    visitState.set(ticket.id, 1);
+    const stack = [{ ticket, blockerIndex: 0 }];
+    while (stack.length > 0) {
+      const frame = stack.at(-1);
+      if (frame.blockerIndex >= frame.ticket.blocker_ids.length) {
+        visitState.set(frame.ticket.id, 2);
+        stack.pop();
+        continue;
+      }
+      const blockerId = frame.ticket.blocker_ids[frame.blockerIndex];
+      frame.blockerIndex += 1;
+      const blockerState = visitState.get(blockerId) ?? 0;
+      if (blockerState === 1) {
+        fail(`initialState blocker graph contains a directed cycle at ${blockerId}.`);
+      }
+      if (blockerState === 0) {
+        visitState.set(blockerId, 1);
+        stack.push({ ticket: ticketsById.get(blockerId), blockerIndex: 0 });
       }
     }
   }
@@ -557,6 +610,10 @@ function applyExternalAction(state, operation, now, violations) {
   if (!ticket) return;
   if (!expectedRevisionMatches(ticket, operation, violations)) return;
   if (!activeClaimMatches(ticket, operation, now, violations)) return;
+  if (ticket.status !== 'open') {
+    addViolation(violations, 'external-action-requires-open-ticket');
+    return;
+  }
   if (ticket.pending_external_action) {
     addViolation(violations, 'pending-external-action');
     return;
@@ -608,6 +665,7 @@ function applyExternalAction(state, operation, now, violations) {
     lookup_reference: operation.lookup_reference,
     outcome: operation.outcome,
     performed_at: now,
+    receipt_synchronization_pending: true,
   };
 }
 
@@ -671,6 +729,10 @@ function applyBlockTicket(state, operation, now, violations) {
   const ticket = ticketById(state, operation, violations);
   if (!ticket || !expectedRevisionMatches(ticket, operation, violations)) return;
   if (!activeClaimMatches(ticket, operation, now, violations)) return;
+  if (ticket.pending_external_action) {
+    addViolation(violations, 'pending-external-action');
+    return;
+  }
   if (operation.confirmed !== true) {
     addViolation(violations, 'block-unconfirmed');
     return;
@@ -799,9 +861,25 @@ function applyReclaimExpiredClaim(state, operation, now, context, violations) {
     addViolation(violations, 'claim-not-reclaimable');
     return;
   }
-  const duration = operation.lease_duration_seconds;
-  if (!Number.isSafeInteger(duration) || duration < 1) {
-    fail('reclaim_expired_claim.lease_duration_seconds must be a positive safe integer.');
+  const duration = operation.lease_duration_ms;
+  if (!Number.isSafeInteger(duration)
+      || duration < 1
+      || duration > MAX_LEASE_DURATION_MS) {
+    fail(
+      `reclaim_expired_claim.lease_duration_ms must be a positive safe integer no greater than ${MAX_LEASE_DURATION_MS}.`,
+    );
+  }
+  const expiryMilliseconds = Date.parse(now) + duration;
+  if (!Number.isSafeInteger(expiryMilliseconds)
+      || expiryMilliseconds > MAX_DATE_MILLISECONDS
+      || expiryMilliseconds < -MAX_DATE_MILLISECONDS) {
+    fail('reclaim_expired_claim computed expiry must be an ISO-representable timestamp.');
+  }
+  let expiresAt;
+  try {
+    expiresAt = new Date(expiryMilliseconds).toISOString();
+  } catch {
+    fail('reclaim_expired_claim computed expiry must be an ISO-representable timestamp.');
   }
   const newClaimToken = requiredString(
     operation.new_claim_token,
@@ -823,7 +901,7 @@ function applyReclaimExpiredClaim(state, operation, now, context, violations) {
     owner_id: ownerId,
     session_id: sessionId,
     acquired_at: now,
-    expires_at: new Date(Date.parse(now) + duration * 1000).toISOString(),
+    expires_at: expiresAt,
   };
   context.inspectionRequiredAtRevision = ticket.revision;
   context.lastFullInspectionRevision = null;

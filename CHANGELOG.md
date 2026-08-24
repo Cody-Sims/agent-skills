@@ -183,6 +183,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- Hardened Wayfinder recovery conformance for open-only external actions,
+  explicit block history, validated blocker DAGs, pending-action fences, and
+  bounded millisecond reclaim leases.
+
 - **Breaking:** Narrowed `shadow-architecture` 2.0.0 routing to `.shadow` setup,
   approved decision lifecycle, compatibility maintenance, supersession, and
   rendering. Observation, future-state design, and drift checks now route to

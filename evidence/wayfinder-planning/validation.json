@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "skill": "wayfinder-planning",
-  "skillSha256": "848efdfadf3cee2240d344b75141a0b3b91e74dd79ad1152285d1bcbdfcb74ef",
-  "evaluatedAt": "2026-08-23",
+  "skillSha256": "0ebf6f07bcb0ce38a44526529f9960f3abf3bfb6de34db2039cd904071e33267",
+  "evaluatedAt": "2026-08-24",
   "profile": "experimental-entry",
   "checks": [
     {

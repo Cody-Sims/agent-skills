@@ -1256,7 +1256,7 @@
           {
             "type": "maintainer-approval",
             "reference": "registry/lifecycle.json",
-            "sha256": "62b68a0bc7b47e38bd6873fae6c90a2b4da75115fb3946c16a9b9800995d429d",
+            "sha256": "c3c267e2c7c2e72848e193982e14657368749e96ebe1b96cda147f349099416e",
             "recordedAt": "2026-08-23"
           }
         ]
@@ -1352,7 +1352,7 @@
           {
             "type": "maintainer-approval",
             "reference": "registry/lifecycle.json",
-            "sha256": "62b68a0bc7b47e38bd6873fae6c90a2b4da75115fb3946c16a9b9800995d429d",
+            "sha256": "c3c267e2c7c2e72848e193982e14657368749e96ebe1b96cda147f349099416e",
             "recordedAt": "2026-08-23"
           }
         ]
@@ -1451,7 +1451,7 @@
           {
             "type": "maintainer-approval",
             "reference": "registry/lifecycle.json",
-            "sha256": "62b68a0bc7b47e38bd6873fae6c90a2b4da75115fb3946c16a9b9800995d429d",
+            "sha256": "c3c267e2c7c2e72848e193982e14657368749e96ebe1b96cda147f349099416e",
             "recordedAt": "2026-08-23"
           }
         ]
@@ -1974,19 +1974,19 @@
       "tier": "experimental",
       "maturity": {
         "status": "verified",
-        "lastEvaluatedAt": "2026-08-23",
+        "lastEvaluatedAt": "2026-08-24",
         "evidence": [
           {
             "type": "structural-validation",
             "reference": "evidence/wayfinder-planning/validation.json",
-            "sha256": "4e84c1fef4190ef3b1c040c2b1805a3b8d47890ad5b5e615357e6af1fa1bbe9f",
-            "recordedAt": "2026-08-23"
+            "sha256": "2623d14fb57ed0943314e5bc6d38f42c3a0b5a7380eafa0df42311e436fd322f",
+            "recordedAt": "2026-08-24"
           },
           {
             "type": "maintainer-approval",
             "reference": "evidence/wayfinder-planning/approval.json",
-            "sha256": "82e1b0f44c0b0587f08aa20fd70153ea9be807c2abeccce6b396dc46de4ab47c",
-            "recordedAt": "2026-08-23"
+            "sha256": "139676e3e8f686922d03a72bfc3b13e3bab89e1e7ca8874ba10bb6dc127de31a",
+            "recordedAt": "2026-08-24"
           }
         ]
       },
