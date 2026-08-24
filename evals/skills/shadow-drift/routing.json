@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "name": "shadow-drift-routing",
+  "trials": 3,
+  "cases": [
+    {
+      "id": "training-check-shadow",
+      "split": "training",
+      "prompt": "Check Shadow for architecture drift and stale decisions, validating our .shadow graph against current code without changing it.",
+      "expected": [
+        "shadow-drift"
+      ],
+      "excluded": []
+    },
+    {
+      "id": "training-validate-graph",
+      "split": "training",
+      "prompt": "Validate .shadow/index.json, find orphan decision records and unresolved relations, and report missing evidence.",
+      "expected": [
+        "shadow-drift"
+      ],
+      "excluded": []
+    },
+    {
+      "id": "validation-implementation-drift",
+      "split": "validation",
+      "prompt": "Which recorded architecture constraints have drifted from the implementation, and which are aligned, stale, or unknown?",
+      "expected": [
+        "shadow-drift"
+      ],
+      "excluded": []
+    },
+    {
+      "id": "validation-derived-output",
+      "split": "validation",
+      "prompt": "Run a read-only Shadow validation and tell me whether derived graph output is stale relative to its recorded source hashes.",
+      "expected": [
+        "shadow-drift"
+      ],
+      "excluded": []
+    },
+    {
+      "id": "training-negative-verification",
+      "split": "training",
+      "prompt": "Before you say this task is complete, run the relevant tests and show fresh command output proving the implementation works.",
+      "expected": [
+        "verification-before-completion"
+      ],
+      "excluded": [
+        "shadow-drift"
+      ]
+    },
+    {
+      "id": "training-negative-pr-review",
+      "split": "training",
+      "prompt": "Review this pull request diff for correctness bugs, security issues, and missing tests.",
+      "expected": [
+        "code-review"
+      ],
+      "excluded": [
+        "shadow-drift"
+      ]
+    },
+    {
+      "id": "validation-negative-docs",
+      "split": "validation",
+      "prompt": "Update the architecture documentation and changelog so they accurately describe the new API behavior.",
+      "expected": [
+        "documentation-maintenance"
+      ],
+      "excluded": [
+        "shadow-drift"
+      ]
+    },
+    {
+      "id": "validation-negative-observe",
+      "split": "validation",
+      "prompt": "Observe the repository's current architecture and create new evidence-linked .shadow decision records from the implementation.",
+      "expected": [
+        "shadow-observe"
+      ],
+      "excluded": [
+        "shadow-drift"
+      ]
+    },
+    {
+      "id": "validation-negative-dream",
+      "split": "validation",
+      "prompt": "Explore three possible future architectures, compare tradeoffs, and draft proposed Shadow decisions without judging the current graph.",
+      "expected": [
+        "shadow-dream"
+      ],
+      "excluded": [
+        "shadow-drift"
+      ]
+    }
+  ]
+}
