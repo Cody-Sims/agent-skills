@@ -4,7 +4,7 @@
   "evidenceKind": "contribution-safety-exception",
   "recordedAt": "2026-08-23",
   "repository": "https://github.com/Cody-Sims/agent-skills",
-  "sourceRevision": "978978fb835525fb19b7bd83d9e0f7e77941ea13",
+  "sourceRevision": "266e4dd3f3b9b06b9d0defa152741223682e8473",
   "skillOriginCommit": "c397eae2e63276fff311dd80fa99b3cb0e7a0a93",
   "inputs": [
     {
@@ -15,17 +15,17 @@
     {
       "kind": "routing-suite",
       "reference": "evals/skills/shadow-observe/routing.json",
-      "sha256": "6a79f2d1e9eb00b6f9f84722f7d4f2a629fc9d1b4b8dd0e0e91d28c9ad6f9e34"
+      "sha256": "837028da842540fa2fc0a10051ead38a17fd78427465ee141cfcd72b43178a1b"
     },
     {
       "kind": "deterministic-test",
       "reference": "tests/shadow-observe.test.mjs",
-      "sha256": "6320bbee2837aec245617ed29d7354ec087d072b61b8bb7864d38a255093a626"
+      "sha256": "54f77c51382c5405c7cbde66925dcd2e29a312fdc30a0d58fc21c21936286ad8"
     },
     {
       "kind": "deterministic-script",
       "reference": "skills/shadow-observe/scripts/inventory.mjs",
-      "sha256": "8c17d6460dc212dcd1894c2bea4968575df7ea4b9414436958123c975a488a74"
+      "sha256": "18c21405e3304fd0b45a96d8001ba835cde2349dce5536771479bb0c96d90b41"
     },
     {
       "kind": "research",
@@ -42,12 +42,12 @@
     {
       "command": "node scripts/validate-evaluations.mjs",
       "status": "passed",
-      "result": "17 behavior cases and 70 routing cases across 12 committed suite files were structurally valid."
+      "result": "17 behavior cases and 71 routing cases across 12 committed suite files were structurally valid."
     },
     {
       "command": "node --test tests/shadow-observe.test.mjs",
       "status": "passed",
-      "result": "6 tests passed with 0 failures."
+      "result": "7 tests passed with 0 failures."
     }
   ],
   "limitations": [
