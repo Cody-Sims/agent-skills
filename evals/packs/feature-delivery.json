@@ -3,7 +3,7 @@
   "name": "feature-delivery-composition",
   "version": "1.0.0",
   "source": {
-    "registrySha256": "1f7826df90987eeb1d44e1bf670758409e1ad2e658519053570558a925530f06",
+    "registrySha256": "ef809274ef4cf856e543fb381bd0e0f358d61b138126ef7faf0aeed8d588d7a3",
     "memberTreeSha256": "a727015630f3d64ccfe101578cbd440f1afc9f823ee1927c1c92d59100efc494",
     "suitePath": "evals/packs/feature-delivery.json"
   },
