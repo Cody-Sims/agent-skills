@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "name": "shadow-observe-routing",
+  "trials": 3,
+  "cases": [
+    {
+      "id": "training-run-shadow",
+      "split": "training",
+      "prompt": "Run Shadow on the current authentication boundary and return evidence-linked candidate observations without changing the decision graph.",
+      "expected": [
+        "shadow-observe"
+      ],
+      "excluded": [
+        "codebase-exploration",
+        "shadow-architecture"
+      ]
+    },
+    {
+      "id": "training-map-dependencies",
+      "split": "training",
+      "prompt": "Map the existing dependencies between the API and persistence layers into bounded Shadow observations, separating verified claims, inference, and unknowns.",
+      "expected": [
+        "shadow-observe"
+      ],
+      "excluded": [
+        "codebase-exploration",
+        "shadow-dream"
+      ]
+    },
+    {
+      "id": "validation-scan-architecture",
+      "split": "validation",
+      "prompt": "Scan architecture for the payments module and generate read-only candidate observations with anchors, related .shadow decision IDs, source revision, and run provenance.",
+      "expected": [
+        "shadow-observe"
+      ],
+      "excluded": [
+        "shadow-architecture",
+        "shadow-drift"
+      ]
+    },
+    {
+      "id": "validation-explicit-artifacts",
+      "split": "validation",
+      "prompt": "Our .shadow schema declares a candidate-observations directory. Write unreviewed observations for the worker boundary there and leave decisions untouched.",
+      "expected": [
+        "shadow-observe"
+      ],
+      "excluded": [
+        "shadow-architecture"
+      ]
+    },
+    {
+      "id": "training-negative-codebase-exploration",
+      "split": "training",
+      "prompt": "I am new to this repository. Find its entry points, build and test commands, conventions, and the smallest place to make my requested change.",
+      "expected": [
+        "codebase-exploration"
+      ],
+      "excluded": [
+        "shadow-observe"
+      ]
+    },
+    {
+      "id": "validation-negative-shadow-core",
+      "split": "validation",
+      "prompt": "Create the repository's .shadow decision graph, add an accepted architecture decision, update its index, and render the graph.",
+      "expected": [
+        "shadow-architecture"
+      ],
+      "excluded": [
+        "shadow-observe"
+      ]
+    },
+    {
+      "id": "training-negative-shadow-dream",
+      "split": "training",
+      "prompt": "Design a future target architecture for splitting this monolith into services and record the proposal for review.",
+      "expected": [
+        "shadow-dream"
+      ],
+      "excluded": [
+        "shadow-observe"
+      ]
+    },
+    {
+      "id": "validation-negative-shadow-drift",
+      "split": "validation",
+      "prompt": "Compare the accepted .shadow decisions with the implementation, identify drift, and repair the stale records and anchors.",
+      "expected": [
+        "shadow-drift"
+      ],
+      "excluded": [
+        "shadow-observe"
+      ]
+    }
+  ]
+}

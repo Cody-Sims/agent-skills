@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 1,
+  "name": "shadow-observe-behavior",
+  "skill": "shadow-observe",
+  "cases": [
+    {
+      "id": "bounded-read-only-report",
+      "prompt": "Run Shadow on the authentication boundary only. Scan current dependencies and generate architecture observations, but do not write files or change the .shadow graph.",
+      "assertions": [
+        {
+          "id": "scope",
+          "type": "contains",
+          "value": "Scope"
+        },
+        {
+          "id": "provenance",
+          "type": "contains",
+          "value": "Run provenance"
+        },
+        {
+          "id": "verified",
+          "type": "contains",
+          "value": "Verified claims"
+        },
+        {
+          "id": "inferences",
+          "type": "contains",
+          "value": "Inferences"
+        },
+        {
+          "id": "unknowns",
+          "type": "contains",
+          "value": "Unknowns"
+        }
+      ],
+      "humanReview": [
+        {
+          "id": "bounded-analysis",
+          "question": "Does the candidate keep analysis within the authentication boundary and avoid turning the request into general repository orientation?"
+        },
+        {
+          "id": "evidence-discipline",
+          "question": "Are verified claims linked to repository evidence while inference and unknowns remain explicitly separate?"
+        }
+      ]
+    },
+    {
+      "id": "explicit-candidate-artifact",
+      "prompt": "The repository's .shadow README and schema declare observations/candidates as the location for unreviewed observation records. Generate candidate observations for the storage boundary there, including source revision, anchors, related decision IDs, and run provenance. Do not create or promote decisions.",
+      "assertions": [
+        {
+          "id": "candidate-state",
+          "type": "contains",
+          "value": "candidate"
+        },
+        {
+          "id": "source-revision",
+          "type": "contains",
+          "value": "source revision"
+        },
+        {
+          "id": "related-decisions",
+          "type": "contains",
+          "value": "related decision IDs"
+        },
+        {
+          "id": "review-gate",
+          "type": "regex",
+          "value": "confirm|dismiss",
+          "flags": "i"
+        },
+        {
+          "id": "no-self-confirm",
+          "type": "notContains",
+          "value": "\"lifecycle\": \"confirmed\""
+        }
+      ],
+      "humanReview": [
+        {
+          "id": "declared-layout",
+          "question": "Does the candidate write only under the repository-declared observation layout and validate the artifact against the declared schema?"
+        },
+        {
+          "id": "decision-boundary",
+          "question": "Does the candidate avoid creating accepted decisions, inventing rationale, or self-confirming observations?"
+        }
+      ]
+    },
+    {
+      "id": "missing-shadow-layout",
+      "prompt": "Scan the API-to-database architecture and save Shadow observations. This repository has no .shadow README, index, schema, or declared observation directory.",
+      "assertions": [
+        {
+          "id": "report-only",
+          "type": "regex",
+          "value": "report only|report-only",
+          "flags": "i"
+        },
+        {
+          "id": "no-bootstrap",
+          "type": "notContains",
+          "value": "Created .shadow"
+        },
+        {
+          "id": "candidate-artifacts-none",
+          "type": "contains",
+          "value": "Candidate artifacts"
+        }
+      ],
+      "humanReview": [
+        {
+          "id": "missing-declaration",
+          "question": "Does the candidate refuse to invent a .shadow layout while still returning useful evidence-linked observations?"
+        }
+      ]
+    }
+  ]
+}
