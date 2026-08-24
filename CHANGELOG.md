@@ -8,6 +8,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Experimental `shadow-observe`, `shadow-dream`, and `shadow-drift` skills with
+  bounded observation inventory and graph-validation scripts, direct tests,
+  behavior and routing evaluations, and distinct current-state, future-state,
+  and read-only drift responsibilities.
+- Versioned `shadow-architecture-suite` composition pack with the linear
+  observe-to-dream-to-architecture-to-drift lifecycle, explicit human approval
+  before decision recording, and adjacent handoff and near-miss evaluation.
 - Experimental `copilot-cloud-agent` skill for launching and monitoring genuine
   GitHub-hosted tasks, explicitly selecting GPT-5.6 Sol, verifying observed task
   metadata and pull-request artifacts, and distinguishing cloud model controls
@@ -163,6 +170,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **Breaking:** Narrowed `shadow-architecture` 2.0.0 routing to `.shadow` setup,
+  approved decision lifecycle, compatibility maintenance, supersession, and
+  rendering. Observation, future-state design, and drift checks now route to
+  their dedicated experimental skills.
 - Removed host-specific invocation frontmatter from five canonical skills and
   patch-bumped them so the complete catalog passes the portable profile.
 

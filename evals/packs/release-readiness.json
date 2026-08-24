@@ -3,7 +3,7 @@
   "name": "release-readiness-composition",
   "version": "1.0.0",
   "source": {
-    "registrySha256": "60a07e2c04e581fdc442f33084f4ac20ee65ae7a0ef6a93ecaac5eb27856252f",
+    "registrySha256": "ef809274ef4cf856e543fb381bd0e0f358d61b138126ef7faf0aeed8d588d7a3",
     "memberTreeSha256": "bcc1a493fb91985e5248dfe349340d5d322ac94735ab64617360f9a301fb9374",
     "suitePath": "evals/packs/release-readiness.json"
   },
@@ -27,7 +27,7 @@
   "adapter": {
     "id": "deterministic-pack-fixture-v1",
     "kind": "fixture",
-    "entrypointSha256": "503cad68a1395771aff028756933f7b8ee2843e960e877d044ea1a8c4bf7a3e1",
+    "entrypointSha256": "f6a5a32dc30f827056775878082795e76922f35ce6fd3584f9eb01b117cb66cb",
     "policySha256": "00aedb8508949b1740c12d07135f27deac65a9f7657699a405d1ed5dfa9b4971",
     "launchPolicySha256": "54fcd0e8eb7ac56d027031e65150a9a7592264a6e1e97fd67aae548b30226a81"
   },

@@ -37,6 +37,60 @@
         }
       ]
     },
+    "shadow-dream": {
+      "status": "verified",
+      "lastEvaluatedAt": "2026-08-23",
+      "evidence": [
+        {
+          "type": "structural-validation",
+          "reference": "evals/skills/shadow-dream/evals.json",
+          "sha256": "7364c090032fea88ff330b75146eb15a6efe75c6373aaf18882432b60fc5a849",
+          "recordedAt": "2026-08-23"
+        },
+        {
+          "type": "maintainer-approval",
+          "reference": "registry/lifecycle.json",
+          "sha256": "62b68a0bc7b47e38bd6873fae6c90a2b4da75115fb3946c16a9b9800995d429d",
+          "recordedAt": "2026-08-23"
+        }
+      ]
+    },
+    "shadow-drift": {
+      "status": "verified",
+      "lastEvaluatedAt": "2026-08-23",
+      "evidence": [
+        {
+          "type": "structural-validation",
+          "reference": "tests/shadow-drift.test.mjs",
+          "sha256": "e2774e9b1a89461075ac0d326ce624a0ff178ca1b68604060627cbd0c6ab5af6",
+          "recordedAt": "2026-08-23"
+        },
+        {
+          "type": "maintainer-approval",
+          "reference": "registry/lifecycle.json",
+          "sha256": "62b68a0bc7b47e38bd6873fae6c90a2b4da75115fb3946c16a9b9800995d429d",
+          "recordedAt": "2026-08-23"
+        }
+      ]
+    },
+    "shadow-observe": {
+      "status": "verified",
+      "lastEvaluatedAt": "2026-08-23",
+      "evidence": [
+        {
+          "type": "structural-validation",
+          "reference": "tests/shadow-observe.test.mjs",
+          "sha256": "54f77c51382c5405c7cbde66925dcd2e29a312fdc30a0d58fc21c21936286ad8",
+          "recordedAt": "2026-08-23"
+        },
+        {
+          "type": "maintainer-approval",
+          "reference": "registry/lifecycle.json",
+          "sha256": "62b68a0bc7b47e38bd6873fae6c90a2b4da75115fb3946c16a9b9800995d429d",
+          "recordedAt": "2026-08-23"
+        }
+      ]
+    },
     "verification-discipline": {
       "status": "verified",
       "lastEvaluatedAt": "2026-07-27",

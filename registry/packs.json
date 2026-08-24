@@ -28,6 +28,28 @@
       }
     },
     {
+      "name": "shadow-architecture-suite",
+      "version": "1.0.0",
+      "description": "Carries a full Shadow architecture lifecycle from current-state observations through approved decision recording and read-only drift validation.",
+      "skills": [
+        { "name": "shadow-observe", "version": "1.0.0" },
+        { "name": "shadow-dream", "version": "1.0.0" },
+        { "name": "shadow-architecture", "version": "2.0.0" },
+        { "name": "shadow-drift", "version": "1.0.0" }
+      ],
+      "handoffs": [
+        { "from": "shadow-observe", "to": "shadow-dream", "when": "Candidate observations are ready for future-state exploration." },
+        { "from": "shadow-dream", "to": "shadow-architecture", "when": "A human has explicitly approved the future-state proposal for decision recording." },
+        { "from": "shadow-architecture", "to": "shadow-drift", "when": "Architecture decisions and implementation are updated and ready for read-only drift validation." }
+      ],
+      "conflicts": [],
+      "installPolicy": {
+        "versionMatch": "exact",
+        "conflictAction": "reject",
+        "requiredRuntimes": ["claude-code", "github-copilot", "openai-codex"]
+      }
+    },
+    {
       "name": "safe-refactor",
       "version": "1.0.0",
       "description": "Guides a behavior-preserving refactor from codebase mapping and tests through review and completion verification.",

@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 1,
+  "name": "shadow-architecture-behavior",
+  "skill": "shadow-architecture",
+  "cases": [
+    {
+      "id": "setup-and-migrate",
+      "prompt": "Create a minimal .shadow graph for this repository, but preserve compatibility with the existing decision files if any are found. Define the authority and v2 migration approach before changing records.",
+      "assertions": [
+        {
+          "id": "readme-authority",
+          "type": "contains",
+          "value": ".shadow/README.md"
+        },
+        {
+          "id": "declared-index",
+          "type": "contains",
+          "value": "index"
+        },
+        {
+          "id": "declared-schema",
+          "type": "contains",
+          "value": "schema"
+        },
+        {
+          "id": "compatibility",
+          "type": "contains",
+          "value": "compatib"
+        }
+      ],
+      "humanReview": [
+        {
+          "id": "repository-authority",
+          "question": "Does the candidate treat the repository-declared README, index, and schema as authoritative rather than imposing a fixed layout?"
+        },
+        {
+          "id": "incremental-migration",
+          "question": "Does the candidate preserve readable legacy records and use additive migration before destructive rewrites?"
+        },
+        {
+          "id": "bounded-scope",
+          "question": "Does the candidate avoid autonomously observing the repository, proposing a future architecture, or checking drift?"
+        }
+      ]
+    },
+    {
+      "id": "approve-and-supersede",
+      "prompt": "Record the approved caching decision in .shadow, then replace an older accepted caching decision without losing the original rationale, evidence, or approval history.",
+      "assertions": [
+        {
+          "id": "human-approval",
+          "type": "contains",
+          "value": "human approval"
+        },
+        {
+          "id": "supersedes",
+          "type": "contains",
+          "value": "supersedes"
+        },
+        {
+          "id": "superseded",
+          "type": "contains",
+          "value": "superseded"
+        },
+        {
+          "id": "preserve-history",
+          "type": "regex",
+          "value": "preserv(e|ing).*history",
+          "flags": "is"
+        }
+      ],
+      "humanReview": [
+        {
+          "id": "no-history-rewrite",
+          "question": "Does the candidate create a new linked decision and retain the accepted record's statement, rationale, evidence, approval, and provenance?"
+        },
+        {
+          "id": "evidence-boundaries",
+          "question": "Does the candidate distinguish verified evidence, inference, and unknown rationale without inventing historical intent?"
+        }
+      ]
+    },
+    {
+      "id": "render-reviewed-records",
+      "prompt": "Render the reviewed .shadow decisions into a diagram and summary. Do not promote proposals or change decision text while rendering.",
+      "assertions": [
+        {
+          "id": "reviewed-inputs",
+          "type": "contains",
+          "value": "reviewed"
+        },
+        {
+          "id": "derived-output",
+          "type": "contains",
+          "value": "derived"
+        },
+        {
+          "id": "source-records",
+          "type": "contains",
+          "value": "source"
+        },
+        {
+          "id": "no-lifecycle-change",
+          "type": "regex",
+          "value": "(do not|without).*(status|lifecycle|decision text)",
+          "flags": "is"
+        }
+      ],
+      "humanReview": [
+        {
+          "id": "render-authority",
+          "question": "Does the candidate use authoritative reviewed records as inputs and label the rendering as disposable derived output?"
+        },
+        {
+          "id": "render-provenance",
+          "question": "Does the candidate record source IDs or revisions, generator identity or method, and generation time?"
+        }
+      ]
+    }
+  ]
+}

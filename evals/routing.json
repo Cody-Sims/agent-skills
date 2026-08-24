@@ -170,6 +170,48 @@
       "prompt": "Research the current version of this external API using primary documentation, corroborate the claim, and cite authoritative URLs.",
       "expected": ["web-research-and-verification"],
       "excluded": ["codebase-exploration", "documentation-maintenance"]
+    },
+    {
+      "id": "observe-current-architecture",
+      "split": "training",
+      "prompt": "Run a bounded read-only Shadow scan of the payments boundary and return evidence-linked candidate observations without creating decisions.",
+      "expected": ["shadow-observe"],
+      "excluded": ["codebase-exploration", "shadow-architecture", "shadow-dream", "shadow-drift"]
+    },
+    {
+      "id": "dream-future-architecture",
+      "split": "training",
+      "prompt": "Use these accepted constraints and candidate observations to compare future-state architectures, migration stages, rollback, and risks without approving one.",
+      "expected": ["shadow-dream"],
+      "excluded": ["requirements-and-spec-writing", "planning-and-task-breakdown", "shadow-architecture", "shadow-observe"]
+    },
+    {
+      "id": "record-approved-shadow-decision",
+      "split": "validation",
+      "prompt": "The proposal has explicit human approval. Record it in the .shadow graph, preserve accepted history, and update the authoritative index.",
+      "expected": ["shadow-architecture"],
+      "excluded": ["shadow-dream", "shadow-drift", "documentation-maintenance"]
+    },
+    {
+      "id": "check-shadow-drift",
+      "split": "validation",
+      "prompt": "Read-only validate the .shadow graph against current implementation and report aligned, drifted, stale, and unknown decisions without repairs.",
+      "expected": ["shadow-drift"],
+      "excluded": ["shadow-architecture", "shadow-observe", "verification-before-completion"]
+    },
+    {
+      "id": "record-current-state-only",
+      "split": "validation",
+      "prompt": "I only need to record this already reviewed current-state architecture decision; do not run the full observation or future-state lifecycle.",
+      "expected": ["shadow-architecture"],
+      "excluded": ["shadow-observe", "shadow-dream", "shadow-drift"]
+    },
+    {
+      "id": "shadow-awaiting-human-approval",
+      "split": "validation",
+      "prompt": "The future-state Shadow proposal is complete but no human approval artifact exists yet; keep it proposed and do not record an accepted decision.",
+      "expected": ["shadow-dream"],
+      "excluded": ["shadow-architecture"]
     }
   ]
 }

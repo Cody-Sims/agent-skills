@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "name": "shadow-architecture-suite-composition",
+  "version": "1.0.0",
+  "source": {
+    "registrySha256": "ef809274ef4cf856e543fb381bd0e0f358d61b138126ef7faf0aeed8d588d7a3",
+    "memberTreeSha256": "4b494ac91f6940ee83e49ff151a48875d5ee48e8d02203187038c3d8b9734895",
+    "suitePath": "evals/packs/shadow-architecture-suite.json"
+  },
+  "pack": {
+    "name": "shadow-architecture-suite",
+    "version": "1.0.0",
+    "members": [
+      { "name": "shadow-architecture", "version": "2.0.0" },
+      { "name": "shadow-dream", "version": "1.0.0" },
+      { "name": "shadow-drift", "version": "1.0.0" },
+      { "name": "shadow-observe", "version": "1.0.0" }
+    ],
+    "handoffs": [
+      { "from": "shadow-observe", "to": "shadow-dream" },
+      { "from": "shadow-dream", "to": "shadow-architecture" },
+      { "from": "shadow-architecture", "to": "shadow-drift" }
+    ]
+  },
+  "adapter": {
+    "id": "deterministic-pack-fixture-v1",
+    "kind": "fixture",
+    "entrypointSha256": "f6a5a32dc30f827056775878082795e76922f35ce6fd3584f9eb01b117cb66cb",
+    "policySha256": "00aedb8508949b1740c12d07135f27deac65a9f7657699a405d1ed5dfa9b4971",
+    "launchPolicySha256": "54fcd0e8eb7ac56d027031e65150a9a7592264a6e1e97fd67aae548b30226a81"
+  },
+  "trials": 3,
+  "thresholds": null,
+  "cases": [
+    { "id": "shadow-c01", "split": "training", "kind": "positive", "prompt": "Run a bounded read-only Shadow scan of the current service boundary and produce evidence-linked candidate observations without creating decisions.", "expected": ["shadow-observe"], "excluded": ["shadow-dream", "shadow-architecture", "shadow-drift"], "handoff": null },
+    { "id": "shadow-c02", "split": "validation", "kind": "positive", "prompt": "The candidate observations are ready for future-state exploration; compare target architectures, tradeoffs, migration stages, rollback, and risks.", "expected": ["shadow-dream"], "excluded": ["shadow-observe", "shadow-architecture"], "handoff": { "from": "shadow-observe", "to": "shadow-dream" } },
+    { "id": "shadow-c03", "split": "validation", "kind": "near-miss", "prompt": "The current-state evidence is incomplete and candidate observations still contain unsupported claims; continue bounded observation before dreaming.", "expected": ["shadow-observe"], "excluded": ["shadow-dream"], "handoff": { "from": "shadow-observe", "to": "shadow-dream" } },
+    { "id": "shadow-c04", "split": "validation", "kind": "positive", "prompt": "A human explicitly approved the future-state proposal and recorded the approval artifact; record the decision in .shadow without changing its substance.", "expected": ["shadow-architecture"], "excluded": ["shadow-dream", "shadow-drift"], "handoff": { "from": "shadow-dream", "to": "shadow-architecture" } },
+    { "id": "shadow-c05", "split": "validation", "kind": "near-miss", "prompt": "The future-state proposal is complete but human approval is still missing; keep it proposed and do not record an accepted decision.", "expected": ["shadow-dream"], "excluded": ["shadow-architecture"], "handoff": { "from": "shadow-dream", "to": "shadow-architecture" } },
+    { "id": "shadow-c06", "split": "validation", "kind": "positive", "prompt": "The approved decisions and implementation are updated; run a read-only check for graph integrity and architecture drift without repairing anything.", "expected": ["shadow-drift"], "excluded": ["shadow-architecture", "shadow-observe"], "handoff": { "from": "shadow-architecture", "to": "shadow-drift" } },
+    { "id": "shadow-c07", "split": "validation", "kind": "near-miss", "prompt": "The approved decision still needs to be recorded and indexed, and implementation updates are incomplete; maintain the .shadow graph before drift validation.", "expected": ["shadow-architecture"], "excluded": ["shadow-drift"], "handoff": { "from": "shadow-architecture", "to": "shadow-drift" } },
+    { "id": "shadow-c08", "split": "validation", "kind": "negative", "prompt": "Write product requirements and acceptance criteria for a new customer billing feature.", "expected": [], "excluded": ["shadow-architecture", "shadow-dream", "shadow-drift", "shadow-observe"], "handoff": null }
+  ]
+}

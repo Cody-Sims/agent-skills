@@ -668,14 +668,20 @@ test('launch digests bind the actual normalized command, arguments, and environm
 });
 
 test('committed suites cover every pack and deterministic CLI smoke writes valid fixture artifacts', () => {
+  const expectedPacks = [
+    'feature-delivery',
+    'release-readiness',
+    'safe-refactor',
+    'shadow-architecture-suite',
+  ];
   const execution = spawnSync('npm', ['run', 'pack:validate'], { cwd: REPO_ROOT, encoding: 'utf8' });
   assert.equal(execution.status, 0, execution.stderr);
-  assert.match(execution.stdout, /3 pack composition suites/);
+  assert.match(execution.stdout, new RegExp(`${expectedPacks.length} pack composition suites`));
 
   const smoke = spawnSync('npm', ['run', 'pack:smoke'], { cwd: REPO_ROOT, encoding: 'utf8' });
   assert.equal(smoke.status, 0, smoke.stderr);
   assert.match(smoke.stdout, /fixture evidence/);
-  for (const pack of ['feature-delivery', 'safe-refactor', 'release-readiness']) {
+  for (const pack of expectedPacks) {
     const result = JSON.parse(readFileSync(resolve(REPO_ROOT, `tmp/pack-evaluations/${pack}.json`), 'utf8'));
     assert.equal(result.pack.name, pack);
     assert.equal(result.status, 'pass');
@@ -685,10 +691,10 @@ test('committed suites cover every pack and deterministic CLI smoke writes valid
   }
   const artifactValidation = spawnSync('npm', [
     'run', 'pack:validate', '--',
-    '--result', 'tmp/pack-evaluations/feature-delivery.json',
-    '--result', 'tmp/pack-evaluations/safe-refactor.json',
-    '--result', 'tmp/pack-evaluations/release-readiness.json',
+    ...expectedPacks.flatMap((pack) => [
+      '--result', `tmp/pack-evaluations/${pack}.json`,
+    ]),
   ], { cwd: REPO_ROOT, encoding: 'utf8' });
   assert.equal(artifactValidation.status, 0, artifactValidation.stderr);
-  assert.match(artifactValidation.stdout, /3 artifacts are valid/);
+  assert.match(artifactValidation.stdout, new RegExp(`${expectedPacks.length} artifacts are valid`));
 });

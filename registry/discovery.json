@@ -268,12 +268,12 @@
     },
     "shadow-architecture": {
       "category": "architecture",
-      "tags": ["architecture", "decision-graph", "drift", "shadow"],
+      "tags": ["architecture", "decision-graph", "governance", "shadow"],
       "inputs": [
-        { "type": "decision-graph", "description": "A repository .shadow graph or architecture decision to record and check." }
+        { "type": "approved-decision", "description": "A .shadow graph or human-approved architecture decision to record, maintain, supersede, or render." }
       ],
       "outputs": [
-        { "type": "decision-graph", "description": "An evidence-linked architecture graph or drift report." }
+        { "type": "decision-graph", "description": "A maintained evidence-linked .shadow graph or derived view of reviewed records." }
       ],
       "risk": { "level": "medium", "factors": ["architecture-change", "file-write"] },
       "runtimeCompatibility": [
@@ -281,11 +281,77 @@
         { "runtime": "github-copilot", "status": "compatible", "notes": null },
         { "runtime": "openai-codex", "status": "compatible", "notes": null }
       ],
-      "relatedSkills": ["codebase-exploration", "documentation-maintenance"],
+      "relatedSkills": ["documentation-maintenance", "shadow-dream", "shadow-drift", "shadow-observe"],
       "conflictingSkills": [],
       "examplePrompts": [
-        "Record this architecture decision in the .shadow graph.",
-        "Check whether the implementation has drifted from recorded decisions."
+        "Record this human-approved architecture decision in the .shadow graph.",
+        "Migrate this .shadow graph to the v2 contract without rewriting accepted history."
+      ]
+    },
+    "shadow-dream": {
+      "category": "architecture",
+      "tags": ["architecture", "future-state", "proposal", "shadow"],
+      "inputs": [
+        { "type": "shadow-observations", "description": "Evidence-linked current-state observations and accepted constraints for a future-state architecture question." }
+      ],
+      "outputs": [
+        { "type": "architecture-proposal", "description": "Reviewable future-state options, tradeoffs, recommendation, migration stages, rollback, and approval gate." }
+      ],
+      "risk": { "level": "medium", "factors": ["architecture-proposal", "file-write"] },
+      "runtimeCompatibility": [
+        { "runtime": "claude-code", "status": "compatible", "notes": null },
+        { "runtime": "github-copilot", "status": "compatible", "notes": null },
+        { "runtime": "openai-codex", "status": "compatible", "notes": null }
+      ],
+      "relatedSkills": ["requirements-and-spec-writing", "shadow-architecture", "shadow-observe"],
+      "conflictingSkills": [],
+      "examplePrompts": [
+        "Dream two future-state architectures from these Shadow observations and compare their migration risks.",
+        "Propose a target architecture and rollback path without treating it as approved."
+      ]
+    },
+    "shadow-drift": {
+      "category": "architecture",
+      "tags": ["architecture", "drift", "read-only", "shadow"],
+      "inputs": [
+        { "type": "decision-graph", "description": "A repository-owned .shadow graph and current implementation evidence to validate read-only." }
+      ],
+      "outputs": [
+        { "type": "drift-report", "description": "Evidence-linked aligned, drifted, stale, unknown, and graph-integrity findings." }
+      ],
+      "risk": { "level": "low", "factors": ["local-execution", "read-only"] },
+      "runtimeCompatibility": [
+        { "runtime": "claude-code", "status": "compatible", "notes": null },
+        { "runtime": "github-copilot", "status": "compatible", "notes": null },
+        { "runtime": "openai-codex", "status": "compatible", "notes": null }
+      ],
+      "relatedSkills": ["shadow-architecture", "shadow-observe", "verification-before-completion"],
+      "conflictingSkills": [],
+      "examplePrompts": [
+        "Check this .shadow graph for architecture drift without repairing it.",
+        "Validate decision relations, evidence, and derived output against the implementation."
+      ]
+    },
+    "shadow-observe": {
+      "category": "architecture",
+      "tags": ["architecture", "current-state", "observation", "shadow"],
+      "inputs": [
+        { "type": "repository-scope", "description": "A bounded repository scope and architecture question for read-only current-state analysis." }
+      ],
+      "outputs": [
+        { "type": "candidate-observations", "description": "Evidence-linked candidate observations separated into verified claims, inferences, and unknowns." }
+      ],
+      "risk": { "level": "low", "factors": ["local-execution", "read-only"] },
+      "runtimeCompatibility": [
+        { "runtime": "claude-code", "status": "compatible", "notes": null },
+        { "runtime": "github-copilot", "status": "compatible", "notes": null },
+        { "runtime": "openai-codex", "status": "compatible", "notes": null }
+      ],
+      "relatedSkills": ["codebase-exploration", "shadow-architecture", "shadow-dream"],
+      "conflictingSkills": [],
+      "examplePrompts": [
+        "Run Shadow on the authentication boundary and return candidate observations.",
+        "Map current API and persistence dependencies without creating decisions."
       ]
     },
     "skill-creator": {
