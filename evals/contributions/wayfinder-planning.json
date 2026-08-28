@@ -10,12 +10,12 @@
     {
       "type": "specification",
       "reference": "skills/wayfinder-planning/references/tracker-contract.md",
-      "summary": "Defines normalized revision, lease, external-action authorization, receipt idempotency, reclaim inspection, human reconciliation audit, and frontier semantics exercised by the deterministic recovery checker."
+      "summary": "Defines strict RFC 3339 timestamps, map-scoped operation targets, bounded normalized state, lifecycle and revision guards, uniform mutation replay, recoverable pending receipts, reclaim and release read fences, compact transition evidence, and human reconciliation audits exercised by the deterministic recovery checker."
     }
   ],
   "comparison": null,
   "exception": {
     "type": "safety",
-    "rationale": "The workflow prevents conflicting ticket claims, stale or partial tracker synchronization, and mutable tracker content from authorizing implementation, destructive actions, or privilege escalation. These concurrency and execution-boundary controls reduce operational risk directly and are better evaluated through adversarial behavior, routing, and maintainer review than average output-quality uplift at experimental entry."
+    "rationale": "The workflow prevents timezone-dependent lease authorization, cross-map operation leakage, unrecoverable pending actions, duplicate mutation effects, unverified claim release, revision overflow, malformed or amplified traces, conflicting ticket claims, malformed blocker graphs, stale or partial tracker synchronization, and mutable tracker content from authorizing implementation, destructive actions, or privilege escalation. These concurrency and execution-boundary controls reduce operational risk directly and are better evaluated through adversarial behavior, routing, and maintainer review than average output-quality uplift at experimental entry."
   }
 }

@@ -22,6 +22,15 @@ installations but do not count as promotion precedent or verified core status.
 `lastEvaluatedAt` is the UTC date, in `YYYY-MM-DD` form, of the newest complete
 evaluation used for the decision. Evidence records use the same date format and
 reference reviewable artifacts by repository-relative path and SHA-256 hash.
+Every artifact used by a `verified` record must be a JSON object with top-level
+`evidenceType`, `skill`, and `skillSha256` fields. `evidenceType` must match the
+manifest evidence type, `skill` must match the manifest skill, and
+`skillSha256` must contain the current complete skill-tree digest. Each manifest
+entry must reference a distinct artifact. The digest covers `SKILL.md` and
+every resource, script, and asset using the same canonical tree hashing as
+contribution evaluation staging. The registry generator rejects missing,
+malformed, relabeled, duplicated, or stale evidence; it never silently
+downgrades verified maturity.
 
 ## Entry and promotion gates
 
@@ -90,7 +99,10 @@ Example:
 Run `npm run registry` after changing the manifest. Pull-request CI compares the
 candidate registry with the base revision and rejects new non-experimental
 entries, skipped promotions, incomplete promotion evidence, and unsupported
-demotions.
+demotions. Refresh every verified evidence artifact and its manifest `sha256`
+after any byte in the skill tree changes. Evidence without `skillSha256` can be
+retained for a non-verified historical or regression record, but it cannot
+confer verified maturity.
 
 ## Regression and demotion
 

@@ -1,6 +1,8 @@
 {
   "schemaVersion": 1,
+  "evidenceType": "structural-validation",
   "skill": "shadow-drift",
+  "skillSha256": "4fcd893926c855f166934921ab4314bedd54cf70b975e507fb63b906ef1f01c3",
   "evidenceKind": "contribution-safety-exception",
   "recordedAt": "2026-08-23",
   "repository": "https://github.com/Cody-Sims/agent-skills",

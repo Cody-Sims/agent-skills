@@ -1,6 +1,8 @@
 {
   "schemaVersion": 1,
+  "evidenceType": "maintainer-approval",
   "skill": "verification-discipline",
+  "skillSha256": "9a18b51da02fdb35616db08c7c03c5273acdfb343d905e73d22388b7f63d40c9",
   "reviewedAt": "2026-07-27",
   "reviewer": "Cody-Sims",
   "decision": "approved-for-experimental-entry",

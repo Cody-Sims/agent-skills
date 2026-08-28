@@ -229,6 +229,12 @@ promotion states, not author-selected quality labels. Record dated maturity
 evidence in `registry/maturity.json`; the generated registry exposes the
 evidence status and last evaluation date. Promotions advance one tier at a time
 and require the gates in [`tier-lifecycle.md`](tier-lifecycle.md).
+Each artifact used for `verified` maturity must declare the current canonical
+complete skill-tree digest as `skillSha256`. Each artifact must also declare
+`evidenceType` and `skill` values that exactly match its distinct maturity
+manifest entry. Changing `SKILL.md`, a reference, a
+script, or an asset invalidates that evidence until the artifact and its
+manifest file hash are refreshed.
 
 Existing catalog entries that declared `core` before the policy are shown as
 `unverified` until fresh evidence supports the declaration.

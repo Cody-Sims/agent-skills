@@ -1,5 +1,6 @@
 {
   "schemaVersion": 1,
+  "evidenceType": "structural-validation",
   "skill": "agent-tool-interface-design",
   "skillSha256": "4be2fb36811c943dc75f9e61d8ed2343338733661b6ab523e27ac1aea5bd6b75",
   "evaluatedAt": "2026-08-24",

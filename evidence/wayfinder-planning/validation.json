@@ -1,7 +1,8 @@
 {
   "schemaVersion": 1,
+  "evidenceType": "structural-validation",
   "skill": "wayfinder-planning",
-  "skillSha256": "0ebf6f07bcb0ce38a44526529f9960f3abf3bfb6de34db2039cd904071e33267",
+  "skillSha256": "bef7c4093fdd784ff46e680d7908d42bad82c7a607873da82f42d30ddae6952a",
   "evaluatedAt": "2026-08-24",
   "profile": "experimental-entry",
   "checks": [
@@ -19,6 +20,10 @@
     },
     {
       "command": "node --test tests/wayfinder-planning-recovery.test.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node --check skills/wayfinder-planning/scripts/recovery-contract.mjs",
       "status": "passed"
     }
   ]

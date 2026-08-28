@@ -1,6 +1,8 @@
 {
   "schemaVersion": 1,
+  "evidenceType": "maintainer-approval",
   "skill": "copilot-cloud-agent",
+  "skillSha256": "35128a27afc4532426811bf10d526347d7faebb8e86d25d09a29e4390eccd40b",
   "reviewedAt": "2026-07-27",
   "reviewer": "Cody-Sims",
   "decision": "approved-for-experimental-entry",

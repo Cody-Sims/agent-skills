@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
 
 import {
   buildRegistry,
@@ -9,7 +9,7 @@ import {
   validateLifecycleManifest,
   validateRegistry,
 } from '../scripts/generate-registry.mjs';
-import { sha256 } from '../scripts/lib/paths.mjs';
+import { sha256, sha256Tree } from '../scripts/lib/paths.mjs';
 import { normalizeLifecycle } from '../scripts/lib/lifecycle.mjs';
 import { makeTempDir, removeDir, writeSkill, validFrontmatter } from './helpers.mjs';
 
@@ -52,6 +52,44 @@ function lifecycleManifest(names, overrides = {}) {
       ...overrides[name],
     }])),
     removed: {},
+  };
+}
+
+function writeJson(path, value) {
+  const content = `${JSON.stringify(value, null, 2)}\n`;
+  mkdirSync(dirname(path), { recursive: true });
+  writeFileSync(path, content);
+  return content;
+}
+
+function writeBoundEvidence(root, skill, skillSha256) {
+  const evidence = [
+    ['structural-validation', 'validation.json'],
+    ['maintainer-approval', 'approval.json'],
+  ].map(([type, file]) => {
+    const reference = `evidence/${skill}/${file}`;
+    const content = writeJson(resolve(root, reference), {
+      schemaVersion: 1,
+      evidenceType: type,
+      skill,
+      skillSha256,
+    });
+    return {
+      type,
+      reference,
+      sha256: sha256(content),
+      recordedAt: '2026-07-26',
+    };
+  });
+  return {
+    schemaVersion: 1,
+    skills: {
+      [skill]: {
+        status: 'verified',
+        lastEvaluatedAt: '2026-07-26',
+        evidence,
+      },
+    },
   };
 }
 
@@ -474,7 +512,13 @@ test('registry validation accepts a core tier with complete evidence', () => {
 test('buildRegistry applies persistent maturity evidence and rejects unknown skills', () => {
   const root = makeTempDir('reg-');
   try {
-    writeSkill(root, 'alpha', { frontmatter: validFrontmatter('alpha') });
+    const skillsRoot = resolve(root, 'skills');
+    const skillRoot = writeSkill(
+      skillsRoot,
+      'alpha',
+      { frontmatter: validFrontmatter('alpha') },
+    );
+    const skillSha256 = sha256Tree(skillRoot);
     const evidenceTypes = [
       'structural-validation',
       'behavior-evaluation',
@@ -484,45 +528,225 @@ test('buildRegistry applies persistent maturity evidence and rejects unknown ski
     ];
     const evidenceContent = Object.fromEntries(evidenceTypes.map((type) => [
       type,
-      `{"type":"${type}"}\n`,
+      `${JSON.stringify({ evidenceType: type, skill: 'alpha', skillSha256 })}\n`,
     ]));
     const record = {
       status: 'verified',
       lastEvaluatedAt: '2026-07-26',
       evidence: evidenceTypes.map((type) => ({
         type,
-        reference: `alpha/evidence/${type}.json`,
+        reference: `evidence/alpha/${type}.json`,
         sha256: sha256(evidenceContent[type]),
         recordedAt: '2026-07-26',
       })),
     };
     assert.throws(
-      () => buildRegistry(root, {
+      () => buildRegistry(skillsRoot, {
         schemaVersion: 1,
         skills: { alpha: record },
-      }),
+      }, root),
       /evidence artifact does not exist/,
     );
-    writeSkill(root, 'alpha', {
-      frontmatter: validFrontmatter('alpha'),
-      files: Object.fromEntries(evidenceTypes.map((type) => [
-        `evidence/${type}.json`,
-        evidenceContent[type],
-      ])),
-    });
-    const registry = buildRegistry(root, {
+    for (const type of evidenceTypes) {
+      const path = resolve(root, `evidence/alpha/${type}.json`);
+      mkdirSync(dirname(path), { recursive: true });
+      writeFileSync(path, evidenceContent[type]);
+    }
+    const registry = buildRegistry(skillsRoot, {
       schemaVersion: 1,
       skills: { alpha: record },
-    });
+    }, root);
     assert.deepEqual(registry.skills[0].maturity, record);
     assert.deepEqual(validateRegistry(registry), []);
     assert.throws(
-      () => buildRegistry(root, {
+      () => buildRegistry(skillsRoot, {
         schemaVersion: 1,
         skills: { missing: record },
-      }),
+      }, root),
       /maturity evidence references unknown skill missing/,
     );
+  } finally {
+    removeDir(root);
+  }
+});
+
+test('buildRegistry rejects verified evidence bound to stale skill bytes', () => {
+  const root = makeTempDir('reg-maturity-binding-');
+  try {
+    const skillsRoot = resolve(root, 'skills');
+    writeSkill(skillsRoot, 'alpha', { frontmatter: validFrontmatter('alpha') });
+    const expected = sha256Tree(resolve(skillsRoot, 'alpha'));
+    const observed = '0'.repeat(64);
+    const manifest = writeBoundEvidence(root, 'alpha', observed);
+    const approval = manifest.skills.alpha.evidence[1];
+    const approvalContent = writeJson(resolve(root, approval.reference), {
+      schemaVersion: 1,
+      evidenceType: 'maintainer-approval',
+      skill: 'alpha',
+      skillSha256: expected,
+    });
+    approval.sha256 = sha256(approvalContent);
+
+    assert.throws(
+      () => buildRegistry(skillsRoot, manifest, root),
+      new Error(
+        'Invalid maturity evidence manifest:\n'
+        + '$.skills.alpha.evidence[0] (structural-validation, '
+        + 'evidence/alpha/validation.json): skillSha256 does not match the current '
+        + `complete skill tree for alpha; expected ${expected}, observed ${observed}.`,
+      ),
+    );
+  } finally {
+    removeDir(root);
+  }
+});
+
+test('buildRegistry binds verified maturity to every complete skill-tree byte', () => {
+  const root = makeTempDir('reg-maturity-tree-');
+  try {
+    const skillsRoot = resolve(root, 'skills');
+    const skillRoot = writeSkill(skillsRoot, 'alpha', {
+      frontmatter: validFrontmatter('alpha'),
+      files: {
+        'references/guide.md': '# Guide\n',
+        'scripts/check.mjs': 'export const valid = true;\n',
+      },
+    });
+    let digest = sha256Tree(skillRoot);
+    let manifest = writeBoundEvidence(root, 'alpha', digest);
+    assert.equal(buildRegistry(skillsRoot, manifest, root).skills[0].maturity.status, 'verified');
+
+    for (const relativePath of ['SKILL.md', 'references/guide.md', 'scripts/check.mjs']) {
+      const path = resolve(skillRoot, relativePath);
+      writeFileSync(path, `${readFileSync(path, 'utf8')}changed\n`);
+      const expected = sha256Tree(skillRoot);
+      assert.notEqual(expected, digest);
+      assert.throws(
+        () => buildRegistry(skillsRoot, manifest, root),
+        (error) => {
+          assert.match(error.message, new RegExp(`expected ${expected}, observed ${digest}`));
+          assert.match(error.message, /structural-validation, evidence\/alpha\/validation\.json/);
+          assert.match(error.message, /maintainer-approval, evidence\/alpha\/approval\.json/);
+          return true;
+        },
+      );
+
+      digest = expected;
+      manifest = writeBoundEvidence(root, 'alpha', digest);
+      assert.equal(
+        buildRegistry(skillsRoot, manifest, root).skills[0].maturity.status,
+        'verified',
+      );
+    }
+  } finally {
+    removeDir(root);
+  }
+});
+
+test('buildRegistry rejects missing and malformed verified evidence skillSha256', () => {
+  const root = makeTempDir('reg-maturity-schema-');
+  try {
+    const skillsRoot = resolve(root, 'skills');
+    writeSkill(skillsRoot, 'alpha', { frontmatter: validFrontmatter('alpha') });
+    const digest = sha256Tree(resolve(skillsRoot, 'alpha'));
+
+    for (const [value, expected] of [
+      [undefined, 'missing required property "skillSha256"'],
+      ['not-a-sha256', 'string does not match pattern ^[0-9a-f]{64}$'],
+      [null, 'evidence artifact must be valid JSON'],
+    ]) {
+      const manifest = writeBoundEvidence(root, 'alpha', digest);
+      const reference = manifest.skills.alpha.evidence[0].reference;
+      let content;
+      if (value === null) {
+        content = '{invalid json\n';
+        writeFileSync(resolve(root, reference), content);
+      } else {
+        const artifact = {
+          schemaVersion: 1,
+          evidenceType: 'structural-validation',
+          skill: 'alpha',
+        };
+        if (value !== undefined) artifact.skillSha256 = value;
+        content = writeJson(resolve(root, reference), artifact);
+      }
+      manifest.skills.alpha.evidence[0].sha256 = sha256(content);
+
+      assert.throws(
+        () => buildRegistry(skillsRoot, manifest, root),
+        (error) => {
+          assert.match(error.message, new RegExp(expected.replaceAll(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+          return true;
+        },
+      );
+    }
+  } finally {
+    removeDir(root);
+  }
+});
+
+test('buildRegistry rejects duplicate and relabeled verified evidence', () => {
+  const root = makeTempDir('reg-maturity-identity-');
+  try {
+    const skillsRoot = resolve(root, 'skills');
+    writeSkill(skillsRoot, 'alpha', { frontmatter: validFrontmatter('alpha') });
+    const digest = sha256Tree(resolve(skillsRoot, 'alpha'));
+    const manifest = writeBoundEvidence(root, 'alpha', digest);
+    const validation = manifest.skills.alpha.evidence[0];
+    const approval = manifest.skills.alpha.evidence[1];
+    approval.reference = validation.reference;
+    approval.sha256 = validation.sha256;
+
+    assert.throws(
+      () => buildRegistry(skillsRoot, manifest, root),
+      (error) => {
+        assert.match(error.message, /duplicate evidence reference/);
+        assert.match(
+          error.message,
+          /artifact evidenceType structural-validation does not match manifest type maintainer-approval/,
+        );
+        return true;
+      },
+    );
+  } finally {
+    removeDir(root);
+  }
+});
+
+test('buildRegistry rejects missing, unsupported, and mismatched evidence identity', () => {
+  const root = makeTempDir('reg-maturity-evidence-type-');
+  try {
+    const skillsRoot = resolve(root, 'skills');
+    writeSkill(skillsRoot, 'alpha', { frontmatter: validFrontmatter('alpha') });
+    const digest = sha256Tree(resolve(skillsRoot, 'alpha'));
+
+    for (const [artifactPatch, expected] of [
+      [{ evidenceType: undefined }, /missing required property "evidenceType"/],
+      [{ evidenceType: 'not-evidence' }, /is not in enum/],
+      [
+        { evidenceType: 'maintainer-approval' },
+        /does not match manifest type structural-validation/,
+      ],
+      [{ skill: 'beta' }, /artifact skill beta does not match manifest skill alpha/],
+    ]) {
+      const manifest = writeBoundEvidence(root, 'alpha', digest);
+      const evidence = manifest.skills.alpha.evidence[0];
+      const artifact = {
+        schemaVersion: 1,
+        evidenceType: 'structural-validation',
+        skill: 'alpha',
+        skillSha256: digest,
+        ...artifactPatch,
+      };
+      if (artifact.evidenceType === undefined) delete artifact.evidenceType;
+      const content = writeJson(resolve(root, evidence.reference), artifact);
+      evidence.sha256 = sha256(content);
+
+      assert.throws(
+        () => buildRegistry(skillsRoot, manifest, root),
+        expected,
+      );
+    }
   } finally {
     removeDir(root);
   }

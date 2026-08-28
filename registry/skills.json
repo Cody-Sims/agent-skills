@@ -14,13 +14,13 @@
           {
             "type": "structural-validation",
             "reference": "evidence/agent-tool-interface-design/validation.json",
-            "sha256": "ff798ebbcf7fd1606dd5b09f2ef4a39e9f12726e1507ae0aae00490c4d065482",
+            "sha256": "3aa90e1c4c718d6dbbf35e85b5783b3d7bf7ecafd256e83feca963945470f6ec",
             "recordedAt": "2026-08-24"
           },
           {
             "type": "maintainer-approval",
             "reference": "evidence/agent-tool-interface-design/approval.json",
-            "sha256": "078c58e406fc5c9b7e2dfb47c1e9a4f763307151f2c886494b79f180a9696ed0",
+            "sha256": "33c9796d5c5c852949e36ce008df758c6926dc1f755661c47a2cb5c2049ebdac",
             "recordedAt": "2026-08-24"
           }
         ]
@@ -289,13 +289,13 @@
           {
             "type": "structural-validation",
             "reference": "evidence/copilot-cloud-agent/validation.json",
-            "sha256": "8d23489eff54ee37c2b1e1e07158cf6cc189a6366eae97c841842ce2c0d7ae20",
+            "sha256": "5e4edd16869d82a738541fb646db5ccfc199fb1b422d78128ccc84d72bec612b",
             "recordedAt": "2026-07-27"
           },
           {
             "type": "maintainer-approval",
             "reference": "evidence/copilot-cloud-agent/approval.json",
-            "sha256": "be3dbfbfc414c82f20c62af0134bc6b5a1d93cb04a756fc0a647baf3682554de",
+            "sha256": "22e8b57f1352df1f96598435638c1851714cf227d5019d062441afa7b7cc8081",
             "recordedAt": "2026-07-27"
           }
         ]
@@ -645,13 +645,13 @@
           {
             "type": "structural-validation",
             "reference": "evidence/parallel-worktree-delivery/validation.json",
-            "sha256": "97023024e0460c90e899ffb2c76612fa7a6d176189f6c29f5a3d343cdbcb9693",
+            "sha256": "a043c4d73e03980c00beb9f53bcaa213ea3a7455b40a0be25ae4f1d387c3d1b7",
             "recordedAt": "2026-07-27"
           },
           {
             "type": "maintainer-approval",
             "reference": "evidence/parallel-worktree-delivery/approval.json",
-            "sha256": "781d244d6e11fb3cb5332e3f6f9d1d9336c8890e1d3fae84d435ebd3a70a6266",
+            "sha256": "c5f37a7ff0f265d88ff5750f109ab6d5a55b0ac59ba9cd5ef6f2279a990d1fbb",
             "recordedAt": "2026-07-27"
           }
         ]
@@ -1249,14 +1249,14 @@
         "evidence": [
           {
             "type": "structural-validation",
-            "reference": "evals/skills/shadow-dream/evals.json",
-            "sha256": "7364c090032fea88ff330b75146eb15a6efe75c6373aaf18882432b60fc5a849",
+            "reference": "evidence/shadow-dream/contribution-validation.json",
+            "sha256": "21cc4f416f6bab1c1056264fb5cacb8504e9ca42a7e46f930f63aa7645d107f5",
             "recordedAt": "2026-08-23"
           },
           {
             "type": "maintainer-approval",
-            "reference": "registry/lifecycle.json",
-            "sha256": "c3c267e2c7c2e72848e193982e14657368749e96ebe1b96cda147f349099416e",
+            "reference": "evidence/shadow-dream/approval.json",
+            "sha256": "28a713582a452b19a59637a296df9fd669a9bb8b5427555a42f1379cf65f35de",
             "recordedAt": "2026-08-23"
           }
         ]
@@ -1345,14 +1345,14 @@
         "evidence": [
           {
             "type": "structural-validation",
-            "reference": "tests/shadow-drift.test.mjs",
-            "sha256": "e2774e9b1a89461075ac0d326ce624a0ff178ca1b68604060627cbd0c6ab5af6",
+            "reference": "evidence/shadow-drift/contribution-validation.json",
+            "sha256": "dff42ea4391e0a0e07089beb68ba60c2238fda0c4fb05fab5264e19ecb292a27",
             "recordedAt": "2026-08-23"
           },
           {
             "type": "maintainer-approval",
-            "reference": "registry/lifecycle.json",
-            "sha256": "c3c267e2c7c2e72848e193982e14657368749e96ebe1b96cda147f349099416e",
+            "reference": "evidence/shadow-drift/approval.json",
+            "sha256": "bc697a2e15b3a3b1a0bc29075aa8b2b648e470c1338fc33314eba744bb867eff",
             "recordedAt": "2026-08-23"
           }
         ]
@@ -1444,14 +1444,14 @@
         "evidence": [
           {
             "type": "structural-validation",
-            "reference": "tests/shadow-observe.test.mjs",
-            "sha256": "54f77c51382c5405c7cbde66925dcd2e29a312fdc30a0d58fc21c21936286ad8",
+            "reference": "evidence/shadow-observe/contribution-validation.json",
+            "sha256": "1239898a521d4abd4f046790e5d18c66e29c0c325cc445bd9a7d8ccfceffe249",
             "recordedAt": "2026-08-23"
           },
           {
             "type": "maintainer-approval",
-            "reference": "registry/lifecycle.json",
-            "sha256": "c3c267e2c7c2e72848e193982e14657368749e96ebe1b96cda147f349099416e",
+            "reference": "evidence/shadow-observe/approval.json",
+            "sha256": "7fe394e06ead8ce161fb16da196176198a4247659772871c14414485b2a2a5cd",
             "recordedAt": "2026-08-23"
           }
         ]
@@ -1881,13 +1881,13 @@
           {
             "type": "structural-validation",
             "reference": "evidence/verification-discipline/validation.json",
-            "sha256": "0bb6c288e031e7bc75a0cc754d943ee26b06fad13c7d81a848df05d00aa61d5f",
+            "sha256": "6a296563a9fd5a7d83d2794d2dea9651f6b2361a3531531780f328dd6ee7e7ae",
             "recordedAt": "2026-07-27"
           },
           {
             "type": "maintainer-approval",
             "reference": "evidence/verification-discipline/approval.json",
-            "sha256": "7ff79ad338e14d60e4a7da32db0df392cb6be15ef79a249edc7bc43d37f2c073",
+            "sha256": "45753899024693e27bdaaccbc5552e40b9cf33678a92a7b2d3176920d4c6d6c8",
             "recordedAt": "2026-07-27"
           }
         ]
@@ -1979,13 +1979,13 @@
           {
             "type": "structural-validation",
             "reference": "evidence/wayfinder-planning/validation.json",
-            "sha256": "2623d14fb57ed0943314e5bc6d38f42c3a0b5a7380eafa0df42311e436fd322f",
+            "sha256": "77b4a3a140319e530f5ac3fafc7bbed6522b8a138a9306f634407285795414ff",
             "recordedAt": "2026-08-24"
           },
           {
             "type": "maintainer-approval",
             "reference": "evidence/wayfinder-planning/approval.json",
-            "sha256": "139676e3e8f686922d03a72bfc3b13e3bab89e1e7ca8874ba10bb6dc127de31a",
+            "sha256": "b9a0ec3861ae1ddbaa53028e117d275bb46bc0c9f81759dd8be28ae469a360f2",
             "recordedAt": "2026-08-24"
           }
         ]
@@ -2075,7 +2075,7 @@
       },
       "path": "skills/wayfinder-planning",
       "skillFile": "skills/wayfinder-planning/SKILL.md",
-      "sha256": "4c0955b722d399483c19c9384e0a3be9097a95fa919df7633f3ddac60d9f2449",
+      "sha256": "86da73bd63658c1269276b3db9b3fbcaf2f7a5a915e68ebe392a5fb0d1614b20",
       "resources": [
         "assets/map-template.md",
         "assets/ticket-template.md",

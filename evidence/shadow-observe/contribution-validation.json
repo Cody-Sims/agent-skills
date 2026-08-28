@@ -1,6 +1,8 @@
 {
   "schemaVersion": 1,
+  "evidenceType": "structural-validation",
   "skill": "shadow-observe",
+  "skillSha256": "638cee289f543a932463451b636494929f0e73454d9cb12f2526419e35cc8308",
   "evidenceKind": "contribution-safety-exception",
   "recordedAt": "2026-08-23",
   "repository": "https://github.com/Cody-Sims/agent-skills",

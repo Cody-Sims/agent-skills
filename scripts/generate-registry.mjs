@@ -11,7 +11,13 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { discoverSkills } from './lib/skills.mjs';
 import { parseFrontmatter } from './lib/frontmatter.mjs';
-import { assertNoSymlinks, sha256, sha256File, walkFiles } from './lib/paths.mjs';
+import {
+  assertNoSymlinks,
+  sha256,
+  sha256File,
+  sha256Tree,
+  walkFiles,
+} from './lib/paths.mjs';
 import { validateAgainstSchema } from './lib/jsonschema.mjs';
 import {
   normalizeDiscovery,
@@ -45,6 +51,31 @@ const MATURITY_SCHEMA_PATH = resolve(REPOSITORY_ROOT, 'schemas', 'maturity-evide
 const DISCOVERY_SCHEMA_PATH = resolve(REPOSITORY_ROOT, 'schemas', 'registry-discovery.schema.json');
 const LIFECYCLE_SCHEMA_PATH = resolve(REPOSITORY_ROOT, 'schemas', 'lifecycle.schema.json');
 const PACKS_SCHEMA_PATH = resolve(REPOSITORY_ROOT, 'schemas', 'packs.schema.json');
+const VERIFIED_EVIDENCE_BINDING_SCHEMA = {
+  type: 'object',
+  required: ['evidenceType', 'skill', 'skillSha256'],
+  properties: {
+    evidenceType: {
+      type: 'string',
+      enum: [
+        'structural-validation',
+        'behavior-evaluation',
+        'routing-evaluation',
+        'runtime-smoke-test',
+        'maintainer-approval',
+        'regression-report',
+      ],
+    },
+    skill: {
+      type: 'string',
+      minLength: 1,
+    },
+    skillSha256: {
+      type: 'string',
+      pattern: '^[0-9a-f]{64}$',
+    },
+  },
+};
 
 // Builds the registry object from a skills root. Pure and deterministic.
 export function buildRegistry(
@@ -56,7 +87,10 @@ export function buildRegistry(
   asOf = new Date().toISOString().slice(0, 10),
   packsManifest = { schemaVersion: 1, packs: [], removed: {} },
 ) {
-  const manifestErrors = validateMaturityManifest(maturityManifest, { artifactRoot });
+  const manifestErrors = validateMaturityManifest(
+    maturityManifest,
+    { artifactRoot, skillsRoot },
+  );
   if (manifestErrors.length > 0) {
     throw new Error(`Invalid maturity evidence manifest:\n${manifestErrors.join('\n')}`);
   }
@@ -188,14 +222,40 @@ export function validateLifecycleManifest(
   );
 }
 
-export function validateMaturityManifest(manifest, { artifactRoot } = {}) {
+export function validateMaturityManifest(
+  manifest,
+  { artifactRoot, skillsRoot = artifactRoot } = {},
+) {
   const errors = validateAgainstSchema(loadMaturitySchema(), manifest);
   if (!artifactRoot || !manifest?.skills || typeof manifest.skills !== 'object') {
     return errors;
   }
   for (const [skill, maturity] of Object.entries(manifest.skills)) {
+    const evidenceReferences = new Map();
+    let currentSkillSha256;
+    if (maturity?.status === 'verified' && skillsRoot) {
+      try {
+        const skillRoot = assertNoSymlinks(skillsRoot, skill);
+        if (existsSync(skillRoot) && statSync(skillRoot).isDirectory()) {
+          currentSkillSha256 = sha256Tree(skillRoot);
+        }
+      } catch (error) {
+        errors.push(`$.skills.${skill}: cannot hash the complete skill tree: ${error.message}`);
+      }
+    }
     for (const [index, evidence] of (maturity?.evidence ?? []).entries()) {
       const path = `$.skills.${skill}.evidence[${index}].reference`;
+      const bindingPath = `$.skills.${skill}.evidence[${index}]`
+        + ` (${evidence?.type}, ${evidence?.reference})`;
+      const previousIndex = evidenceReferences.get(evidence?.reference);
+      if (previousIndex !== undefined) {
+        errors.push(
+          `${path}: duplicate evidence reference; already used by `
+          + `$.skills.${skill}.evidence[${previousIndex}].reference.`,
+        );
+      } else {
+        evidenceReferences.set(evidence?.reference, index);
+      }
       try {
         const artifactPath = assertNoSymlinks(artifactRoot, evidence.reference);
         if (!existsSync(artifactPath)) {
@@ -204,6 +264,41 @@ export function validateMaturityManifest(manifest, { artifactRoot } = {}) {
           errors.push(`${path}: evidence artifact must be a regular file.`);
         } else if (sha256File(artifactPath) !== evidence.sha256) {
           errors.push(`${path}: evidence artifact hash does not match.`);
+        } else if (maturity.status === 'verified' && currentSkillSha256) {
+          let artifact;
+          try {
+            artifact = JSON.parse(readFileSync(artifactPath, 'utf8'));
+          } catch (error) {
+            errors.push(`${bindingPath}: evidence artifact must be valid JSON (${error.message}).`);
+            continue;
+          }
+          const bindingErrors = validateAgainstSchema(
+            VERIFIED_EVIDENCE_BINDING_SCHEMA,
+            artifact,
+            bindingPath,
+          );
+          errors.push(...bindingErrors);
+          if (bindingErrors.length === 0) {
+            if (artifact.evidenceType !== evidence.type) {
+              errors.push(
+                `${bindingPath}: artifact evidenceType ${artifact.evidenceType} `
+                + `does not match manifest type ${evidence.type}.`,
+              );
+            }
+            if (artifact.skill !== skill) {
+              errors.push(
+                `${bindingPath}: artifact skill ${artifact.skill} `
+                + `does not match manifest skill ${skill}.`,
+              );
+            }
+            if (artifact.skillSha256 !== currentSkillSha256) {
+              errors.push(
+                `${bindingPath}: skillSha256 does not match the current complete skill tree `
+                + `for ${skill}; expected ${currentSkillSha256}, `
+                + `observed ${artifact.skillSha256}.`,
+              );
+            }
+          }
         }
       } catch (error) {
         errors.push(`${path}: ${error.message}`);

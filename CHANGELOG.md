@@ -6,6 +6,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- Bound verified maturity evidence to a unique, self-typed artifact for the
+  current complete skill tree, rejecting duplicated, relabeled, or stale
+  evidence during registry generation.
+- Hardened the Wayfinder recovery checker with map-scoped targets, recoverable
+  pending actions, revisioned external actions, uniform mutation replay keys,
+  post-release read fences, strict RFC 3339 timestamps, checked revisions,
+  bounded inputs and journals, coherent progress history, and compact
+  hash-and-delta transitions.
+
 ## [0.2.0] - 2026-08-24
 
 ### Added
@@ -183,9 +194,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- Hardened Wayfinder recovery conformance for open-only external actions,
-  explicit block history, validated blocker DAGs, pending-action fences, and
-  bounded millisecond reclaim leases.
+- **Breaking:** Hardened Wayfinder recovery conformance for open-only external
+  actions, explicit block history, validated blocker DAGs, and pending-action
+  fences. Reclaim traces now use bounded `lease_duration_ms` instead of
+  `lease_duration_seconds`. Schema-v1 traces now require one stable `map_id`,
+  offset-qualified timestamps, valid claim intervals, closed-state consistency,
+  and lifecycle fences for every modeled mutation.
 
 - **Breaking:** Narrowed `shadow-architecture` 2.0.0 routing to `.shadow` setup,
   approved decision lifecycle, compatibility maintenance, supersession, and

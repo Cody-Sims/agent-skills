@@ -4,6 +4,7 @@
     "unknownExternalOutcome": {
       "input": {
         "schemaVersion": 1,
+        "map_id": "map-recovery",
         "now": "2026-08-23T20:00:00.000Z",
         "initialState": {
           "tickets": [
@@ -26,6 +27,7 @@
         "operations": [
           {
             "operation": "record_task_intent",
+            "mutation_key": "mutation:unknown:intent",
             "ticket_id": "task-unknown",
             "expected_revision": 1,
             "claim_token": "claim-unknown",
@@ -38,6 +40,7 @@
           },
           {
             "operation": "external_action",
+            "mutation_key": "vendor-request-1",
             "ticket_id": "task-unknown",
             "expected_revision": 2,
             "claim_token": "claim-unknown",
@@ -50,8 +53,9 @@
           },
           {
             "operation": "record_task_receipt",
+            "mutation_key": "mutation:unknown:receipt",
             "ticket_id": "task-unknown",
-            "expected_revision": 2,
+            "expected_revision": 3,
             "claim_token": "claim-unknown",
             "owner_id": "agent-1",
             "session_id": "session-1",
@@ -66,8 +70,9 @@
           },
           {
             "operation": "block_ticket",
+            "mutation_key": "mutation:unknown:block",
             "ticket_id": "task-unknown",
-            "expected_revision": 3,
+            "expected_revision": 4,
             "claim_token": "claim-unknown",
             "owner_id": "agent-1",
             "session_id": "session-1",
@@ -79,16 +84,23 @@
           {
             "operation": "get_ticket",
             "ticket_id": "task-unknown",
-            "expected_revision": 4,
+            "expected_revision": 5,
             "full": true
           },
           {
             "operation": "release_claim",
+            "mutation_key": "mutation:unknown:release",
             "ticket_id": "task-unknown",
-            "expected_revision": 4,
+            "expected_revision": 5,
             "claim_token": "claim-unknown",
             "owner_id": "agent-1",
             "session_id": "session-1"
+          },
+          {
+            "operation": "get_ticket",
+            "ticket_id": "task-unknown",
+            "expected_revision": 6,
+            "full": true
           }
         ]
       },
@@ -98,7 +110,8 @@
         "record_task_receipt",
         "block_ticket",
         "get_ticket",
-        "release_claim"
+        "release_claim",
+        "get_ticket"
       ],
       "expectedViolationCodes": [],
       "expectedFrontier": [],
@@ -107,6 +120,7 @@
     "failedBlock": {
       "input": {
         "schemaVersion": 1,
+        "map_id": "map-recovery",
         "now": "2026-08-23T20:00:00.000Z",
         "initialState": {
           "tickets": [
@@ -136,6 +150,7 @@
         "operations": [
           {
             "operation": "external_action",
+            "mutation_key": "uncertain-action-1",
             "ticket_id": "task-failed-block",
             "expected_revision": 1,
             "claim_token": "claim-failed",
@@ -148,8 +163,9 @@
           },
           {
             "operation": "record_task_receipt",
+            "mutation_key": "mutation:failed:receipt",
             "ticket_id": "task-failed-block",
-            "expected_revision": 1,
+            "expected_revision": 2,
             "claim_token": "claim-failed",
             "owner_id": "agent-2",
             "session_id": "session-2",
@@ -164,8 +180,9 @@
           },
           {
             "operation": "block_ticket",
+            "mutation_key": "mutation:failed:block",
             "ticket_id": "task-failed-block",
-            "expected_revision": 2,
+            "expected_revision": 3,
             "claim_token": "claim-failed",
             "owner_id": "agent-2",
             "session_id": "session-2",
@@ -176,8 +193,9 @@
           },
           {
             "operation": "release_claim",
+            "mutation_key": "mutation:failed:release",
             "ticket_id": "task-failed-block",
-            "expected_revision": 2,
+            "expected_revision": 3,
             "claim_token": "claim-failed",
             "owner_id": "agent-2",
             "session_id": "session-2"
@@ -200,6 +218,7 @@
     "blockedExternalAction": {
       "input": {
         "schemaVersion": 1,
+        "map_id": "map-recovery",
         "now": "2026-08-23T20:00:00.000Z",
         "initialState": {
           "tickets": [
@@ -222,6 +241,7 @@
         "operations": [
           {
             "operation": "record_task_intent",
+            "mutation_key": "mutation:blocked-action:intent",
             "ticket_id": "task-block-before-action",
             "expected_revision": 1,
             "claim_token": "claim-block-before-action",
@@ -234,6 +254,7 @@
           },
           {
             "operation": "block_ticket",
+            "mutation_key": "mutation:blocked-action:block",
             "ticket_id": "task-block-before-action",
             "expected_revision": 2,
             "claim_token": "claim-block-before-action",
@@ -246,6 +267,7 @@
           },
           {
             "operation": "external_action",
+            "mutation_key": "block-before-action-1",
             "ticket_id": "task-block-before-action",
             "expected_revision": 3,
             "claim_token": "claim-block-before-action",
@@ -272,6 +294,7 @@
     "nonHumanUnblock": {
       "input": {
         "schemaVersion": 1,
+        "map_id": "map-recovery",
         "now": "2026-08-23T20:00:00.000Z",
         "initialState": {
           "tickets": [
@@ -305,6 +328,7 @@
         "operations": [
           {
             "operation": "unblock_ticket",
+            "mutation_key": "mutation:non-human:unblock",
             "ticket_id": "task-blocked",
             "expected_revision": 9,
             "block_revision": 9,
@@ -327,6 +351,7 @@
     "staleRevisions": {
       "input": {
         "schemaVersion": 1,
+        "map_id": "map-recovery",
         "now": "2026-08-23T20:00:00.000Z",
         "initialState": {
           "tickets": [
@@ -355,6 +380,7 @@
           },
           {
             "operation": "record_progress",
+            "mutation_key": "mutation:stale:progress",
             "ticket_id": "research-stale",
             "expected_revision": 4,
             "claim_token": "claim-stale",
@@ -380,6 +406,7 @@
     "progressIdempotency": {
       "input": {
         "schemaVersion": 1,
+        "map_id": "map-recovery",
         "now": "2026-08-23T20:00:00.000Z",
         "initialState": {
           "tickets": [
@@ -402,6 +429,7 @@
         "operations": [
           {
             "operation": "record_progress",
+            "mutation_key": "mutation:progress:first",
             "ticket_id": "research-progress",
             "expected_revision": 1,
             "claim_token": "claim-progress",
@@ -417,6 +445,7 @@
           },
           {
             "operation": "record_progress",
+            "mutation_key": "mutation:progress:replay",
             "ticket_id": "research-progress",
             "expected_revision": 2,
             "claim_token": "claim-progress",
@@ -432,6 +461,7 @@
           },
           {
             "operation": "record_progress",
+            "mutation_key": "mutation:progress:conflict",
             "ticket_id": "research-progress",
             "expected_revision": 2,
             "claim_token": "claim-progress",
@@ -461,6 +491,7 @@
     "expiredLeaseReclaim": {
       "input": {
         "schemaVersion": 1,
+        "map_id": "map-recovery",
         "now": "2026-08-23T20:00:00.000Z",
         "initialState": {
           "tickets": [
@@ -518,6 +549,7 @@
         "operations": [
           {
             "operation": "reclaim_expired_claim",
+            "mutation_key": "mutation:reclaim:expired",
             "ticket_id": "task-reclaim",
             "expected_revision": 7,
             "observed_claim_token": "claim-expired",
@@ -534,6 +566,7 @@
           },
           {
             "operation": "external_action",
+            "mutation_key": "vendor-existing-7",
             "ticket_id": "task-reclaim",
             "expected_revision": 8,
             "claim_token": "claim-reclaimed",
@@ -546,6 +579,7 @@
           },
           {
             "operation": "external_action",
+            "mutation_key": "vendor-new-8",
             "ticket_id": "task-reclaim",
             "expected_revision": 8,
             "claim_token": "claim-reclaimed",
@@ -574,6 +608,7 @@
     "frontierDerivation": {
       "input": {
         "schemaVersion": 1,
+        "map_id": "map-recovery",
         "now": "2026-08-23T20:00:00.000Z",
         "initialState": {
           "tickets": [

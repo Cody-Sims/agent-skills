@@ -4,7 +4,9 @@ import { readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { resolve } from 'node:path';
 
-import { evaluateRecoveryTrace } from '../skills/wayfinder-planning/scripts/recovery-contract.mjs';
+import {
+  evaluateRecoveryTrace as evaluateRecoveryTraceStrict,
+} from '../skills/wayfinder-planning/scripts/recovery-contract.mjs';
 
 const ROOT = resolve(import.meta.dirname, '..');
 const CHECKER = resolve(ROOT, 'skills/wayfinder-planning/scripts/recovery-contract.mjs');
@@ -17,6 +19,41 @@ const fixture = JSON.parse(readFileSync(
   'utf8',
 ));
 const traces = fixture.traces;
+const MUTATION_OPERATIONS = new Set([
+  'block_ticket',
+  'external_action',
+  'reclaim_expired_claim',
+  'record_progress',
+  'record_task_intent',
+  'record_task_receipt',
+  'release_claim',
+  'unblock_ticket',
+]);
+
+function withTestMutationKeys(input) {
+  const normalized = structuredClone(input);
+  normalized.operations = normalized.operations?.map((operation, index) => {
+    if (!MUTATION_OPERATIONS.has(operation.operation)
+        || operation.mutation_key !== undefined) {
+      return operation;
+    }
+    return {
+      ...operation,
+      mutation_key: operation.operation === 'external_action'
+        ? operation.idempotency_key
+          ?? `test:${index}:${operation.operation}:${operation.ticket_id ?? 'missing'}`
+        : `test:${index}:${operation.operation}:${operation.ticket_id ?? 'missing'}`,
+    };
+  });
+  return normalized;
+}
+
+function evaluateRecoveryTrace(input) {
+  return evaluateRecoveryTraceStrict(withTestMutationKeys({
+    map_id: 'map-recovery',
+    ...input,
+  }));
+}
 
 function claim(overrides = {}) {
   return {
@@ -73,6 +110,7 @@ function state(tickets, externalActions = []) {
 
 function assertFixtureContract(name, result) {
   const scenario = traces[name];
+  assert.equal(result.map_id, scenario.input.map_id);
   assert.deepEqual(result.operationOrder, scenario.expectedOperationOrder);
   assert.deepEqual(result.violationCodes, scenario.expectedViolationCodes);
   assert.deepEqual(result.frontier, scenario.expectedFrontier);
@@ -95,14 +133,14 @@ test('unknown external outcome is durably blocked and verified before claim rele
     evidence_reference: 'vendor:req-1',
     actor_id: 'agent-1',
     blocked_at: scenario.input.now,
-    blocked_revision: 4,
+    blocked_revision: 5,
     requires_human_resolution: true,
   };
   const expectedTicket = ticket({
     id: 'task-unknown',
     type: 'task',
     status: 'blocked',
-    revision: 5,
+    revision: 6,
     block: expectedBlock,
     block_history: [expectedBlock],
     task_action: {
@@ -129,7 +167,7 @@ test('unknown external outcome is durably blocked and verified before claim rele
     performed_at: scenario.input.now,
   };
   assert.deepEqual(result.finalState, state([expectedTicket], [expectedAction]));
-  assert.deepEqual(result.transitions.at(-1).after, result.finalState);
+  assert.equal(result.transitions.at(-1).afterStateSha256, result.finalStateSha256);
   assert.equal(result.finalState.tickets[0].claim, null);
 });
 
@@ -154,7 +192,7 @@ test('unconfirmed blocking rejects release, preserves the lease, and fails close
   });
   assert.deepEqual(result.transitions[2].violationCodes, ['block-unconfirmed']);
   assert.deepEqual(result.transitions[3].violationCodes, ['release-before-confirmed-block']);
-  assert.deepEqual(result.transitions[3].before, result.transitions[3].after);
+  assertCompactNoMutation(result, 3);
 });
 
 test('non-human unblock is rejected without changing lifecycle or frontier', () => {
@@ -162,7 +200,7 @@ test('non-human unblock is rejected without changing lifecycle or frontier', () 
   assertFixtureContract('nonHumanUnblock', result);
   assert.equal(result.finalState.tickets[0].status, 'blocked');
   assert.equal(result.finalState.tickets[0].revision, 9);
-  assert.deepEqual(result.transitions[0].before, result.transitions[0].after);
+  assertCompactNoMutation(result, 0);
 });
 
 test('human unblock requires the exact block revision and authoritative inputs', async (t) => {
@@ -236,7 +274,7 @@ test('human unblock requires the exact block revision and authoritative inputs',
         operations: [scenario.operation],
       });
       assert.deepEqual(result.transitions[0].violationCodes, [scenario.violation]);
-      assert.deepEqual(result.transitions[0].before, result.transitions[0].after);
+      assertCompactNoMutation(result, 0);
       assert.deepEqual(result.frontier, []);
     });
   }
@@ -295,7 +333,7 @@ test('unknown task outcomes require terminal reconciliation before human unblock
     ],
   });
   assert.deepEqual(result.violationCodes, ['unresolved-external-outcome']);
-  assert.deepEqual(result.transitions[0].before, result.transitions[0].after);
+  assertCompactNoMutation(result, 0);
   assert.equal(result.finalState.tickets[0].status, 'blocked');
   assert.deepEqual(result.frontier, []);
 });
@@ -444,7 +482,7 @@ test('human unblock rejects a reconciliation receipt from another external syste
     ],
   });
   assert.deepEqual(result.violationCodes, ['task-receipt-conflict']);
-  assert.deepEqual(result.transitions[0].before, result.transitions[0].after);
+  assertCompactNoMutation(result, 0);
   assert.equal(result.finalState.tickets[0].status, 'blocked');
 });
 
@@ -684,7 +722,7 @@ test('reconciliation audits cannot be overwritten after an unblock', () => {
   assert.deepEqual(result.transitions[1].violationCodes, [
     'invalid-lifecycle-transition',
   ]);
-  assert.deepEqual(result.transitions[1].before, result.transitions[1].after);
+  assertCompactNoMutation(result, 1);
   assert.equal(
     result.finalState.tickets[0].block_history[0].reconciliation.actor_id,
     'human-original',
@@ -785,10 +823,9 @@ test('multiple block and unblock cycles retain immutable ordered audit history',
       },
     ],
   );
-  assert.deepEqual(
-    result.transitions[3].before.tickets[0].block_history[0],
-    result.transitions[3].after.tickets[0].block_history[0],
-  );
+  assert.deepEqual(result.transitions[3].deltas.map(({ path }) => path), [
+    '/tickets/task-audit-cycles',
+  ]);
 });
 
 test('normalized task actions require receipts that match their state', async (t) => {
@@ -862,8 +899,8 @@ test('revisioned reads and mutations reject stale expected revisions', () => {
     ['stale-revision'],
     ['stale-revision'],
   ]);
-  assert.deepEqual(result.transitions[0].before, result.transitions[0].after);
-  assert.deepEqual(result.transitions[1].before, result.transitions[1].after);
+  assertCompactNoMutation(result, 0);
+  assertCompactNoMutation(result, 1);
   assert.equal(result.finalState.tickets[0].revision, 5);
   assert.deepEqual(result.finalState.tickets[0].progress_records, []);
 });
@@ -884,9 +921,9 @@ test('stable progress keys are idempotent and conflicting reuse cannot overwrite
   };
   assert.deepEqual(result.finalState.tickets[0].progress_records, [expectedRecord]);
   assert.equal(result.finalState.tickets[0].revision, 2);
-  assert.deepEqual(result.transitions[0].after.tickets[0].progress_records, [expectedRecord]);
-  assert.deepEqual(result.transitions[1].before, result.transitions[1].after);
-  assert.deepEqual(result.transitions[2].before, result.transitions[2].after);
+  assert.deepEqual(result.finalState.tickets[0].progress_records, [expectedRecord]);
+  assertCompactNoMutation(result, 1);
+  assertCompactNoMutation(result, 2);
   assert.deepEqual(result.transitions[2].violationCodes, ['progress-key-conflict']);
 });
 
@@ -1026,7 +1063,7 @@ test('external actions require current revision, active ownership, and recorded 
         operations: [scenario.operation],
       });
       assert.deepEqual(result.transitions[0].violationCodes, [scenario.violation]);
-      assert.deepEqual(result.transitions[0].before, result.transitions[0].after);
+      assertCompactNoMutation(result, 0);
       assert.equal(result.externalActionCount, 0);
     });
   }
@@ -1039,10 +1076,12 @@ test('external actions require an open ticket without mutating rejected traces',
   assert.deepEqual(blockedResult.transitions[2].violationCodes, [
     'external-action-requires-open-ticket',
   ]);
-  assert.deepEqual(blockedResult.transitions[2].before, blockedResult.transitions[2].after);
+  assertCompactNoMutation(blockedResult, 2);
   assert.deepEqual(blockedResult.transitions[2].inspection, {
     requiredAtRevision: null,
     lastFullInspectionRevision: null,
+    releaseConfirmationRequiredAtRevision: null,
+    lastReleaseConfirmationRevision: null,
   });
 
   const activeClaim = claim({
@@ -1096,8 +1135,6 @@ test('external actions require an open ticket without mutating rejected traces',
       type: 'task',
       status: 'closed',
       revision: 4,
-      claim: activeClaim,
-      task_action: taskAction,
     }),
   ]) {
     await t.test(lifecycleTicket.status, () => {
@@ -1110,7 +1147,7 @@ test('external actions require an open ticket without mutating rejected traces',
       assert.deepEqual(result.violationCodes, [
         'external-action-requires-open-ticket',
       ]);
-      assert.deepEqual(result.transitions[0].before, result.transitions[0].after);
+      assertCompactNoMutation(result, 0);
       assert.equal(result.externalActionCount, 0);
     });
   }
@@ -1149,6 +1186,7 @@ test('pending external actions fence release until a matching receipt is durable
       });
       const input = {
         schemaVersion: 1,
+        map_id: 'map-pending-actions',
         now: '2026-08-23T20:00:00.000Z',
         initialState: {
           tickets: [
@@ -1188,7 +1226,7 @@ test('pending external actions fence release until a matching receipt is durable
           {
             operation: 'release_claim',
             ticket_id: `task-pending-${outcome}`,
-            expected_revision: 2,
+            expected_revision: 3,
             claim_token: activeClaim.claim_token,
             owner_id: activeClaim.owner_id,
             session_id: activeClaim.session_id,
@@ -1197,9 +1235,9 @@ test('pending external actions fence release until a matching receipt is durable
       };
 
       const result = evaluateRecoveryTrace(input);
-      const pending = result.transitions[1].after.tickets[0].pending_external_action;
+      const pending = result.finalState.tickets[0].pending_external_action;
       assert.deepEqual(result.transitions[2].violationCodes, ['pending-external-action']);
-      assert.deepEqual(result.transitions[2].before, result.transitions[2].after);
+      assertCompactNoMutation(result, 2);
       assert.deepEqual(result.finalState.tickets[0].claim, activeClaim);
       assert.deepEqual(pending, {
         ticket_id: `task-pending-${outcome}`,
@@ -1232,6 +1270,7 @@ test('pending external action rejects another action and matching receipt clears
       });
       const result = evaluateRecoveryTrace({
         schemaVersion: 1,
+        map_id: 'map-pending-actions',
         now: '2026-08-23T20:00:00.000Z',
         initialState: {
           tickets: [
@@ -1278,8 +1317,15 @@ test('pending external action rejects another action and matching receipt clears
         ],
       });
 
-      assert.deepEqual(result.transitions[1].violationCodes, ['pending-external-action']);
-      assert.deepEqual(result.transitions[1].before, result.transitions[1].after);
+      assert.deepEqual(
+        result.transitions[1].violationCodes,
+        key === 'pending-repeat-1' ? [] : ['pending-external-action'],
+      );
+      assert.equal(
+        result.transitions[1].replayed,
+        key === 'pending-repeat-1',
+      );
+      assertCompactNoMutation(result, 1);
       assert.equal(result.externalActionCount, 1);
     });
   }
@@ -1299,6 +1345,7 @@ test('pending external action rejects another action and matching receipt clears
   };
   const synchronized = evaluateRecoveryTrace({
     schemaVersion: 1,
+    map_id: 'map-pending-actions',
     now: '2026-08-23T20:00:00.000Z',
     initialState: {
       tickets: [
@@ -1333,7 +1380,7 @@ test('pending external action rejects another action and matching receipt clears
       {
         operation: 'record_task_receipt',
         ticket_id: 'task-pending-sync',
-        expected_revision: 1,
+        expected_revision: 2,
         claim_token: activeClaim.claim_token,
         owner_id: activeClaim.owner_id,
         session_id: activeClaim.session_id,
@@ -1344,10 +1391,16 @@ test('pending external action rejects another action and matching receipt clears
       {
         operation: 'release_claim',
         ticket_id: 'task-pending-sync',
-        expected_revision: 2,
+        expected_revision: 3,
         claim_token: activeClaim.claim_token,
         owner_id: activeClaim.owner_id,
         session_id: activeClaim.session_id,
+      },
+      {
+        operation: 'get_ticket',
+        ticket_id: 'task-pending-sync',
+        expected_revision: 4,
+        full: true,
       },
     ],
   });
@@ -1367,11 +1420,13 @@ test('pending external actions require receipt synchronization before blocking',
   });
   const result = evaluateRecoveryTrace({
     schemaVersion: 1,
+    map_id: 'map-pending-actions',
     now: '2026-08-23T20:00:00.000Z',
     initialState: {
       tickets: [
         ticket({
           id: 'task-pending-block',
+          parent_map_id: 'map-pending-actions',
           type: 'task',
           claim: activeClaim,
           task_action: {
@@ -1412,7 +1467,7 @@ test('pending external actions require receipt synchronization before blocking',
       {
         operation: 'record_task_receipt',
         ticket_id: 'task-pending-block',
-        expected_revision: 1,
+        expected_revision: 2,
         claim_token: activeClaim.claim_token,
         owner_id: activeClaim.owner_id,
         session_id: activeClaim.session_id,
@@ -1428,7 +1483,7 @@ test('pending external actions require receipt synchronization before blocking',
       {
         operation: 'block_ticket',
         ticket_id: 'task-pending-block',
-        expected_revision: 2,
+        expected_revision: 3,
         claim_token: activeClaim.claim_token,
         owner_id: activeClaim.owner_id,
         session_id: activeClaim.session_id,
@@ -1441,52 +1496,52 @@ test('pending external actions require receipt synchronization before blocking',
   });
 
   assert.deepEqual(result.transitions[1].violationCodes, ['pending-external-action']);
-  assert.deepEqual(result.transitions[1].before, result.transitions[1].after);
+  assertCompactNoMutation(result, 1);
   assert.equal(result.finalState.tickets[0].status, 'blocked');
-  assert.equal(result.finalState.tickets[0].revision, 3);
+  assert.equal(result.finalState.tickets[0].revision, 4);
   assert.equal(result.finalState.tickets[0].pending_external_action, null);
   assert.equal(result.externalActionCount, 1);
 });
 
-test('an unmatched normalized pending action stays outside the frontier without a claim', () => {
-  const result = evaluateRecoveryTrace({
-    schemaVersion: 1,
-    now: '2026-08-23T20:00:00.000Z',
-    initialState: {
-      tickets: [
-        ticket({
-          id: 'task-pending-unclaimed',
-          parent_map_id: 'map-pending-actions',
-          type: 'task',
-          task_action: {
-            intent: 'Recover a previously invoked action.',
-            idempotency_key: 'pending-unclaimed-1',
-            authorization_reference: 'human-approval-pending-unclaimed',
-            reconciliation_method: 'Look up pending-unclaimed-1.',
-            state: 'intended',
-          },
-          pending_external_action: {
-            ticket_id: 'task-pending-unclaimed',
-            intent: 'Recover a previously invoked action.',
-            idempotency_key: 'pending-unclaimed-1',
-            claim_token: 'claim-prior',
-            owner_id: 'agent-prior',
-            session_id: 'session-prior',
-            external_system: 'vendor-api',
-            lookup_reference: 'vendor:pending-unclaimed-1',
-            outcome: 'unknown',
-            performed_at: '2026-08-23T19:45:00.000Z',
-            receipt_synchronization_pending: true,
-          },
-        }),
-      ],
-    },
-    operations: [],
-  });
-  assert.deepEqual(result.frontier, []);
-  assert.equal(
-    result.finalState.tickets[0].pending_external_action.idempotency_key,
-    'pending-unclaimed-1',
+test('an unmatched normalized pending action without a claim is rejected', () => {
+  assert.throws(
+    () => evaluateRecoveryTrace({
+      schemaVersion: 1,
+      map_id: 'map-pending-actions',
+      now: '2026-08-23T20:00:00.000Z',
+      initialState: {
+        tickets: [
+          ticket({
+            id: 'task-pending-unclaimed',
+            parent_map_id: 'map-pending-actions',
+            type: 'task',
+            task_action: {
+              intent: 'Recover a previously invoked action.',
+              idempotency_key: 'pending-unclaimed-1',
+              authorization_reference: 'human-approval-pending-unclaimed',
+              reconciliation_method: 'Look up pending-unclaimed-1.',
+              state: 'intended',
+            },
+            pending_external_action: {
+              ticket_id: 'task-pending-unclaimed',
+              intent: 'Recover a previously invoked action.',
+              idempotency_key: 'pending-unclaimed-1',
+              claim_token: 'claim-prior',
+              owner_id: 'agent-prior',
+              session_id: 'session-prior',
+              external_system: 'vendor-api',
+              lookup_reference: 'vendor:pending-unclaimed-1',
+              outcome: 'unknown',
+              performed_at: '2026-08-23T19:45:00.000Z',
+              receipt_synchronization_pending: true,
+            },
+          }),
+        ],
+      },
+      operations: [],
+    }),
+    (error) => error.code === 'malformed-input'
+      && /pending_external_action.*open claimed/i.test(error.message),
   );
 });
 
@@ -1541,7 +1596,7 @@ test('identical task receipt replay is idempotent without a revision bump', () =
   });
   assert.deepEqual(result.violationCodes, []);
   assert.equal(result.finalState.tickets[0].revision, 2);
-  assert.deepEqual(result.transitions[1].before, result.transitions[1].after);
+  assertCompactNoMutation(result, 1);
   assert.deepEqual(result.finalState.tickets[0].task_action.external_receipt, receipt);
 });
 
@@ -1654,7 +1709,7 @@ test('conflicting task receipt reuse cannot overwrite authoritative receipt', as
         operations: [scenario.operation],
       });
       assert.deepEqual(result.transitions[0].violationCodes, [scenario.violation]);
-      assert.deepEqual(result.transitions[0].before, result.transitions[0].after);
+      assertCompactNoMutation(result, 0);
       assert.deepEqual(
         result.finalState.tickets[0].task_action.external_receipt,
         authoritativeReceipt,
@@ -1729,7 +1784,7 @@ test('external actions and task receipts reject undocumented outcomes', async (t
         operations: [scenario.operation],
       });
       assert.deepEqual(result.violationCodes, ['invalid-task-outcome']);
-      assert.deepEqual(result.transitions[0].before, result.transitions[0].after);
+      assertCompactNoMutation(result, 0);
       assert.equal(result.externalActionCount, 0);
     });
   }
@@ -1740,7 +1795,7 @@ test('expired reclaim requires full inspection and exposes prior recovery record
   const result = evaluateRecoveryTrace(scenario.input);
   assertFixtureContract('expiredLeaseReclaim', result);
 
-  const reclaimed = result.transitions[0].after.tickets[0];
+  const reclaimed = result.finalState.tickets[0];
   assert.equal(reclaimed.revision, 8);
   assert.deepEqual(reclaimed.claim, claim({
     claim_token: 'claim-reclaimed',
@@ -1751,7 +1806,7 @@ test('expired reclaim requires full inspection and exposes prior recovery record
   }));
   assert.equal(result.transitions[0].inspection.requiredAtRevision, 8);
 
-  const inspected = result.transitions[1].after.tickets[0];
+  const inspected = result.finalState.tickets[0];
   assert.equal(result.transitions[1].inspection.requiredAtRevision, null);
   assert.equal(result.transitions[1].inspection.lastFullInspectionRevision, 8);
   assert.deepEqual(inspected.comments, scenario.input.initialState.tickets[0].comments);
@@ -1820,7 +1875,7 @@ test('expired reclaim rejects stale fencing credentials and accepts a fresh sess
         operations: [scenario.operation],
       });
       assert.deepEqual(result.violationCodes, [scenario.violation]);
-      assert.deepEqual(result.transitions[0].before, result.transitions[0].after);
+      assertCompactNoMutation(result, 0);
       assert.deepEqual(result.finalState.tickets[0].claim, expiredClaim);
       assert.equal(result.finalState.tickets[0].revision, 4);
     });
@@ -1906,17 +1961,17 @@ test('reclaim expiry validates safe duration and representable timestamps before
     });
   }
 
-  await t.test('computed expiry outside the ISO date range', () => {
+  await t.test('computed expiry outside the RFC 3339 year range', () => {
     const input = structuredClone(baseInput);
-    input.now = '+275760-09-12T23:59:59.999Z';
-    input.initialState.tickets[0].claim.expires_at = '+275760-09-12T23:59:59.998Z';
+    input.now = '9999-12-31T23:59:59.999Z';
+    input.initialState.tickets[0].claim.expires_at = '9999-12-31T23:59:59.998Z';
     input.operations[0].lease_duration_ms = 2;
     const before = structuredClone(input);
     assert.throws(
       () => evaluateRecoveryTrace(input),
       (error) => error.code === 'malformed-input'
         && !(error instanceof RangeError)
-        && /expiry.*representable/i.test(error.message),
+        && /expiry.*RFC 3339/i.test(error.message),
     );
     assert.deepEqual(input, before);
   });
@@ -1934,16 +1989,16 @@ test('reclaim expiry validates safe duration and representable timestamps before
     });
   }
 
-  await t.test('maximum representable expiry', () => {
+  await t.test('maximum RFC 3339 expiry', () => {
     const input = structuredClone(baseInput);
-    input.now = '+275760-09-12T23:59:59.999Z';
-    input.initialState.tickets[0].claim.expires_at = '+275760-09-12T23:59:59.998Z';
+    input.now = '9999-12-31T23:59:59.998Z';
+    input.initialState.tickets[0].claim.expires_at = '9999-12-31T23:59:59.997Z';
     input.operations[0].lease_duration_ms = 1;
     const result = evaluateRecoveryTrace(input);
     assert.deepEqual(result.violationCodes, []);
     assert.equal(
       result.finalState.tickets[0].claim.expires_at,
-      '+275760-09-13T00:00:00.000Z',
+      '9999-12-31T23:59:59.999Z',
     );
   });
 });
@@ -2145,7 +2200,7 @@ test('reclaim inspection gate rejects every modeled mutation without changing st
       assert.deepEqual(result.transitions[1].violationCodes, [
         'work-before-full-inspection',
       ]);
-      assert.deepEqual(result.transitions[1].before, result.transitions[1].after);
+      assertCompactNoMutation(result, 1);
       assert.equal(result.finalState.tickets[0].revision, 2);
       assert.equal(result.finalState.tickets[0].claim.claim_token, newClaimFields.claim_token);
     });
@@ -2155,6 +2210,7 @@ test('reclaim inspection gate rejects every modeled mutation without changing st
 test('successful full inspection at reclaimed revision permits later mutation', () => {
   const input = {
     schemaVersion: 1,
+    map_id: 'map-recovery',
     now: '2026-08-23T20:00:00.000Z',
     initialState: {
       tickets: [
@@ -2333,7 +2389,7 @@ test('reordering release before durable block is a detected recovery regression'
     intent,
     action,
     receipt,
-    { ...release, expected_revision: 3 },
+    { ...release, expected_revision: 4 },
     block,
     getTicket,
   ];
@@ -2631,7 +2687,7 @@ test('every semantic rejection is transactional across state and inspection cont
       });
       const transition = result.transitions[scenario.transitionIndex];
       assert.deepEqual(transition.violationCodes, [scenario.violation]);
-      assert.deepEqual(transition.before, transition.after);
+      assertCompactNoMutation(result, scenario.transitionIndex);
       if (scenario.transitionIndex > 0) {
         assert.deepEqual(
           transition.inspection,
@@ -2641,6 +2697,8 @@ test('every semantic rejection is transactional across state and inspection cont
         assert.deepEqual(transition.inspection, {
           requiredAtRevision: null,
           lastFullInspectionRevision: null,
+          releaseConfirmationRequiredAtRevision: null,
+          lastReleaseConfirmationRevision: null,
         });
       }
     });
@@ -2683,6 +2741,7 @@ test('CLI output has export parity and malformed JSON exits nonzero', () => {
 test('CLI state ordering is byte-stable across process locales', () => {
   const input = {
     schemaVersion: 1,
+    map_id: 'map-recovery',
     now: '2026-08-23T20:00:00.000Z',
     initialState: {
       tickets: [
@@ -2774,6 +2833,592 @@ test('blocked normalization requires explicit durable history without fabricatio
   );
 });
 
+test('final invariants require offset-qualified timestamps in every normalized time field', async (t) => {
+  const reconciledBlock = {
+    reason: 'Previously blocked.',
+    evidence_reference: 'evidence:strict-time',
+    actor_id: 'agent-strict-time',
+    blocked_at: '2026-08-23T18:00:00.000Z',
+    blocked_revision: 2,
+    requires_human_resolution: true,
+    reconciliation: {
+      block_revision: 2,
+      actor_type: 'human',
+      actor_id: 'human-strict-time',
+      authorization_reference: 'authorization:strict-time',
+      reconciliation_evidence: {
+        authority_reference: 'authority:strict-time',
+        conclusion: 'The prior block was reconciled.',
+      },
+      reconciled_at: '2026-08-23T18:30:00.000Z',
+      resulting_revision: 3,
+    },
+  };
+  const baseInput = {
+    schemaVersion: 1,
+    map_id: 'map-recovery',
+    now: '2026-08-23T20:00:00.000Z',
+    initialState: {
+      tickets: [
+        ticket({
+          id: 'task-strict-time',
+          type: 'task',
+          revision: 4,
+          claim: claim({
+            claim_token: 'claim-strict-time',
+            owner_id: 'agent-strict-time',
+            session_id: 'session-strict-time',
+            acquired_at: '2026-08-23T19:00:00.000Z',
+            expires_at: '2026-08-23T21:00:00.000Z',
+          }),
+          block_history: [reconciledBlock],
+          progress_records: [{
+            progress_key: 'strict-time:p1',
+            payload: { summary: 'Preserved work.' },
+            recorded_at: '2026-08-23T19:15:00.000Z',
+            revision: 4,
+          }],
+        }),
+      ],
+    },
+    operations: [],
+  };
+  const cases = [
+    {
+      name: 'now',
+      mutate(input) {
+        input.now = '2026-08-23T20:00:00.000';
+      },
+      message: /now.*UTC offset|now.*Z/i,
+    },
+    {
+      name: 'claim acquisition',
+      mutate(input) {
+        input.initialState.tickets[0].claim.acquired_at = '2026-08-23T19:00:00.000';
+      },
+      message: /claim\.acquired_at.*UTC offset|claim\.acquired_at.*Z/i,
+    },
+    {
+      name: 'claim expiry',
+      mutate(input) {
+        input.initialState.tickets[0].claim.expires_at = '2026-08-23T21:00:00.000';
+      },
+      message: /claim\.expires_at.*UTC offset|claim\.expires_at.*Z/i,
+    },
+    {
+      name: 'block time',
+      mutate(input) {
+        input.initialState.tickets[0].block_history[0].blocked_at =
+          '2026-08-23T18:00:00.000';
+      },
+      message: /blocked_at.*UTC offset|blocked_at.*Z/i,
+    },
+    {
+      name: 'reconciliation audit time',
+      mutate(input) {
+        input.initialState.tickets[0].block_history[0].reconciliation.reconciled_at =
+          '2026-08-23T18:30:00.000';
+      },
+      message: /reconciled_at.*UTC offset|reconciled_at.*Z/i,
+    },
+    {
+      name: 'progress time',
+      mutate(input) {
+        input.initialState.tickets[0].progress_records[0].recorded_at =
+          '2026-08-23T19:15:00.000';
+      },
+      message: /recorded_at.*UTC offset|recorded_at.*Z/i,
+    },
+    {
+      name: 'pending external operation time',
+      mutate(input) {
+        const target = input.initialState.tickets[0];
+        target.task_action = {
+          intent: 'Synchronize the observed action.',
+          idempotency_key: 'strict-time-action-1',
+          authorization_reference: 'authorization:strict-time-action-1',
+          reconciliation_method: 'Look up strict-time-action-1.',
+          state: 'intended',
+        };
+        target.pending_external_action = {
+          ticket_id: target.id,
+          intent: target.task_action.intent,
+          idempotency_key: target.task_action.idempotency_key,
+          claim_token: target.claim.claim_token,
+          owner_id: target.claim.owner_id,
+          session_id: target.claim.session_id,
+          external_system: 'vendor-api',
+          lookup_reference: 'vendor:strict-time-action-1',
+          outcome: 'succeeded',
+          performed_at: '2026-08-23T19:30:00.000',
+          receipt_synchronization_pending: true,
+        };
+      },
+      message: /performed_at.*UTC offset|performed_at.*Z/i,
+    },
+  ];
+
+  for (const scenario of cases) {
+    await t.test(scenario.name, () => {
+      const input = structuredClone(baseInput);
+      scenario.mutate(input);
+      assert.throws(
+        () => evaluateRecoveryTrace(input),
+        (error) => error.code === 'malformed-input'
+          && scenario.message.test(error.message),
+      );
+    });
+  }
+});
+
+test('final invariants authorize claims only for acquired_at <= now < expires_at', async (t) => {
+  const baseInput = {
+    schemaVersion: 1,
+    map_id: 'map-recovery',
+    now: '2026-08-23T20:00:00.000Z',
+    initialState: {
+      tickets: [
+        ticket({
+          id: 'research-claim-interval',
+          claim: claim({
+            claim_token: 'claim-interval',
+            owner_id: 'agent-interval',
+            session_id: 'session-interval',
+            acquired_at: '2026-08-23T20:00:00.000Z',
+            expires_at: '2026-08-23T21:00:00.000Z',
+          }),
+        }),
+      ],
+    },
+    operations: [{
+      operation: 'record_progress',
+      ticket_id: 'research-claim-interval',
+      expected_revision: 1,
+      claim_token: 'claim-interval',
+      owner_id: 'agent-interval',
+      session_id: 'session-interval',
+      progress_key: 'claim-interval:p1',
+      payload: { summary: 'Equality at acquisition is authorized.' },
+    }],
+  };
+
+  await t.test('acquisition equality is allowed', () => {
+    const result = evaluateRecoveryTrace(baseInput);
+    assert.deepEqual(result.violationCodes, []);
+    assert.equal(result.finalState.tickets[0].revision, 2);
+  });
+
+  for (const scenario of [
+    {
+      name: 'future acquisition is not authorized',
+      acquired_at: '2026-08-23T20:00:00.001Z',
+      expires_at: '2026-08-23T21:00:00.000Z',
+      violation: 'claim-conflict',
+    },
+    {
+      name: 'expiry equality is not authorized',
+      acquired_at: '2026-08-23T19:00:00.000Z',
+      expires_at: '2026-08-23T20:00:00.000Z',
+      violation: 'claim-conflict',
+    },
+    {
+      name: 'already expired claim is not authorized',
+      acquired_at: '2026-08-23T18:00:00.000Z',
+      expires_at: '2026-08-23T19:00:00.000Z',
+      violation: 'claim-conflict',
+    },
+  ]) {
+    await t.test(scenario.name, () => {
+      const input = structuredClone(baseInput);
+      Object.assign(input.initialState.tickets[0].claim, scenario);
+      delete input.initialState.tickets[0].claim.name;
+      delete input.initialState.tickets[0].claim.violation;
+      const result = evaluateRecoveryTrace(input);
+      assert.deepEqual(result.violationCodes, [scenario.violation]);
+      assertCompactNoMutation(result, 0);
+    });
+  }
+
+  await t.test('inverted claim interval is malformed before an operation', () => {
+    const input = structuredClone(baseInput);
+    input.initialState.tickets[0].claim.acquired_at = '2026-08-23T20:30:00.000Z';
+    input.initialState.tickets[0].claim.expires_at = '2026-08-23T20:15:00.000Z';
+    assert.throws(
+      () => evaluateRecoveryTrace(input),
+      (error) => error.code === 'malformed-input' && /claim interval/i.test(error.message),
+    );
+  });
+});
+
+test('final invariants make qualified and rejected CLI timestamps timezone-independent', () => {
+  const qualifiedInput = {
+    schemaVersion: 1,
+    map_id: 'map-recovery',
+    now: '2026-08-23T13:00:00.000-07:00',
+    initialState: {
+      tickets: [
+        ticket({
+          id: 'research-timezone',
+          claim: claim({
+            claim_token: 'claim-timezone',
+            owner_id: 'agent-timezone',
+            session_id: 'session-timezone',
+            acquired_at: '2026-08-23T12:00:00.000-07:00',
+            expires_at: '2026-08-23T14:00:00.000-07:00',
+          }),
+        }),
+      ],
+    },
+    operations: [],
+  };
+  const timezones = ['UTC', 'Pacific/Honolulu', 'Asia/Kathmandu'];
+  const qualifiedOutputs = timezones.map((timezone) => {
+    const execution = spawnSync(process.execPath, [CHECKER], {
+      cwd: ROOT,
+      encoding: 'utf8',
+      env: { ...process.env, TZ: timezone },
+      input: JSON.stringify(qualifiedInput),
+    });
+    assert.equal(execution.status, 0, execution.stderr);
+    return execution.stdout;
+  });
+  assert.equal(new Set(qualifiedOutputs).size, 1);
+  const parsed = JSON.parse(qualifiedOutputs[0]);
+  assert.equal(parsed.map_id, 'map-recovery');
+  assert.equal(parsed.finalState.tickets[0].claim.acquired_at, '2026-08-23T19:00:00.000Z');
+  assert.equal(parsed.finalState.tickets[0].claim.expires_at, '2026-08-23T21:00:00.000Z');
+
+  const zoneLessInput = structuredClone(qualifiedInput);
+  zoneLessInput.now = '2026-08-23T20:00:00.000';
+  const rejectedOutputs = timezones.map((timezone) => {
+    const execution = spawnSync(process.execPath, [CHECKER], {
+      cwd: ROOT,
+      encoding: 'utf8',
+      env: { ...process.env, TZ: timezone },
+      input: JSON.stringify(zoneLessInput),
+    });
+    assert.equal(execution.status, 1);
+    return execution.stdout;
+  });
+  assert.equal(new Set(rejectedOutputs).size, 1);
+  const error = JSON.parse(rejectedOutputs[0]);
+  assert.equal(error.error.code, 'malformed-input');
+  assert.match(error.error.message, /now.*RFC 3339/i);
+});
+
+test('final invariants reject impossible closed snapshots and preserve valid terminal history', async (t) => {
+  const activeClaim = claim({
+    claim_token: 'claim-closed',
+    owner_id: 'agent-closed',
+    session_id: 'session-closed',
+    acquired_at: '2026-08-23T19:00:00.000Z',
+    expires_at: '2026-08-23T21:00:00.000Z',
+  });
+  const intendedAction = {
+    intent: 'Perform an action that still requires work.',
+    idempotency_key: 'closed-action-1',
+    authorization_reference: 'authorization:closed-action-1',
+    reconciliation_method: 'Look up closed-action-1.',
+    state: 'intended',
+  };
+  const unknownAction = {
+    ...intendedAction,
+    state: 'outcome_unknown',
+    external_receipt: {
+      external_system: 'vendor-api',
+      idempotency_key: 'closed-action-1',
+      result: 'unknown',
+      lookup_reference: 'vendor:closed-action-1',
+    },
+  };
+  const cases = [
+    {
+      name: 'active claim',
+      overrides: { claim: activeClaim },
+      message: /closed.*claim/i,
+    },
+    {
+      name: 'active block',
+      overrides: {
+        block: {
+          reason: 'Still blocked.',
+          evidence_reference: 'evidence:closed-block',
+          actor_id: 'agent-closed',
+          blocked_at: '2026-08-23T19:00:00.000Z',
+          blocked_revision: 2,
+          requires_human_resolution: true,
+        },
+      },
+      message: /block.*closed|closed.*block/i,
+    },
+    {
+      name: 'pending external action',
+      overrides: {
+        task_action: intendedAction,
+        pending_external_action: {
+          ticket_id: 'task-closed-invalid',
+          intent: intendedAction.intent,
+          idempotency_key: intendedAction.idempotency_key,
+          claim_token: activeClaim.claim_token,
+          owner_id: activeClaim.owner_id,
+          session_id: activeClaim.session_id,
+          external_system: 'vendor-api',
+          lookup_reference: 'vendor:closed-action-1',
+          outcome: 'succeeded',
+          performed_at: '2026-08-23T19:30:00.000Z',
+          receipt_synchronization_pending: true,
+        },
+      },
+      message: /pending_external_action/i,
+    },
+    {
+      name: 'recovery hold',
+      overrides: {
+        recovery_hold: {
+          code: 'unknown-external-outcome',
+          idempotency_key: 'closed-action-1',
+          evidence_reference: 'vendor:closed-action-1',
+        },
+      },
+      message: /closed.*recovery_hold/i,
+    },
+    {
+      name: 'intended task action',
+      overrides: { task_action: intendedAction },
+      message: /closed.*task_action.*terminal/i,
+    },
+    {
+      name: 'unknown task outcome',
+      overrides: { task_action: unknownAction },
+      message: /closed.*task_action.*terminal/i,
+    },
+  ];
+
+  for (const scenario of cases) {
+    await t.test(scenario.name, () => {
+      const invalid = ticket({
+        id: 'task-closed-invalid',
+        type: 'task',
+        status: 'closed',
+        revision: 4,
+        ...scenario.overrides,
+      });
+      if (scenario.overrides.block) invalid.block_history = [scenario.overrides.block];
+      assert.throws(
+        () => evaluateRecoveryTrace({
+          schemaVersion: 1,
+          map_id: 'map-recovery',
+          now: '2026-08-23T20:00:00.000Z',
+          initialState: { tickets: [invalid] },
+          operations: [],
+        }),
+        (error) => error.code === 'malformed-input'
+          && scenario.message.test(error.message),
+      );
+    });
+  }
+
+  const priorBlock = {
+    reason: 'Previously blocked.',
+    evidence_reference: 'evidence:closed-history',
+    actor_id: 'agent-closed',
+    blocked_at: '2026-08-23T18:00:00.000Z',
+    blocked_revision: 2,
+    requires_human_resolution: true,
+    reconciliation: {
+      block_revision: 2,
+      actor_type: 'human',
+      actor_id: 'human-closed',
+      authorization_reference: 'authorization:closed-history',
+      reconciliation_evidence: {
+        authority_reference: 'authority:closed-history',
+        conclusion: 'The prior block was reconciled.',
+      },
+      reconciled_at: '2026-08-23T18:30:00.000Z',
+      resulting_revision: 3,
+    },
+  };
+  const succeededAction = {
+    ...intendedAction,
+    state: 'succeeded',
+    external_receipt: {
+      external_system: 'vendor-api',
+      idempotency_key: intendedAction.idempotency_key,
+      result: 'succeeded',
+      lookup_reference: 'vendor:closed-action-1',
+    },
+  };
+  const valid = evaluateRecoveryTrace({
+    schemaVersion: 1,
+    map_id: 'map-recovery',
+    now: '2026-08-23T20:00:00.000Z',
+    initialState: {
+      tickets: [
+        ticket({
+          id: 'research-closed-valid',
+          status: 'closed',
+          revision: 2,
+        }),
+        ticket({
+          id: 'task-closed-valid',
+          type: 'task',
+          status: 'closed',
+          revision: 4,
+          block_history: [priorBlock],
+          task_action: succeededAction,
+        }),
+      ],
+    },
+    operations: [],
+  });
+  assert.deepEqual(valid.violationCodes, []);
+  assert.deepEqual(valid.finalState.tickets[1].block_history, [priorBlock]);
+});
+
+test('final invariants enforce centralized lifecycle gates before every mutation', async (t) => {
+  const closedTicket = ticket({
+    id: 'task-closed-lifecycle',
+    type: 'task',
+    status: 'closed',
+    revision: 4,
+  });
+  const closedOperations = [
+    'record_progress',
+    'record_task_intent',
+    'record_task_receipt',
+    'block_ticket',
+    'external_action',
+    'unblock_ticket',
+    'release_claim',
+    'reclaim_expired_claim',
+  ];
+  for (const operation of closedOperations) {
+    await t.test(`closed ${operation}`, () => {
+      const result = evaluateRecoveryTrace({
+        schemaVersion: 1,
+        map_id: 'map-recovery',
+        now: '2026-08-23T20:00:00.000Z',
+        initialState: { tickets: [closedTicket] },
+        operations: [{
+          operation,
+          ticket_id: closedTicket.id,
+          expected_revision: closedTicket.revision,
+        }],
+      });
+      assert.deepEqual(
+        result.transitions[0].violationCodes,
+        [operation === 'external_action'
+          ? 'external-action-requires-open-ticket'
+          : 'invalid-lifecycle-transition'],
+      );
+      assertCompactNoMutation(result, 0);
+    });
+  }
+
+  for (const operation of [
+    'record_progress',
+    'record_task_intent',
+    'record_task_receipt',
+    'block_ticket',
+    'external_action',
+  ]) {
+    await t.test(`blocked ${operation}`, () => {
+      const block = {
+        reason: 'Still blocked.',
+        evidence_reference: 'evidence:blocked-lifecycle',
+        actor_id: 'agent-blocked-lifecycle',
+        blocked_at: '2026-08-23T19:00:00.000Z',
+        blocked_revision: 4,
+        requires_human_resolution: true,
+      };
+      const result = evaluateRecoveryTrace({
+        schemaVersion: 1,
+        map_id: 'map-recovery',
+        now: '2026-08-23T20:00:00.000Z',
+        initialState: {
+          tickets: [
+            ticket({
+              id: 'task-blocked-lifecycle',
+              type: 'task',
+              status: 'blocked',
+              revision: 4,
+              block,
+              block_history: [block],
+            }),
+          ],
+        },
+        operations: [{
+          operation,
+          ticket_id: 'task-blocked-lifecycle',
+          expected_revision: 4,
+        }],
+      });
+      assert.deepEqual(
+        result.transitions[0].violationCodes,
+        [operation === 'external_action'
+          ? 'external-action-requires-open-ticket'
+          : 'invalid-lifecycle-transition'],
+      );
+      assertCompactNoMutation(result, 0);
+    });
+  }
+
+  const read = evaluateRecoveryTrace({
+    schemaVersion: 1,
+    map_id: 'map-recovery',
+    now: '2026-08-23T20:00:00.000Z',
+    initialState: { tickets: [closedTicket] },
+    operations: [{
+      operation: 'get_ticket',
+      ticket_id: closedTicket.id,
+      expected_revision: closedTicket.revision,
+      full: true,
+    }],
+  });
+  assert.deepEqual(read.violationCodes, []);
+});
+
+test('final invariants scope the frontier to the required map identity', () => {
+  const input = {
+    schemaVersion: 1,
+    map_id: 'map-a',
+    now: '2026-08-23T20:00:00.000Z',
+    initialState: {
+      tickets: [
+        ticket({ id: 'a-ready', parent_map_id: 'map-a' }),
+        ticket({ id: 'b-ready', parent_map_id: 'map-b' }),
+        ticket({ id: 'non-child', parent_map_id: null }),
+      ],
+    },
+    operations: [],
+  };
+  const mapA = evaluateRecoveryTrace(input);
+  assert.equal(mapA.map_id, 'map-a');
+  assert.deepEqual(mapA.frontier, ['a-ready']);
+
+  const mapB = evaluateRecoveryTrace({ ...input, map_id: 'map-b' });
+  assert.equal(mapB.map_id, 'map-b');
+  assert.deepEqual(mapB.frontier, ['b-ready']);
+});
+
+test('final invariants reject a missing or empty map identity', async (t) => {
+  for (const mapId of [undefined, '', '   ']) {
+    await t.test(mapId === undefined ? 'missing' : JSON.stringify(mapId), () => {
+      const input = {
+        schemaVersion: 1,
+        now: '2026-08-23T20:00:00.000Z',
+        initialState: { tickets: [] },
+        operations: [],
+      };
+      if (mapId !== undefined) input.map_id = mapId;
+      assert.throws(
+        () => evaluateRecoveryTraceStrict(input),
+        (error) => error.code === 'malformed-input' && /map_id/.test(error.message),
+      );
+    });
+  }
+});
+
 test('tracker contract pins pending-action, reclaim, blocker, and lease guarantees', () => {
   const contract = readFileSync(TRACKER_CONTRACT, 'utf8');
   const normalizedContract = contract.replace(/\s+/g, ' ');
@@ -2797,10 +3442,1632 @@ test('tracker contract pins pending-action, reclaim, blocker, and lease guarante
     '`block_history` is required whenever `status` is `blocked`; adapters and the checker must never synthesize it',
     '`lease_duration_ms` must be a positive safe integer no greater than 2592000000',
     'Every blocker must be a sibling child with the same non-null `parent_map_id`.',
+    '`map_id`, the required stable identity of the single map whose frontier is evaluated',
+    '`acquired_at <= now < expires_at`',
+    '`get_ticket` may inspect any lifecycle state',
+    '`reclaim_expired_claim` is allowed only for `open` or `blocked` tickets',
   ]) {
     assert.ok(
       normalizedContract.includes(phrase),
       `missing contract phrase: ${phrase}`,
     );
+  }
+});
+
+function strictTrace(overrides = {}) {
+  return {
+    schemaVersion: 1,
+    map_id: 'map-recovery',
+    now: '2026-08-23T20:00:00.000Z',
+    initialState: { tickets: [] },
+    operations: [],
+    ...overrides,
+  };
+}
+
+function liveClaim(suffix = 'matrix') {
+  return claim({
+    claim_token: `claim-${suffix}`,
+    owner_id: `agent-${suffix}`,
+    session_id: `session-${suffix}`,
+    acquired_at: '2026-08-23T19:00:00.000Z',
+    expires_at: '2026-08-23T21:00:00.000Z',
+  });
+}
+
+function intendedTaskAction(suffix = 'matrix') {
+  return {
+    intent: `Perform action ${suffix}.`,
+    idempotency_key: `action-${suffix}`,
+    authorization_reference: `authorization-${suffix}`,
+    reconciliation_method: `Look up action-${suffix}.`,
+    state: 'intended',
+  };
+}
+
+function pendingActionRecord(ticketId, activeClaim, action, overrides = {}) {
+  return {
+    ticket_id: ticketId,
+    intent: action.intent,
+    idempotency_key: action.idempotency_key,
+    claim_token: activeClaim.claim_token,
+    owner_id: activeClaim.owner_id,
+    session_id: activeClaim.session_id,
+    external_system: 'vendor-api',
+    lookup_reference: `vendor:${action.idempotency_key}`,
+    outcome: 'succeeded',
+    performed_at: '2026-08-23T19:30:00.000Z',
+    receipt_synchronization_pending: true,
+    ...overrides,
+  };
+}
+
+function assertCompactNoMutation(result, index, expectedViolation) {
+  const transition = result.transitions[index];
+  if (expectedViolation) {
+    assert.deepEqual(transition.violationCodes, [expectedViolation]);
+  }
+  assert.match(transition.beforeStateSha256, /^[a-f0-9]{64}$/);
+  assert.equal(transition.afterStateSha256, transition.beforeStateSha256);
+  assert.deepEqual(transition.deltas, []);
+  assert.equal('before' in transition, false);
+  assert.equal('after' in transition, false);
+}
+
+function scopedOperation(operation, target) {
+  const activeClaim = target.claim;
+  const common = {
+    operation,
+    ticket_id: target.id,
+    expected_revision: target.revision,
+  };
+  switch (operation) {
+    case 'get_ticket':
+      return { ...common, full: true };
+    case 'record_progress':
+      return {
+        ...common,
+        mutation_key: `mutation:${operation}`,
+        claim_token: activeClaim.claim_token,
+        owner_id: activeClaim.owner_id,
+        session_id: activeClaim.session_id,
+        progress_key: 'progress:map-scope',
+        payload: { summary: 'Must remain scoped.' },
+      };
+    case 'record_task_intent':
+      return {
+        ...common,
+        mutation_key: `mutation:${operation}`,
+        claim_token: activeClaim.claim_token,
+        owner_id: activeClaim.owner_id,
+        session_id: activeClaim.session_id,
+        intent: 'Must remain scoped.',
+        idempotency_key: 'action-map-scope',
+        authorization_reference: 'authorization-map-scope',
+        reconciliation_method: 'Look up action-map-scope.',
+      };
+    case 'external_action':
+      return {
+        ...common,
+        mutation_key: target.task_action.idempotency_key,
+        claim_token: activeClaim.claim_token,
+        owner_id: activeClaim.owner_id,
+        session_id: activeClaim.session_id,
+        idempotency_key: target.task_action.idempotency_key,
+        external_system: 'vendor-api',
+        lookup_reference: 'vendor:map-scope',
+        outcome: 'succeeded',
+      };
+    case 'record_task_receipt':
+      return {
+        ...common,
+        mutation_key: `mutation:${operation}`,
+        claim_token: activeClaim.claim_token,
+        owner_id: activeClaim.owner_id,
+        session_id: activeClaim.session_id,
+        idempotency_key: target.task_action.idempotency_key,
+        outcome: 'succeeded',
+        receipt: {
+          external_system: 'vendor-api',
+          idempotency_key: target.task_action.idempotency_key,
+          result: 'succeeded',
+          lookup_reference: 'vendor:map-scope',
+        },
+      };
+    case 'block_ticket':
+      return {
+        ...common,
+        mutation_key: `mutation:${operation}`,
+        claim_token: activeClaim.claim_token,
+        owner_id: activeClaim.owner_id,
+        session_id: activeClaim.session_id,
+        confirmed: true,
+        reason: 'Must remain scoped.',
+        evidence_reference: 'evidence:map-scope',
+        actor_id: activeClaim.owner_id,
+      };
+    case 'release_claim':
+      return {
+        ...common,
+        mutation_key: `mutation:${operation}`,
+        claim_token: activeClaim.claim_token,
+        owner_id: activeClaim.owner_id,
+        session_id: activeClaim.session_id,
+      };
+    case 'unblock_ticket':
+      return {
+        ...common,
+        mutation_key: `mutation:${operation}`,
+        block_revision: target.block.blocked_revision,
+        actor_type: 'human',
+        actor_id: 'human-map-scope',
+        authorization_reference: 'authorization-map-scope',
+        reconciliation_evidence: {
+          authority_reference: 'authority:map-scope',
+          conclusion: 'The block is reconciled.',
+        },
+      };
+    case 'reclaim_expired_claim':
+      return {
+        ...common,
+        mutation_key: `mutation:${operation}`,
+        observed_claim_token: activeClaim.claim_token,
+        new_claim_token: 'claim-new-map-scope',
+        owner_id: activeClaim.owner_id,
+        session_id: 'session-new-map-scope',
+        lease_duration_ms: 3_600_000,
+      };
+    default:
+      throw new Error(`unsupported scoped operation ${operation}`);
+  }
+}
+
+function scopedTicket(operation, parentMapId) {
+  const activeClaim = operation === 'reclaim_expired_claim'
+    ? claim({
+      claim_token: 'claim-expired-map-scope',
+      owner_id: 'agent-map-scope',
+      session_id: 'session-old-map-scope',
+      acquired_at: '2026-08-23T18:00:00.000Z',
+      expires_at: '2026-08-23T19:00:00.000Z',
+    })
+    : liveClaim('map-scope');
+  if (operation === 'unblock_ticket') {
+    const block = {
+      reason: 'Requires reconciliation.',
+      evidence_reference: 'evidence:map-scope',
+      actor_id: 'agent-map-scope',
+      blocked_at: '2026-08-23T19:00:00.000Z',
+      blocked_revision: 2,
+      requires_human_resolution: true,
+    };
+    return ticket({
+      id: 'target-map-scope',
+      parent_map_id: parentMapId,
+      status: 'blocked',
+      revision: 2,
+      claim: activeClaim,
+      block,
+      block_history: [block],
+    });
+  }
+  const taskOperation = [
+    'record_task_intent',
+    'external_action',
+    'record_task_receipt',
+  ].includes(operation);
+  return ticket({
+    id: 'target-map-scope',
+    parent_map_id: parentMapId,
+    type: taskOperation ? 'task' : 'research',
+    claim: activeClaim,
+    task_action: ['external_action', 'record_task_receipt'].includes(operation)
+      ? intendedTaskAction('map-scope')
+      : null,
+  });
+}
+
+test('all operation families reject cross-map and null-parent targets transactionally', async (t) => {
+  for (const operation of [
+    'get_ticket',
+    'record_progress',
+    'record_task_intent',
+    'external_action',
+    'record_task_receipt',
+    'block_ticket',
+    'release_claim',
+    'unblock_ticket',
+    'reclaim_expired_claim',
+  ]) {
+    for (const [scopeName, parentMapId] of [
+      ['cross-map', 'map-other'],
+      ['null-parent', null],
+    ]) {
+      await t.test(`${operation} ${scopeName}`, () => {
+        const target = scopedTicket(operation, parentMapId);
+        const result = evaluateRecoveryTraceStrict(strictTrace({
+          initialState: { tickets: [target] },
+          operations: [scopedOperation(operation, target)],
+        }));
+        assertCompactNoMutation(result, 0, 'ticket-outside-selected-map');
+        assert.deepEqual(result.finalState.tickets[0], target);
+      });
+    }
+  }
+});
+
+test('normalized pending actions exist only on open tickets with the matching active claim', async (t) => {
+  const activeClaim = liveClaim('pending-normalized');
+  const action = intendedTaskAction('pending-normalized');
+  const pending = pendingActionRecord('task-pending-normalized', activeClaim, action);
+  const blocked = {
+    reason: 'Cannot normalize pending while blocked.',
+    evidence_reference: 'evidence:pending-normalized',
+    actor_id: activeClaim.owner_id,
+    blocked_at: '2026-08-23T19:45:00.000Z',
+    blocked_revision: 2,
+    requires_human_resolution: true,
+  };
+  const cases = [
+    {
+      name: 'blocked',
+      value: ticket({
+        id: 'task-pending-normalized',
+        type: 'task',
+        status: 'blocked',
+        revision: 2,
+        claim: activeClaim,
+        block: blocked,
+        block_history: [blocked],
+        task_action: action,
+        pending_external_action: pending,
+      }),
+    },
+    {
+      name: 'closed',
+      value: ticket({
+        id: 'task-pending-normalized',
+        type: 'task',
+        status: 'closed',
+        revision: 2,
+        task_action: action,
+        pending_external_action: pending,
+      }),
+    },
+    {
+      name: 'unclaimed',
+      value: ticket({
+        id: 'task-pending-normalized',
+        type: 'task',
+        task_action: action,
+        pending_external_action: pending,
+      }),
+    },
+    {
+      name: 'claim mismatch',
+      value: ticket({
+        id: 'task-pending-normalized',
+        type: 'task',
+        claim: activeClaim,
+        task_action: action,
+        pending_external_action: {
+          ...pending,
+          session_id: 'session-other',
+        },
+      }),
+    },
+  ];
+  for (const scenario of cases) {
+    await t.test(scenario.name, () => {
+      assert.throws(
+        () => evaluateRecoveryTraceStrict(strictTrace({
+          initialState: { tickets: [scenario.value] },
+        })),
+        (error) => error.code === 'malformed-input'
+          && /pending_external_action/.test(error.message),
+      );
+    });
+  }
+
+  const valid = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: {
+      tickets: [ticket({
+        id: 'task-pending-normalized',
+        type: 'task',
+        claim: activeClaim,
+        task_action: action,
+        pending_external_action: pending,
+      })],
+    },
+  }));
+  assert.equal(valid.valid, true);
+});
+
+test('external action persistence advances revision and matching receipt uses that revision', () => {
+  const activeClaim = liveClaim('action-revision');
+  const action = intendedTaskAction('action-revision');
+  const externalOperation = {
+    operation: 'external_action',
+    mutation_key: action.idempotency_key,
+    ticket_id: 'task-action-revision',
+    expected_revision: 1,
+    claim_token: activeClaim.claim_token,
+    owner_id: activeClaim.owner_id,
+    session_id: activeClaim.session_id,
+    idempotency_key: action.idempotency_key,
+    external_system: 'vendor-api',
+    lookup_reference: 'vendor:action-revision',
+    outcome: 'succeeded',
+  };
+  const result = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: {
+      tickets: [ticket({
+        id: 'task-action-revision',
+        type: 'task',
+        claim: activeClaim,
+        task_action: action,
+      })],
+    },
+    operations: [
+      externalOperation,
+      {
+        operation: 'record_task_receipt',
+        mutation_key: 'mutation:receipt-action-revision',
+        ticket_id: 'task-action-revision',
+        expected_revision: 2,
+        claim_token: activeClaim.claim_token,
+        owner_id: activeClaim.owner_id,
+        session_id: activeClaim.session_id,
+        idempotency_key: action.idempotency_key,
+        outcome: 'succeeded',
+        receipt: {
+          external_system: 'vendor-api',
+          idempotency_key: action.idempotency_key,
+          result: 'succeeded',
+          lookup_reference: 'vendor:action-revision',
+        },
+      },
+    ],
+  }));
+  assert.deepEqual(result.violationCodes, []);
+  assert.equal(result.transitions[0].mutationResult.ticket_revision, 2);
+  assert.equal(result.transitions[1].mutationResult.ticket_revision, 3);
+  assert.equal(result.finalState.tickets[0].revision, 3);
+  assert.equal(result.finalState.tickets[0].pending_external_action, null);
+  assert.equal(result.externalActionCount, 1);
+});
+
+test('external action replay returns the original result and conflicting reuse is fenced', () => {
+  const activeClaim = liveClaim('action-replay');
+  const action = intendedTaskAction('action-replay');
+  const operation = {
+    operation: 'external_action',
+    mutation_key: action.idempotency_key,
+    ticket_id: 'task-action-replay',
+    expected_revision: 1,
+    claim_token: activeClaim.claim_token,
+    owner_id: activeClaim.owner_id,
+    session_id: activeClaim.session_id,
+    idempotency_key: action.idempotency_key,
+    external_system: 'vendor-api',
+    lookup_reference: 'vendor:action-replay',
+    outcome: 'succeeded',
+  };
+  const result = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: {
+      tickets: [ticket({
+        id: 'task-action-replay',
+        type: 'task',
+        claim: activeClaim,
+        task_action: action,
+      })],
+    },
+    operations: [
+      operation,
+      operation,
+      { ...operation, lookup_reference: 'vendor:conflict' },
+    ],
+  }));
+  assert.equal(result.transitions[1].replayed, true);
+  assert.deepEqual(
+    result.transitions[1].mutationResult,
+    result.transitions[0].mutationResult,
+  );
+  assertCompactNoMutation(result, 1);
+  assertCompactNoMutation(result, 2, 'mutation-key-conflict');
+  assert.equal(result.finalState.tickets[0].revision, 2);
+  assert.equal(result.externalActionCount, 1);
+  assert.equal(result.mutationJournal.length, 1);
+});
+
+function replayScenario(operation) {
+  const activeClaim = liveClaim(`replay-${operation}`);
+  const base = {
+    operation,
+    mutation_key: `mutation:replay-${operation}`,
+    ticket_id: `ticket-replay-${operation}`,
+    expected_revision: 1,
+  };
+  switch (operation) {
+    case 'record_progress':
+      return {
+        ticket: ticket({ id: base.ticket_id, claim: activeClaim }),
+        operation: {
+          ...base,
+          claim_token: activeClaim.claim_token,
+          owner_id: activeClaim.owner_id,
+          session_id: activeClaim.session_id,
+          progress_key: 'progress:replay',
+          payload: { summary: 'Replay safely.' },
+        },
+        revision: 2,
+      };
+    case 'record_task_intent':
+      return {
+        ticket: ticket({ id: base.ticket_id, type: 'task', claim: activeClaim }),
+        operation: {
+          ...base,
+          claim_token: activeClaim.claim_token,
+          owner_id: activeClaim.owner_id,
+          session_id: activeClaim.session_id,
+          intent: 'Replay the task intent safely.',
+          idempotency_key: 'action-replay-intent',
+          authorization_reference: 'authorization-replay-intent',
+          reconciliation_method: 'Look up action-replay-intent.',
+        },
+        revision: 2,
+      };
+    case 'record_task_receipt': {
+      const action = intendedTaskAction('replay-receipt');
+      return {
+        ticket: ticket({
+          id: base.ticket_id,
+          type: 'task',
+          claim: activeClaim,
+          task_action: action,
+        }),
+        operation: {
+          ...base,
+          claim_token: activeClaim.claim_token,
+          owner_id: activeClaim.owner_id,
+          session_id: activeClaim.session_id,
+          idempotency_key: action.idempotency_key,
+          outcome: 'succeeded',
+          receipt: {
+            external_system: 'vendor-api',
+            idempotency_key: action.idempotency_key,
+            result: 'succeeded',
+            lookup_reference: 'vendor:replay-receipt',
+          },
+        },
+        revision: 2,
+      };
+    }
+    case 'block_ticket':
+      return {
+        ticket: ticket({ id: base.ticket_id, claim: activeClaim }),
+        operation: {
+          ...base,
+          claim_token: activeClaim.claim_token,
+          owner_id: activeClaim.owner_id,
+          session_id: activeClaim.session_id,
+          confirmed: true,
+          reason: 'Replay the block safely.',
+          evidence_reference: 'evidence:replay-block',
+          actor_id: activeClaim.owner_id,
+        },
+        revision: 2,
+      };
+    case 'release_claim':
+      return {
+        ticket: ticket({ id: base.ticket_id, claim: activeClaim }),
+        operation: {
+          ...base,
+          claim_token: activeClaim.claim_token,
+          owner_id: activeClaim.owner_id,
+          session_id: activeClaim.session_id,
+        },
+        revision: 2,
+      };
+    case 'unblock_ticket': {
+      const block = {
+        reason: 'Replay the unblock safely.',
+        evidence_reference: 'evidence:replay-unblock',
+        actor_id: 'agent-replay-unblock',
+        blocked_at: '2026-08-23T19:00:00.000Z',
+        blocked_revision: 1,
+        requires_human_resolution: true,
+      };
+      return {
+        ticket: ticket({
+          id: base.ticket_id,
+          status: 'blocked',
+          block,
+          block_history: [block],
+        }),
+        operation: {
+          ...base,
+          block_revision: 1,
+          actor_type: 'human',
+          actor_id: 'human-replay-unblock',
+          authorization_reference: 'authorization-replay-unblock',
+          reconciliation_evidence: {
+            authority_reference: 'authority:replay-unblock',
+            conclusion: 'The block was reconciled.',
+          },
+        },
+        revision: 2,
+      };
+    }
+    case 'reclaim_expired_claim': {
+      const expiredClaim = claim({
+        claim_token: 'claim-expired-replay',
+        owner_id: 'agent-replay-reclaim',
+        session_id: 'session-old-replay',
+        acquired_at: '2026-08-23T18:00:00.000Z',
+        expires_at: '2026-08-23T19:00:00.000Z',
+      });
+      return {
+        ticket: ticket({ id: base.ticket_id, claim: expiredClaim }),
+        operation: {
+          ...base,
+          observed_claim_token: expiredClaim.claim_token,
+          new_claim_token: 'claim-new-replay',
+          owner_id: expiredClaim.owner_id,
+          session_id: 'session-new-replay',
+          lease_duration_ms: 3_600_000,
+        },
+        revision: 2,
+      };
+    }
+    default:
+      throw new Error(`unsupported replay operation ${operation}`);
+  }
+}
+
+test('every modeled mutation replays without duplicate revision or state mutation', async (t) => {
+  for (const operation of [
+    'record_progress',
+    'record_task_intent',
+    'record_task_receipt',
+    'block_ticket',
+    'release_claim',
+    'unblock_ticket',
+    'reclaim_expired_claim',
+  ]) {
+    await t.test(operation, () => {
+      const scenario = replayScenario(operation);
+      const result = evaluateRecoveryTraceStrict(strictTrace({
+        initialState: { tickets: [scenario.ticket] },
+        operations: [scenario.operation, scenario.operation],
+      }));
+      assert.deepEqual(result.transitions[0].violationCodes, []);
+      assert.equal(result.transitions[1].replayed, true);
+      assert.deepEqual(
+        result.transitions[1].mutationResult,
+        result.transitions[0].mutationResult,
+      );
+      assertCompactNoMutation(result, 1);
+      assert.equal(result.finalState.tickets[0].revision, scenario.revision);
+      assert.equal(result.mutationJournal.length, 1);
+    });
+  }
+});
+
+test('replayed release and reclaim results restore their required read fences', async (t) => {
+  await t.test('release replay', () => {
+    const scenario = replayScenario('release_claim');
+    const first = evaluateRecoveryTraceStrict(strictTrace({
+      initialState: { tickets: [scenario.ticket] },
+      operations: [scenario.operation],
+    }));
+    const replay = evaluateRecoveryTraceStrict(strictTrace({
+      initialState: first.finalState,
+      mutationJournal: first.mutationJournal,
+      operations: [scenario.operation],
+    }));
+    assert.equal(replay.transitions[0].replayed, true);
+    assert.equal(
+      replay.transitions[0].inspection.releaseConfirmationRequiredAtRevision,
+      2,
+    );
+    assert.ok(replay.violationCodes.includes('release-confirmation-required'));
+  });
+
+  await t.test('reclaim replay', () => {
+    const scenario = replayScenario('reclaim_expired_claim');
+    const first = evaluateRecoveryTraceStrict(strictTrace({
+      initialState: { tickets: [scenario.ticket] },
+      operations: [scenario.operation],
+    }));
+    const replay = evaluateRecoveryTraceStrict(strictTrace({
+      initialState: first.finalState,
+      mutationJournal: first.mutationJournal,
+      operations: [
+        scenario.operation,
+        {
+          operation: 'record_progress',
+          mutation_key: 'mutation:after-replayed-reclaim',
+          ticket_id: scenario.ticket.id,
+          expected_revision: 2,
+          claim_token: 'claim-new-replay',
+          owner_id: 'agent-replay-reclaim',
+          session_id: 'session-new-replay',
+          progress_key: 'progress:after-replayed-reclaim',
+          payload: { summary: 'Must inspect after replay.' },
+        },
+      ],
+    }));
+    assert.equal(replay.transitions[0].replayed, true);
+    assert.equal(replay.transitions[0].inspection.requiredAtRevision, 2);
+    assertCompactNoMutation(replay, 1, 'work-before-full-inspection');
+  });
+});
+
+test('reclaim transfers pending receipt recovery to the fresh claim', () => {
+  const expiredClaim = claim({
+    claim_token: 'claim-expired-pending-recovery',
+    owner_id: 'agent-pending-recovery',
+    session_id: 'session-old-pending-recovery',
+    acquired_at: '2026-08-23T18:00:00.000Z',
+    expires_at: '2026-08-23T19:00:00.000Z',
+  });
+  const action = intendedTaskAction('pending-recovery');
+  const pending = pendingActionRecord(
+    'task-pending-recovery',
+    expiredClaim,
+    action,
+  );
+  const result = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: {
+      tickets: [ticket({
+        id: 'task-pending-recovery',
+        type: 'task',
+        claim: expiredClaim,
+        task_action: action,
+        pending_external_action: pending,
+      })],
+    },
+    operations: [
+      {
+        operation: 'reclaim_expired_claim',
+        mutation_key: 'mutation:reclaim-pending-recovery',
+        ticket_id: 'task-pending-recovery',
+        expected_revision: 1,
+        observed_claim_token: expiredClaim.claim_token,
+        new_claim_token: 'claim-new-pending-recovery',
+        owner_id: expiredClaim.owner_id,
+        session_id: 'session-new-pending-recovery',
+        lease_duration_ms: 3_600_000,
+      },
+      {
+        operation: 'get_ticket',
+        ticket_id: 'task-pending-recovery',
+        expected_revision: 2,
+        full: true,
+      },
+      {
+        operation: 'record_task_receipt',
+        mutation_key: 'mutation:receipt-pending-recovery',
+        ticket_id: 'task-pending-recovery',
+        expected_revision: 2,
+        claim_token: 'claim-new-pending-recovery',
+        owner_id: expiredClaim.owner_id,
+        session_id: 'session-new-pending-recovery',
+        idempotency_key: action.idempotency_key,
+        outcome: 'succeeded',
+        receipt: {
+          external_system: pending.external_system,
+          idempotency_key: action.idempotency_key,
+          result: 'succeeded',
+          lookup_reference: pending.lookup_reference,
+        },
+      },
+    ],
+  }));
+  assert.deepEqual(result.violationCodes, []);
+  assert.equal(result.finalState.tickets[0].revision, 3);
+  assert.equal(result.finalState.tickets[0].pending_external_action, null);
+  assert.equal(result.finalState.tickets[0].task_action.state, 'succeeded');
+});
+
+test('normalized replay journal rejects missing or invalid operation results', async (t) => {
+  const scenario = replayScenario('release_claim');
+  const first = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: { tickets: [scenario.ticket] },
+    operations: [scenario.operation],
+  }));
+  for (const [name, result] of [
+    ['null', null],
+    ['missing ticket revision', { claim_absent: true }],
+    ['invalid release result', { ticket_revision: 2, claim_absent: false }],
+  ]) {
+    await t.test(name, () => {
+      const mutationJournal = structuredClone(first.mutationJournal);
+      mutationJournal[0].result = result;
+      assert.throws(
+        () => evaluateRecoveryTraceStrict(strictTrace({
+          initialState: first.finalState,
+          mutationJournal,
+          operations: [scenario.operation],
+        })),
+        (error) => error.code === 'malformed-input'
+          && /mutationJournal\[0\]\.result/.test(error.message),
+      );
+    });
+  }
+});
+
+test('mutation keys conflict across changed payloads and operation names', () => {
+  const activeClaim = liveClaim('mutation-conflict');
+  const first = {
+    operation: 'record_progress',
+    mutation_key: 'mutation:conflict',
+    ticket_id: 'ticket-mutation-conflict',
+    expected_revision: 1,
+    claim_token: activeClaim.claim_token,
+    owner_id: activeClaim.owner_id,
+    session_id: activeClaim.session_id,
+    progress_key: 'progress:conflict',
+    payload: { summary: 'Original payload.' },
+  };
+  const result = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: {
+      tickets: [ticket({
+        id: 'ticket-mutation-conflict',
+        claim: activeClaim,
+      })],
+    },
+    operations: [
+      first,
+      { ...first, payload: { summary: 'Changed payload.' } },
+      {
+        operation: 'block_ticket',
+        mutation_key: first.mutation_key,
+        ticket_id: first.ticket_id,
+        expected_revision: 2,
+        claim_token: activeClaim.claim_token,
+        owner_id: activeClaim.owner_id,
+        session_id: activeClaim.session_id,
+        confirmed: true,
+        reason: 'Changed operation.',
+        evidence_reference: 'evidence:changed-operation',
+        actor_id: activeClaim.owner_id,
+      },
+    ],
+  }));
+  assertCompactNoMutation(result, 1, 'mutation-key-conflict');
+  assertCompactNoMutation(result, 2, 'mutation-key-conflict');
+  assert.equal(result.finalState.tickets[0].revision, 2);
+  assert.equal(result.mutationJournal.length, 1);
+});
+
+test('every mutation requires a meaningful uniform mutation key', async (t) => {
+  for (const operation of MUTATION_OPERATIONS) {
+    await t.test(operation, () => {
+      assert.throws(
+        () => evaluateRecoveryTraceStrict(strictTrace({
+          operations: [{
+            operation,
+            ticket_id: 'missing',
+            expected_revision: 1,
+          }],
+        })),
+        (error) => error.code === 'malformed-input'
+          && /mutation_key/.test(error.message),
+      );
+    });
+  }
+});
+
+test('release requires a full read at the returned revision before trace completion', async (t) => {
+  const activeClaim = liveClaim('release-fence');
+  const release = {
+    operation: 'release_claim',
+    mutation_key: 'mutation:release-fence',
+    ticket_id: 'ticket-release-fence',
+    expected_revision: 1,
+    claim_token: activeClaim.claim_token,
+    owner_id: activeClaim.owner_id,
+    session_id: activeClaim.session_id,
+  };
+  const base = strictTrace({
+    initialState: {
+      tickets: [
+        ticket({ id: 'ticket-release-fence', claim: activeClaim }),
+        ticket({ id: 'ticket-release-other' }),
+      ],
+    },
+  });
+  const cases = [
+    {
+      name: 'missing confirmation',
+      operations: [release],
+      transitionViolation: null,
+      finalViolation: 'release-confirmation-required',
+    },
+    {
+      name: 'wrong ticket',
+      operations: [
+        release,
+        {
+          operation: 'get_ticket',
+          ticket_id: 'ticket-release-other',
+          expected_revision: 1,
+          full: true,
+        },
+      ],
+      transitionViolation: null,
+      finalViolation: 'release-confirmation-required',
+    },
+    {
+      name: 'stale revision',
+      operations: [
+        release,
+        {
+          operation: 'get_ticket',
+          ticket_id: 'ticket-release-fence',
+          expected_revision: 1,
+          full: true,
+        },
+      ],
+      transitionViolation: 'stale-revision',
+      finalViolation: 'release-confirmation-required',
+    },
+    {
+      name: 'partial read',
+      operations: [
+        release,
+        {
+          operation: 'get_ticket',
+          ticket_id: 'ticket-release-fence',
+          expected_revision: 2,
+          full: false,
+        },
+      ],
+      transitionViolation: 'full-inspection-required',
+      finalViolation: 'release-confirmation-required',
+    },
+  ];
+  for (const scenario of cases) {
+    await t.test(scenario.name, () => {
+      const result = evaluateRecoveryTraceStrict({
+        ...base,
+        operations: scenario.operations,
+      });
+      if (scenario.transitionViolation) {
+        assertCompactNoMutation(result, 1, scenario.transitionViolation);
+      }
+      assert.ok(result.violationCodes.includes(scenario.finalViolation));
+      assert.equal(result.valid, false);
+    });
+  }
+
+  const confirmed = evaluateRecoveryTraceStrict({
+    ...base,
+    operations: [
+      release,
+      {
+        operation: 'get_ticket',
+        ticket_id: 'ticket-release-fence',
+        expected_revision: 2,
+        full: true,
+      },
+    ],
+  });
+  assert.deepEqual(confirmed.violationCodes, []);
+  assert.equal(confirmed.valid, true);
+  assert.equal(confirmed.finalState.tickets[0].claim, null);
+  assert.equal(
+    confirmed.transitions[1].inspection.releaseConfirmationRequiredAtRevision,
+    null,
+  );
+});
+
+test('release confirmation fence blocks later mutations without changing state', () => {
+  const activeClaim = liveClaim('release-block');
+  const otherClaim = liveClaim('release-block-other');
+  const result = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: {
+      tickets: [
+        ticket({ id: 'ticket-release-block', claim: activeClaim }),
+        ticket({ id: 'ticket-release-block-other', claim: otherClaim }),
+      ],
+    },
+    operations: [
+      {
+        operation: 'release_claim',
+        mutation_key: 'mutation:release-block',
+        ticket_id: 'ticket-release-block',
+        expected_revision: 1,
+        claim_token: activeClaim.claim_token,
+        owner_id: activeClaim.owner_id,
+        session_id: activeClaim.session_id,
+      },
+      {
+        operation: 'record_progress',
+        mutation_key: 'mutation:after-release',
+        ticket_id: 'ticket-release-block-other',
+        expected_revision: 1,
+        claim_token: otherClaim.claim_token,
+        owner_id: otherClaim.owner_id,
+        session_id: otherClaim.session_id,
+        progress_key: 'progress:after-release',
+        payload: { summary: 'Must not run before confirmation.' },
+      },
+    ],
+  }));
+  assertCompactNoMutation(result, 1, 'work-before-release-confirmation');
+  assert.ok(result.violationCodes.includes('release-confirmation-required'));
+});
+
+test('meaningful string fields reject whitespace without trimming opaque identities', async (t) => {
+  const activeClaim = liveClaim('meaningful');
+  const action = intendedTaskAction('meaningful');
+  const baseTicket = ticket({
+    id: 'task-meaningful',
+    type: 'task',
+    claim: activeClaim,
+    task_action: action,
+  });
+  const cases = [
+    ['ticket id', (input) => { input.initialState.tickets[0].id = ' \t '; }],
+    ['parent map id', (input) => { input.initialState.tickets[0].parent_map_id = ' \n '; }],
+    ['claim token', (input) => { input.initialState.tickets[0].claim.claim_token = '   '; }],
+    ['claim owner', (input) => { input.initialState.tickets[0].claim.owner_id = '\t'; }],
+    ['claim session', (input) => { input.initialState.tickets[0].claim.session_id = '\n'; }],
+    ['task intent', (input) => { input.initialState.tickets[0].task_action.intent = '   '; }],
+    ['action idempotency key', (input) => {
+      input.initialState.tickets[0].task_action.idempotency_key = '   ';
+    }],
+    ['authorization reference', (input) => {
+      input.initialState.tickets[0].task_action.authorization_reference = '\t ';
+    }],
+    ['reconciliation method', (input) => {
+      input.initialState.tickets[0].task_action.reconciliation_method = ' \n ';
+    }],
+  ];
+  for (const [name, mutate] of cases) {
+    await t.test(name, () => {
+      const input = strictTrace({ initialState: { tickets: [baseTicket] } });
+      mutate(input);
+      assert.throws(
+        () => evaluateRecoveryTraceStrict(input),
+        (error) => error.code === 'malformed-input' && /non-empty|meaningful/i.test(error.message),
+      );
+    });
+  }
+
+  const preserved = evaluateRecoveryTraceStrict(strictTrace({
+    map_id: ' map-opaque ',
+    initialState: {
+      tickets: [ticket({
+        id: ' ticket-opaque ',
+        parent_map_id: ' map-opaque ',
+      })],
+    },
+  }));
+  assert.equal(preserved.map_id, ' map-opaque ');
+  assert.equal(preserved.finalState.tickets[0].id, ' ticket-opaque ');
+});
+
+test('strict RFC3339 accepts qualified instants and rejects invalid grammar or calendar values', async (t) => {
+  for (const value of [
+    '2024-02-29T23:59:59Z',
+    '2024-02-29T23:59:59.1Z',
+    '2024-02-29T23:59:59.123456+14:00',
+    '2024-02-29T23:59:59-00:00',
+  ]) {
+    await t.test(`valid ${value}`, () => {
+      const result = evaluateRecoveryTraceStrict(strictTrace({ now: value }));
+      assert.equal(result.valid, true);
+    });
+  }
+  for (const value of [
+    '2024-02-29 23:59:59Z',
+    '2024-02-29T23:59:59+1400',
+    '2023-02-29T23:59:59Z',
+    '2024-04-31T23:59:59Z',
+    '2024-13-01T23:59:59Z',
+    '2024-01-01T24:00:00Z',
+    '2024-01-01T23:60:00Z',
+    '2024-01-01T23:59:60Z',
+    '2024-01-01T23:59:59+24:00',
+    '2024-01-01T23:59:59+01:60',
+    '2024-01-01T23:59:59Zsuffix',
+  ]) {
+    await t.test(`invalid ${value}`, () => {
+      assert.throws(
+        () => evaluateRecoveryTraceStrict(strictTrace({ now: value })),
+        (error) => error.code === 'malformed-input' && /RFC 3339|timestamp/i.test(error.message),
+      );
+    });
+  }
+});
+
+function exhaustedScenario(operation) {
+  const scenario = replayScenario(operation);
+  scenario.ticket.revision = Number.MAX_SAFE_INTEGER;
+  scenario.operation.expected_revision = Number.MAX_SAFE_INTEGER;
+  if (operation === 'unblock_ticket') {
+    scenario.ticket.block.blocked_revision = Number.MAX_SAFE_INTEGER;
+    scenario.ticket.block_history[0].blocked_revision = Number.MAX_SAFE_INTEGER;
+    scenario.operation.block_revision = Number.MAX_SAFE_INTEGER;
+  }
+  return scenario;
+}
+
+test('checked revision increments reject exhaustion for every mutation family', async (t) => {
+  for (const operation of [
+    'record_progress',
+    'record_task_intent',
+    'record_task_receipt',
+    'block_ticket',
+    'release_claim',
+    'unblock_ticket',
+    'reclaim_expired_claim',
+  ]) {
+    await t.test(operation, () => {
+      const scenario = exhaustedScenario(operation);
+      const result = evaluateRecoveryTraceStrict(strictTrace({
+        initialState: { tickets: [scenario.ticket] },
+        operations: [scenario.operation],
+      }));
+      assertCompactNoMutation(result, 0, 'revision-exhausted');
+      assert.equal(result.finalState.tickets[0].revision, Number.MAX_SAFE_INTEGER);
+      assert.deepEqual(result.mutationJournal, []);
+    });
+  }
+
+  const activeClaim = liveClaim('exhausted-action');
+  const action = intendedTaskAction('exhausted-action');
+  const result = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: {
+      tickets: [ticket({
+        id: 'task-exhausted-action',
+        type: 'task',
+        revision: Number.MAX_SAFE_INTEGER,
+        claim: activeClaim,
+        task_action: action,
+      })],
+    },
+    operations: [{
+      operation: 'external_action',
+      mutation_key: action.idempotency_key,
+      ticket_id: 'task-exhausted-action',
+      expected_revision: Number.MAX_SAFE_INTEGER,
+      claim_token: activeClaim.claim_token,
+      owner_id: activeClaim.owner_id,
+      session_id: activeClaim.session_id,
+      idempotency_key: action.idempotency_key,
+      external_system: 'vendor-api',
+      lookup_reference: 'vendor:exhausted-action',
+      outcome: 'succeeded',
+    }],
+  }));
+  assertCompactNoMutation(result, 0, 'revision-exhausted');
+  assert.equal(result.externalActionCount, 0);
+});
+
+test('normalized progress history is revision- and time-coherent', async (t) => {
+  const record = (progressKey, revision, recordedAt) => ({
+    progress_key: progressKey,
+    payload: { summary: progressKey },
+    recorded_at: recordedAt,
+    revision,
+  });
+  const cases = [
+    {
+      name: 'equal revisions',
+      revision: 3,
+      records: [
+        record('progress:a', 2, '2026-08-23T18:00:00.000Z'),
+        record('progress:b', 2, '2026-08-23T19:00:00.000Z'),
+      ],
+    },
+    {
+      name: 'decreasing revisions',
+      revision: 4,
+      records: [
+        record('progress:a', 3, '2026-08-23T18:00:00.000Z'),
+        record('progress:b', 2, '2026-08-23T19:00:00.000Z'),
+      ],
+    },
+    {
+      name: 'future revision',
+      revision: 3,
+      records: [record('progress:a', 4, '2026-08-23T18:00:00.000Z')],
+    },
+    {
+      name: 'decreasing time',
+      revision: 4,
+      records: [
+        record('progress:a', 2, '2026-08-23T19:00:00.000Z'),
+        record('progress:b', 3, '2026-08-23T18:00:00.000Z'),
+      ],
+    },
+    {
+      name: 'future time',
+      revision: 3,
+      records: [record('progress:a', 2, '2026-08-23T20:00:00.001Z')],
+    },
+  ];
+  for (const scenario of cases) {
+    await t.test(scenario.name, () => {
+      assert.throws(
+        () => evaluateRecoveryTraceStrict(strictTrace({
+          initialState: {
+            tickets: [ticket({
+              id: 'ticket-progress-history',
+              revision: scenario.revision,
+              progress_records: scenario.records,
+            })],
+          },
+        })),
+        (error) => error.code === 'malformed-input'
+          && /progress_records/.test(error.message),
+      );
+    });
+  }
+
+  const valid = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: {
+      tickets: [ticket({
+        id: 'ticket-progress-history',
+        revision: 5,
+        progress_records: [
+          record('progress:a', 2, '2026-08-23T18:00:00.000Z'),
+          record('progress:b', 4, '2026-08-23T19:00:00.000Z'),
+        ],
+      })],
+    },
+  }));
+  assert.equal(valid.valid, true);
+});
+
+test('checker enforces explicit input collection and serialized-size limits', async (t) => {
+  const limits = {
+    inputBytes: 262_144,
+    tickets: 128,
+    operations: 128,
+    comments: 64,
+    evidence: 64,
+    progress: 64,
+    journal: 128,
+    ticketBytes: 32_768,
+  };
+  const cases = [
+    {
+      name: 'ticket count',
+      input: strictTrace({
+        initialState: {
+          tickets: Array.from(
+            { length: limits.tickets + 1 },
+            (_, index) => ticket({ id: `ticket-limit-${index}` }),
+          ),
+        },
+      }),
+      message: /tickets.*128/i,
+    },
+    {
+      name: 'operation count',
+      input: strictTrace({
+        operations: Array.from(
+          { length: limits.operations + 1 },
+          (_, index) => ({
+            operation: 'get_ticket',
+            ticket_id: `ticket-limit-${index}`,
+            expected_revision: 1,
+            full: true,
+          }),
+        ),
+      }),
+      message: /operations.*128/i,
+    },
+    {
+      name: 'comments per ticket',
+      input: strictTrace({
+        initialState: {
+          tickets: [ticket({
+            comments: Array.from(
+              { length: limits.comments + 1 },
+              (_, index) => ({ id: `comment-${index}` }),
+            ),
+          })],
+        },
+      }),
+      message: /comments.*64/i,
+    },
+    {
+      name: 'serialized ticket size',
+      input: strictTrace({
+        initialState: {
+          tickets: [ticket({
+            comments: Array.from(
+              { length: 10 },
+              (_, index) => ({
+                id: `large-comment-${index}`,
+                body: 'x'.repeat(3_500),
+              }),
+            ),
+          })],
+        },
+      }),
+      message: /ticket.*32768/i,
+    },
+    {
+      name: 'evidence per ticket',
+      input: strictTrace({
+        initialState: {
+          tickets: [ticket({
+            evidence: Array.from(
+              { length: limits.evidence + 1 },
+              (_, index) => ({ id: `evidence-${index}` }),
+            ),
+          })],
+        },
+      }),
+      message: /evidence.*64/i,
+    },
+    {
+      name: 'progress per ticket',
+      input: strictTrace({
+        initialState: {
+          tickets: [ticket({
+            revision: limits.progress + 1,
+            progress_records: Array.from(
+              { length: limits.progress + 1 },
+              (_, index) => ({
+                progress_key: `progress-${index}`,
+                payload: { summary: `Progress ${index}` },
+                recorded_at: '2026-08-23T19:00:00.000Z',
+                revision: index + 1,
+              }),
+            ),
+          })],
+        },
+      }),
+      message: /progress_records.*64/i,
+    },
+    {
+      name: 'mutation journal',
+      input: strictTrace({
+        mutationJournal: Array.from(
+          { length: limits.journal + 1 },
+          (_, index) => ({
+            mutation_key: `mutation-journal-${index}`,
+            operation: 'record_progress',
+            ticket_id: 'ticket',
+            fingerprint_sha256: 'a'.repeat(64),
+            result: { ticket_revision: index + 1 },
+          }),
+        ),
+      }),
+      message: /mutationJournal.*128/i,
+    },
+  ];
+  for (const scenario of cases) {
+    await t.test(scenario.name, () => {
+      assert.throws(
+        () => evaluateRecoveryTraceStrict(scenario.input),
+        (error) => error.code === 'malformed-input'
+          && scenario.message.test(error.message),
+      );
+    });
+  }
+
+  const oversized = strictTrace({
+    initialState: {
+      tickets: [ticket({
+        comments: [{ body: 'x'.repeat(limits.inputBytes) }],
+      })],
+    },
+  });
+  assert.throws(
+    () => evaluateRecoveryTraceStrict(oversized),
+    (error) => error.code === 'malformed-input' && /input.*262144/i.test(error.message),
+  );
+});
+
+test('compact transitions prevent large trace output amplification', () => {
+  const activeClaim = liveClaim('stress');
+  const operations = Array.from({ length: 64 }, (_, index) => ({
+    operation: 'record_progress',
+    mutation_key: `mutation:stress-${index}`,
+    ticket_id: 'ticket-stress-0',
+    expected_revision: index + 1,
+    claim_token: activeClaim.claim_token,
+    owner_id: activeClaim.owner_id,
+    session_id: activeClaim.session_id,
+    progress_key: `progress:stress-${index}`,
+    payload: {
+      summary: `Stress progress ${index}`,
+      evidence: 'x'.repeat(512),
+    },
+  }));
+  const input = strictTrace({
+    initialState: {
+      tickets: Array.from({ length: 32 }, (_, index) => ticket({
+        id: `ticket-stress-${index}`,
+        claim: index === 0 ? activeClaim : null,
+      })),
+    },
+    operations,
+  });
+  const result = evaluateRecoveryTraceStrict(input);
+  const inputBytes = Buffer.byteLength(JSON.stringify(input));
+  const outputBytes = Buffer.byteLength(JSON.stringify(result));
+  assert.deepEqual(result.violationCodes, []);
+  assert.equal(result.transitions.length, operations.length);
+  assert.ok(result.transitions.every((transition) =>
+    !('before' in transition) && !('after' in transition)));
+  assert.ok(outputBytes < inputBytes * 10, `${outputBytes} should be < ${inputBytes * 10}`);
+  assert.ok(outputBytes < 1_000_000, `${outputBytes} should be < 1000000`);
+});
+
+test('reclaim branch matrix rejects absent, wrong, and unexpired claims transactionally', async (t) => {
+  const expiredClaim = claim({
+    claim_token: 'claim-reclaim-branches',
+    owner_id: 'agent-reclaim-branches',
+    session_id: 'session-old-reclaim-branches',
+    acquired_at: '2026-08-23T18:00:00.000Z',
+    expires_at: '2026-08-23T19:00:00.000Z',
+  });
+  const operation = {
+    operation: 'reclaim_expired_claim',
+    mutation_key: 'mutation:reclaim-branches',
+    ticket_id: 'ticket-reclaim-branches',
+    expected_revision: 1,
+    observed_claim_token: expiredClaim.claim_token,
+    new_claim_token: 'claim-new-reclaim-branches',
+    owner_id: expiredClaim.owner_id,
+    session_id: 'session-new-reclaim-branches',
+    lease_duration_ms: 3_600_000,
+  };
+  for (const scenario of [
+    ['absent', null, operation],
+    ['wrong token', expiredClaim, { ...operation, observed_claim_token: 'claim-other' }],
+    ['unexpired', { ...expiredClaim, expires_at: '2026-08-23T21:00:00.000Z' }, operation],
+  ]) {
+    await t.test(scenario[0], () => {
+      const result = evaluateRecoveryTraceStrict(strictTrace({
+        initialState: {
+          tickets: [ticket({
+            id: 'ticket-reclaim-branches',
+            claim: scenario[1],
+          })],
+        },
+        operations: [scenario[2]],
+      }));
+      assertCompactNoMutation(result, 0, 'claim-not-reclaimable');
+    });
+  }
+});
+
+test('reclaim inspection remains fenced after partial and stale reads', async (t) => {
+  const scenario = replayScenario('reclaim_expired_claim');
+  for (const [name, read, violation] of [
+    [
+      'partial',
+      {
+        operation: 'get_ticket',
+        ticket_id: scenario.ticket.id,
+        expected_revision: 2,
+        full: false,
+      },
+      'full-inspection-required',
+    ],
+    [
+      'stale',
+      {
+        operation: 'get_ticket',
+        ticket_id: scenario.ticket.id,
+        expected_revision: 1,
+        full: true,
+      },
+      'stale-revision',
+    ],
+  ]) {
+    await t.test(name, () => {
+      const result = evaluateRecoveryTraceStrict(strictTrace({
+        initialState: { tickets: [scenario.ticket] },
+        operations: [
+          scenario.operation,
+          read,
+          {
+            operation: 'record_progress',
+            mutation_key: `mutation:after-${name}-inspection`,
+            ticket_id: scenario.ticket.id,
+            expected_revision: 2,
+            claim_token: 'claim-new-replay',
+            owner_id: 'agent-replay-reclaim',
+            session_id: 'session-new-replay',
+            progress_key: `progress:after-${name}`,
+            payload: { summary: 'Must remain fenced.' },
+          },
+        ],
+      }));
+      assertCompactNoMutation(result, 1, violation);
+      assertCompactNoMutation(result, 2, 'work-before-full-inspection');
+    });
+  }
+});
+
+test('pending receipt mismatches and pending unblock or release cannot mutate', async (t) => {
+  const activeClaim = liveClaim('pending-branches');
+  const action = intendedTaskAction('pending-branches');
+  const pending = pendingActionRecord('task-pending-branches', activeClaim, action);
+  const baseReceipt = {
+    operation: 'record_task_receipt',
+    mutation_key: 'mutation:pending-receipt',
+    ticket_id: 'task-pending-branches',
+    expected_revision: 2,
+    claim_token: activeClaim.claim_token,
+    owner_id: activeClaim.owner_id,
+    session_id: activeClaim.session_id,
+    idempotency_key: action.idempotency_key,
+    outcome: 'succeeded',
+    receipt: {
+      external_system: pending.external_system,
+      idempotency_key: action.idempotency_key,
+      result: 'succeeded',
+      lookup_reference: pending.lookup_reference,
+    },
+  };
+  const cases = [
+    {
+      name: 'key mismatch',
+      operation: {
+        ...baseReceipt,
+        idempotency_key: 'action-other',
+        receipt: {
+          ...baseReceipt.receipt,
+          idempotency_key: 'action-other',
+        },
+      },
+      violation: 'task-action-key-conflict',
+    },
+    {
+      name: 'system mismatch',
+      operation: {
+        ...baseReceipt,
+        receipt: {
+          ...baseReceipt.receipt,
+          external_system: 'other-api',
+        },
+      },
+      violation: 'task-receipt-conflict',
+    },
+    {
+      name: 'outcome mismatch',
+      operation: {
+        ...baseReceipt,
+        outcome: 'unknown',
+        receipt: {
+          ...baseReceipt.receipt,
+          result: 'unknown',
+        },
+      },
+      violation: 'task-receipt-conflict',
+    },
+    {
+      name: 'pending unblock',
+      operation: {
+        operation: 'unblock_ticket',
+        mutation_key: 'mutation:pending-unblock',
+        ticket_id: 'task-pending-branches',
+        expected_revision: 2,
+      },
+      violation: 'pending-external-action',
+    },
+    {
+      name: 'pending release',
+      operation: {
+        operation: 'release_claim',
+        mutation_key: 'mutation:pending-release',
+        ticket_id: 'task-pending-branches',
+        expected_revision: 2,
+        claim_token: activeClaim.claim_token,
+        owner_id: activeClaim.owner_id,
+        session_id: activeClaim.session_id,
+      },
+      violation: 'pending-external-action',
+    },
+  ];
+  for (const scenario of cases) {
+    await t.test(scenario.name, () => {
+      const result = evaluateRecoveryTraceStrict(strictTrace({
+        initialState: {
+          tickets: [ticket({
+            id: 'task-pending-branches',
+            type: 'task',
+            revision: 2,
+            claim: activeClaim,
+            task_action: action,
+            pending_external_action: pending,
+          })],
+        },
+        operations: [scenario.operation],
+      }));
+      assertCompactNoMutation(result, 0, scenario.violation);
+    });
+  }
+});
+
+test('task intent domain replay, conflict, and wrong-type branches are complete', () => {
+  const activeClaim = liveClaim('intent-branches');
+  const intent = {
+    operation: 'record_task_intent',
+    mutation_key: 'mutation:intent-original',
+    ticket_id: 'task-intent-branches',
+    expected_revision: 1,
+    claim_token: activeClaim.claim_token,
+    owner_id: activeClaim.owner_id,
+    session_id: activeClaim.session_id,
+    intent: 'Record the durable task intent.',
+    idempotency_key: 'action-intent-branches',
+    authorization_reference: 'authorization-intent-branches',
+    reconciliation_method: 'Look up action-intent-branches.',
+  };
+  const result = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: {
+      tickets: [
+        ticket({
+          id: 'task-intent-branches',
+          type: 'task',
+          claim: activeClaim,
+        }),
+        ticket({
+          id: 'research-intent-branches',
+          claim: activeClaim,
+        }),
+      ],
+    },
+    operations: [
+      intent,
+      {
+        ...intent,
+        mutation_key: 'mutation:intent-domain-replay',
+        expected_revision: 2,
+      },
+      {
+        ...intent,
+        mutation_key: 'mutation:intent-conflict',
+        expected_revision: 2,
+        intent: 'Conflicting task intent.',
+      },
+      {
+        ...intent,
+        mutation_key: 'mutation:intent-wrong-type',
+        ticket_id: 'research-intent-branches',
+      },
+    ],
+  }));
+  assert.deepEqual(result.transitions[1].violationCodes, []);
+  assert.equal(result.transitions[1].mutationResult.ticket_revision, 2);
+  assertCompactNoMutation(result, 2, 'task-intent-conflict');
+  assertCompactNoMutation(result, 3, 'task-operation-on-non-task');
+  assert.equal(result.finalState.tickets[0].revision, 1);
+  assert.equal(result.finalState.tickets[1].revision, 2);
+});
+
+test('tracker contract documents scoped targets, replay, release fences, bounds, and compact output', () => {
+  const contract = readFileSync(TRACKER_CONTRACT, 'utf8').replace(/\s+/g, ' ');
+  for (const phrase of [
+    'Every operation target must be a direct child of the selected `map_id`.',
+    'Every modeled mutation requires a non-whitespace `mutation_key`.',
+    'An identical replay returns the original mutation result without another revision increment.',
+    'A reused mutation key with a different operation or payload is a conflict.',
+    'release confirmation is pending',
+    'full `get_ticket` at the released revision',
+    '`beforeStateSha256`',
+    '`afterStateSha256`',
+    'compact changed-path deltas',
+    'strict RFC 3339',
+    '128 tickets',
+    '128 operations',
+    '262144 bytes',
+  ]) {
+    assert.ok(contract.includes(phrase), `missing contract phrase: ${phrase}`);
   }
 });

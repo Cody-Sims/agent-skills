@@ -1,6 +1,8 @@
 {
   "schemaVersion": 1,
+  "evidenceType": "structural-validation",
   "skill": "shadow-dream",
+  "skillSha256": "65599749d3ea66f8cbfd60c3251a55399d76c7adb82c194d91b096737b3b4b2e",
   "evidenceKind": "contribution-safety-exception",
   "recordedAt": "2026-08-23",
   "repository": "https://github.com/Cody-Sims/agent-skills",

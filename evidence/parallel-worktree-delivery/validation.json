@@ -1,6 +1,8 @@
 {
   "schemaVersion": 1,
+  "evidenceType": "structural-validation",
   "skill": "parallel-worktree-delivery",
+  "skillSha256": "2c2081fa3b6ad657f803e754e8b16ada1f90f8ad494b4695e5b755bfda006423",
   "evaluatedAt": "2026-07-27",
   "profile": "experimental-entry",
   "checks": [

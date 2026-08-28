@@ -37,23 +37,28 @@ implement the destination or deliver a pull request.
 1. Keep exactly one parent map with these sections: **Destination**,
    **Decisions So Far**, **Not Yet Specified / Fog of War**, and
    **Out of Scope**.
-2. Treat the frontier as exactly the `open`, dependency-unblocked, unclaimed
-   child decision tickets returned from a consistent tracker snapshot. A ticket
-   in the durable `blocked` lifecycle state is never actionable.
+2. Scope every snapshot to one stable map identity. Treat the frontier as
+   exactly the `open`, dependency-unblocked, unclaimed child decision tickets
+   whose `parent_map_id` matches that map. Other-map, non-child, and durable
+   `blocked` tickets are never actionable or valid operation targets.
 3. Use exactly four ticket types: `research`, `prototype`, `grilling`, and
    `task`.
 4. Make every ticket resolve a question or uncertainty. A `task` performs only
    idempotent or explicitly reconcilable operational work needed to unblock a
    decision; it is never product implementation.
 5. Acquire a claim lease before investigation, discussion, prototyping, or
-   external work. Keep its stable claim token and owner/session identity. Stop
-   on a claim conflict.
+   external work. Keep its stable claim token and owner/session identity. A
+   claim authorizes work only while `acquired_at <= now < expires_at`; equality
+   at acquisition is allowed and expiry is strict. Stop on a claim conflict.
 6. Resolve exactly one ticket per agent session, synchronize its ticket and
    parent map, then stop.
 7. Keep rationale and primary evidence in the child ticket's resolution
    comments. Put only a one-line linked summary on the parent map.
 8. Chart only questions that are sharp now. Leave dependent uncertainty in fog,
    then graduate it into tickets after a resolution makes it precise.
+9. Give every mutation a stable `mutation_key` in addition to domain keys.
+   Identical replay returns the original result. Conflicting reuse stops without
+   mutation.
 
 The only exception to rule 6 is parallel `research` subagents during initial
 charting. Each subagent handles one claimed research question and cannot mutate
@@ -138,7 +143,9 @@ do not create a map. Route the work to `requirements-and-spec-writing`.
      idempotent or explicitly reconcilable action. Before acting, choose one
      stable idempotency key and atomically record the intended action, key,
      authorization reference, and reconciliation method in the ticket. Send
-     that key to the external system and capture a durable external receipt.
+     that key to the external system. Atomically record the pending action and
+     returned ticket revision, then capture a durable external receipt and
+     synchronize it using that new revision.
      Before any retry, reconcile the external system by key. If it already
      succeeded, do not repeat the action; synchronize the receipt instead. If
      receipt synchronization is stale after external success, preserve and
@@ -188,8 +195,9 @@ other stop after a claim:
    cannot be confirmed, preserve or renew the lease and report the exact manual
    reconciliation, block, verification, and release sequence.
 3. Otherwise call `release_claim` with the current claim token, owner/session
-   identity, and revision returned by the latest mutation. Use `get_ticket` to
-   confirm release.
+   identity, stable mutation key, and revision returned by the latest mutation.
+   Before any later mutation or success report, use a full `get_ticket` at the
+   returned revision to confirm claim absence.
 4. If release cannot be confirmed, report the stranded lease identity and
    expiry plus the exact `reclaim_expired_claim` recovery action. Never report
    the ticket or session as successful.

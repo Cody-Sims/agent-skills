@@ -3,7 +3,7 @@
   "name": "release-readiness-composition",
   "version": "1.0.0",
   "source": {
-    "registrySha256": "bfd491afcd29e8760f7b3ec0a2969acf305561652f51df158bf8548234c61e8e",
+    "registrySha256": "94232b6b36d699bc332c770258f4fe30a9b29e52f4049a41bd03dba6a746e71d",
     "memberTreeSha256": "bcc1a493fb91985e5248dfe349340d5d322ac94735ab64617360f9a301fb9374",
     "suitePath": "evals/packs/release-readiness.json"
   },
