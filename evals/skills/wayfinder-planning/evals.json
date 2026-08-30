@@ -48,7 +48,7 @@
     },
     {
       "id": "resolve-one-frontier-ticket",
-      "prompt": "Resume an existing decision map. Resolve the next open, unblocked, unclaimed child, preserve the primary-source reasoning, graduate any newly sharp fog, synchronize state, and tell me what happens next.",
+      "prompt": "Resume an existing decision map and continue autonomously through at least two sequential frontier cycles. For each cycle, claim the next open, unblocked, unclaimed child, preserve the primary-source reasoning, graduate newly sharp fog, atomically synchronize and verify the consumed claim before rereading and selecting the next claim. Stop only for substantive conditions or hard-budget exhaustion, without asking a generic continuation question.",
       "assertions": [
         {
           "id": "claim-first",
@@ -66,9 +66,74 @@
           "value": "update_map"
         },
         {
-          "id": "one-ticket-stop",
+          "id": "two-sequential-cycles",
           "type": "regex",
-          "value": "one ticket[\\s\\S]{0,160}stop",
+          "value": "(?:first|cycle 1)[\\s\\S]{0,300}(?:second|cycle 2)",
+          "flags": "i"
+        },
+        {
+          "id": "verified-sync-before-second-claim",
+          "type": "regex",
+          "value": "(?:atomic|atomically)[\\s\\S]{0,200}(?:synchron|sync)[\\s\\S]{0,200}verif[\\s\\S]{0,200}(?:second|next)[\\s\\S]{0,100}claim",
+          "flags": "i"
+        },
+        {
+          "id": "one-live-claim",
+          "type": "regex",
+          "value": "at most one live claim",
+          "flags": "i"
+        },
+        {
+          "id": "budget-and-reserve",
+          "type": "regex",
+          "value": "30\\s+minutes[\\s\\S]{0,180}64\\s*k?[\\s-]+normalized\\s+token\\s+units[\\s\\S]{0,180}64\\s+tool\\s+calls[\\s\\S]{0,240}5\\s+minutes[\\s\\S]{0,160}12\\s*k?[\\s-]+tokens[\\s\\S]{0,160}12\\s+calls[\\s\\S]{0,240}2\\s+minutes[\\s\\S]{0,160}4\\s*k?[\\s-]+tokens[\\s\\S]{0,160}6\\s+calls",
+          "flags": "i"
+        },
+        {
+          "id": "reserve-preservation",
+          "type": "regex",
+          "value": "(?=[\\s\\S]*progress)(?=[\\s\\S]*reconciliation)(?=[\\s\\S]*block)(?=[\\s\\S]*release)(?=[\\s\\S]*read[- ]fence)(?=[\\s\\S]*checkpoint)(?=[\\s\\S]*report)[\\s\\S]*(?:preserv|reserve|budget)",
+          "flags": "i"
+        },
+        {
+          "id": "automatic-continuation",
+          "type": "regex",
+          "value": "automatically[\\s\\S]{0,240}(?:re-read|reread|recompute)[\\s\\S]{0,240}(?:next|claim)",
+          "flags": "i"
+        },
+        {
+          "id": "substantive-stop-conditions",
+          "type": "regex",
+          "value": "(?=[\\s\\S]*(?:human[\\s\\S]{0,80}grilling|grilling[\\s\\S]{0,80}human|authorization|policy input))(?=[\\s\\S]*ambiguous scope)(?=[\\s\\S]*blocked)(?=[\\s\\S]*claimed)(?=[\\s\\S]*empty frontier)(?=[\\s\\S]*map clear)(?=[\\s\\S]*safety)(?=[\\s\\S]*recovery failure)(?=[\\s\\S]*exhausted hard budget)",
+          "flags": "i"
+        },
+        {
+          "id": "no-continuation-prompt",
+          "type": "notContains",
+          "value": "continue/next?"
+        },
+        {
+          "id": "no-ticket-count-cap",
+          "type": "regex",
+          "value": "no default ticket-count cap",
+          "flags": "i"
+        },
+        {
+          "id": "read-only-parallel-workers",
+          "type": "regex",
+          "value": "parallel workers[\\s\\S]{0,100}read-only[\\s\\S]{0,100}claimless",
+          "flags": "i"
+        },
+        {
+          "id": "handoff-boundary",
+          "type": "regex",
+          "value": "requirements-and-spec-writing[\\s\\S]{0,200}planning-and-task-breakdown[\\s\\S]{0,200}(?:approved specification|specification approval)",
+          "flags": "i"
+        },
+        {
+          "id": "no-delivery-work",
+          "type": "regex",
+          "value": "(?:no|never|do not)[\\s\\S]{0,100}(?:self[- ]approval|implementation|agent execution|Git|pull[- ]request)",
           "flags": "i"
         }
       ],

@@ -15,7 +15,7 @@
     {
       "id": "training-positive-resume",
       "split": "training",
-      "prompt": "Resume this Wayfinder map, claim one ticket from the frontier, resolve it, update the fog and decisions, then stop.",
+      "prompt": "Resume this Wayfinder map autonomously: claim one frontier ticket at a time, resolve and atomically synchronize each decision, verify synchronization, then continue sequentially to the next claim while preserving one live claim and stopping only for substantive stop conditions or hard-budget exhaustion.",
       "expected": [
         "wayfinder-planning"
       ],

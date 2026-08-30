@@ -237,7 +237,7 @@
     {
       "id": "resume-wayfinder-frontier",
       "split": "validation",
-      "prompt": "Resume this Wayfinder decision map across sessions: claim one open, unblocked, unclaimed frontier ticket, resolve that decision, synchronize the map and fog, then stop.",
+      "prompt": "Resume this Wayfinder decision map across sessions and continue autonomously: claim one open, unblocked, unclaimed frontier ticket at a time, resolve it, atomically synchronize and verify the map and fog, then reread and continue to the next claim until substantive stop conditions or hard budget exhaustion.",
       "expected": ["wayfinder-planning"],
       "excluded": ["requirements-and-spec-writing", "planning-and-task-breakdown", "parallel-worktree-delivery", "git-and-pr-workflow"]
     },

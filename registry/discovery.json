@@ -490,7 +490,7 @@
     },
     "wayfinder-planning": {
       "category": "planning",
-      "tags": ["decision-map", "fog-of-war", "frontier", "uncertainty"],
+      "tags": ["autonomous", "bounded", "decision-map", "fog-of-war", "frontier", "resume", "sequential", "uncertainty"],
       "inputs": [
         { "type": "ambiguous-effort", "description": "A long-running ambiguous effort to chart, resume, or replan across sessions." },
         { "type": "tracker-adapter", "description": "A tracker adapter with snapshot, claim, revision, frontier, and atomic mutation support." },
@@ -498,7 +498,8 @@
       ],
       "outputs": [
         { "type": "decision-map", "description": "A verified Wayfinder map with linked decisions, current fog, blockers, and frontier." },
-        { "type": "decision-resolution", "description": "One claimed decision ticket resolved and atomically synchronized with its parent map." }
+        { "type": "decision-resolution", "description": "A bounded sequence of frontier decisions resolved with a single live claim at a time and atomically synchronized with the parent map." },
+        { "type": "decision-loop-report", "description": "A compact report of completed cycles, remaining budget, verified frontier state, and the substantive stop or handoff reason." }
       ],
       "risk": { "level": "high", "factors": ["experimental-workflow", "remote-write", "untrusted-content"] },
       "runtimeCompatibility": [
@@ -510,7 +511,7 @@
       "conflictingSkills": [],
       "examplePrompts": [
         "Chart this ambiguous multi-session effort as a Wayfinder map with fog of war and frontier decision tickets.",
-        "Resume this Wayfinder map, claim one frontier ticket, resolve it, and synchronize the map.",
+        "Resume this Wayfinder map autonomously, resolve safe frontier work with a single live claim at a time, verify each atomic synchronization, preserve budgets and reserves, and stop only for substantive conditions.",
         "Replan this Wayfinder map after the latest decision and hand the cleared map to requirements-and-spec-writing."
       ]
     },

@@ -1,11 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { resolve } from 'node:path';
 
 import {
   evaluateRecoveryTrace as evaluateRecoveryTraceStrict,
+  RECOVERY_LIMITS,
 } from '../skills/wayfinder-planning/scripts/recovery-contract.mjs';
 
 const ROOT = resolve(import.meta.dirname, '..');
@@ -14,6 +16,8 @@ const TRACKER_CONTRACT = resolve(
   ROOT,
   'skills/wayfinder-planning/references/tracker-contract.md',
 );
+const DURABLE_JOURNAL_CAP = 128;
+const MUTATION_RECEIPT_CAP = RECOVERY_LIMITS.mutationReceipts;
 const fixture = JSON.parse(readFileSync(
   resolve(ROOT, 'tests/fixtures/wayfinder-planning/recovery-traces.json'),
   'utf8',
@@ -101,10 +105,32 @@ function compareStrings(left, right) {
   return leftCodePoints.length - rightCodePoints.length;
 }
 
-function state(tickets, externalActions = []) {
+function canonicalize(value) {
+  if (Array.isArray(value)) return value.map(canonicalize);
+  if (value !== null && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.keys(value)
+        .filter((key) => value[key] !== undefined)
+        .sort(compareStrings)
+        .map((key) => [key, canonicalize(value[key])]),
+    );
+  }
+  return value;
+}
+
+function journalDigest(entry) {
+  return createHash('sha256')
+    .update(JSON.stringify(canonicalize(entry)))
+    .digest('hex');
+}
+
+function state(tickets, externalActions = [], recoveryConfirmations = undefined) {
   return {
     tickets: [...tickets].sort((left, right) => compareStrings(left.id, right.id)),
     external_actions: externalActions,
+    ...(recoveryConfirmations === undefined
+      ? {}
+      : { recovery_confirmations: recoveryConfirmations }),
   };
 }
 
@@ -166,7 +192,17 @@ test('unknown external outcome is durably blocked and verified before claim rele
     outcome: 'unknown',
     performed_at: scenario.input.now,
   };
-  assert.deepEqual(result.finalState, state([expectedTicket], [expectedAction]));
+  assert.deepEqual(result.finalState, state([expectedTicket], [expectedAction], [{
+    map_id: 'map-recovery',
+    ticket_id: 'task-unknown',
+    revision: 6,
+    fence_kind: 'release-confirmation-required',
+    read_result: {
+      ticket_revision: 6,
+      full: true,
+      claim_absent: true,
+    },
+  }]));
   assert.equal(result.transitions.at(-1).afterStateSha256, result.finalStateSha256);
   assert.equal(result.finalState.tickets[0].claim, null);
 });
@@ -1596,7 +1632,13 @@ test('identical task receipt replay is idempotent without a revision bump', () =
   });
   assert.deepEqual(result.violationCodes, []);
   assert.equal(result.finalState.tickets[0].revision, 2);
-  assertCompactNoMutation(result, 1);
+  assert.notEqual(
+    result.transitions[1].beforeStateSha256,
+    result.transitions[1].afterStateSha256,
+  );
+  assert.deepEqual(result.transitions[1].deltas.map(({ path }) => path), [
+    '/mutation_receipts',
+  ]);
   assert.deepEqual(result.finalState.tickets[0].task_action.external_receipt, receipt);
 });
 
@@ -4054,6 +4096,1337 @@ test('every modeled mutation replays without duplicate revision or state mutatio
   }
 });
 
+test('every modeled mutation replays safely across invocations', async (t) => {
+  for (const operation of [
+    'record_progress',
+    'record_task_intent',
+    'record_task_receipt',
+    'block_ticket',
+    'release_claim',
+    'unblock_ticket',
+    'reclaim_expired_claim',
+  ]) {
+    await t.test(operation, () => {
+      const scenario = replayScenario(operation);
+      const first = evaluateRecoveryTraceStrict(strictTrace({
+        initialState: { tickets: [scenario.ticket] },
+        operations: [scenario.operation],
+      }));
+      const replay = evaluateRecoveryTraceStrict(strictTrace({
+        initialState: first.finalState,
+        mutationJournal: first.mutationJournal,
+        operations: [scenario.operation],
+      }));
+      assert.deepEqual(
+        replay.violationCodes,
+        operation === 'release_claim' ? ['release-confirmation-required'] : [],
+      );
+      assert.equal(replay.transitions[0].replayed, true);
+      assert.deepEqual(
+        replay.transitions[0].mutationResult,
+        first.transitions[0].mutationResult,
+      );
+      assert.deepEqual(replay.finalState, first.finalState);
+    });
+  }
+});
+
+test('historical ordinary replays return the original result after later mutations', async (t) => {
+  const activeClaim = liveClaim('historical-ordinary');
+  const progress = {
+    operation: 'record_progress',
+    mutation_key: 'mutation:historical-progress',
+    ticket_id: 'ticket-historical-ordinary',
+    expected_revision: 1,
+    claim_token: activeClaim.claim_token,
+    owner_id: activeClaim.owner_id,
+    session_id: activeClaim.session_id,
+    progress_key: 'progress:historical-ordinary',
+    payload: { summary: 'Record the first durable progress.' },
+  };
+  const laterProgress = {
+    ...progress,
+    mutation_key: 'mutation:historical-progress-later',
+    expected_revision: 2,
+    progress_key: 'progress:historical-progress-later',
+    payload: { summary: 'Record a later durable progress.' },
+  };
+  const intent = {
+    operation: 'record_task_intent',
+    mutation_key: 'mutation:historical-intent',
+    ticket_id: 'task-historical-intent',
+    expected_revision: 1,
+    claim_token: activeClaim.claim_token,
+    owner_id: activeClaim.owner_id,
+    session_id: activeClaim.session_id,
+    intent: 'Record the historical task intent.',
+    idempotency_key: 'historical-intent',
+    authorization_reference: 'authorization:historical-intent',
+    reconciliation_method: 'Look up historical-intent.',
+  };
+  const laterIntentProgress = {
+    operation: 'record_progress',
+    mutation_key: 'mutation:historical-intent-later',
+    ticket_id: intent.ticket_id,
+    expected_revision: 2,
+    claim_token: activeClaim.claim_token,
+    owner_id: activeClaim.owner_id,
+    session_id: activeClaim.session_id,
+    progress_key: 'progress:historical-intent-later',
+    payload: { summary: 'Record progress after the intent.' },
+  };
+  const receipt = {
+    operation: 'record_task_receipt',
+    mutation_key: 'mutation:historical-receipt',
+    ticket_id: 'task-historical-receipt',
+    expected_revision: 1,
+    claim_token: activeClaim.claim_token,
+    owner_id: activeClaim.owner_id,
+    session_id: activeClaim.session_id,
+    idempotency_key: 'historical-receipt',
+    outcome: 'succeeded',
+    receipt: {
+      external_system: 'vendor-api',
+      idempotency_key: 'historical-receipt',
+      result: 'succeeded',
+      lookup_reference: 'vendor:historical-receipt',
+    },
+  };
+  const laterReceiptProgress = {
+    operation: 'record_progress',
+    mutation_key: 'mutation:historical-receipt-later',
+    ticket_id: receipt.ticket_id,
+    expected_revision: 2,
+    claim_token: activeClaim.claim_token,
+    owner_id: activeClaim.owner_id,
+    session_id: activeClaim.session_id,
+    progress_key: 'progress:historical-receipt-later',
+    payload: { summary: 'Record progress after the receipt.' },
+  };
+
+  for (const scenario of [
+    {
+      name: 'progress',
+      initialState: {
+        tickets: [ticket({ id: progress.ticket_id, claim: activeClaim })],
+      },
+      operations: [progress, laterProgress, progress],
+    },
+    {
+      name: 'task intent',
+      initialState: {
+        tickets: [ticket({
+          id: intent.ticket_id,
+          type: 'task',
+          claim: activeClaim,
+        })],
+      },
+      operations: [intent, laterIntentProgress, intent],
+    },
+    {
+      name: 'task receipt',
+      initialState: {
+        tickets: [ticket({
+          id: receipt.ticket_id,
+          type: 'task',
+          claim: activeClaim,
+          task_action: {
+            ...intendedTaskAction('historical-receipt'),
+            idempotency_key: receipt.idempotency_key,
+          },
+        })],
+      },
+      operations: [receipt, laterReceiptProgress, receipt],
+    },
+  ]) {
+    await t.test(scenario.name, () => {
+      const result = evaluateRecoveryTraceStrict(strictTrace({
+        initialState: scenario.initialState,
+        operations: scenario.operations,
+      }));
+      assert.deepEqual(result.violationCodes, []);
+      assert.equal(result.transitions[2].replayed, true);
+      assert.deepEqual(
+        result.transitions[2].mutationResult,
+        result.transitions[0].mutationResult,
+      );
+      assertCompactNoMutation(result, 2);
+      assert.equal(result.mutationJournal.length, 2);
+    });
+  }
+});
+
+test('historical ordinary replay rejects changed bindings and current-state divergence', () => {
+  const activeClaim = liveClaim('historical-conflict');
+  const firstOperation = {
+    operation: 'record_progress',
+    mutation_key: 'mutation:historical-conflict-first',
+    ticket_id: 'ticket-historical-conflict',
+    expected_revision: 1,
+    claim_token: activeClaim.claim_token,
+    owner_id: activeClaim.owner_id,
+    session_id: activeClaim.session_id,
+    progress_key: 'progress:historical-conflict-first',
+    payload: { summary: 'Original historical payload.' },
+  };
+  const laterOperation = {
+    ...firstOperation,
+    mutation_key: 'mutation:historical-conflict-later',
+    expected_revision: 2,
+    progress_key: 'progress:historical-conflict-later',
+    payload: { summary: 'Later payload.' },
+  };
+  const first = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: {
+      tickets: [ticket({
+        id: firstOperation.ticket_id,
+        claim: activeClaim,
+      })],
+    },
+    operations: [firstOperation, laterOperation],
+  }));
+  assert.deepEqual(first.violationCodes, []);
+
+  for (const changedOperation of [
+    { ...firstOperation, payload: { summary: 'Changed historical payload.' } },
+    { ...firstOperation, progress_key: 'progress:changed-historical-key' },
+    { ...firstOperation, operation: 'block_ticket' },
+  ]) {
+    const conflict = evaluateRecoveryTraceStrict(strictTrace({
+      initialState: first.finalState,
+      mutationJournal: first.mutationJournal,
+      operations: [changedOperation],
+    }));
+    assertCompactNoMutation(conflict, 0, 'mutation-key-conflict');
+    assert.equal(conflict.transitions[0].replayed, false);
+  }
+
+  const alteredState = structuredClone(first.finalState);
+  alteredState.tickets[0].progress_records[1].payload.summary = 'Forged later state.';
+  const divergent = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: alteredState,
+    mutationJournal: first.mutationJournal,
+    operations: [firstOperation],
+  }));
+  assertCompactNoMutation(divergent, 0, 'mutation-journal-conflict');
+  assert.equal(divergent.transitions[0].replayed, false);
+});
+
+test('mutation journals require a contiguous predecessor-bound sequence', async (t) => {
+  const activeClaim = liveClaim('journal-chain');
+  const firstOperation = {
+    operation: 'record_progress',
+    mutation_key: 'mutation:journal-chain-first',
+    ticket_id: 'ticket-journal-chain',
+    expected_revision: 1,
+    claim_token: activeClaim.claim_token,
+    owner_id: activeClaim.owner_id,
+    session_id: activeClaim.session_id,
+    progress_key: 'progress:journal-chain-first',
+    payload: { summary: 'First chained mutation.' },
+  };
+  const laterOperation = {
+    ...firstOperation,
+    mutation_key: 'mutation:journal-chain-later',
+    expected_revision: 2,
+    progress_key: 'progress:journal-chain-later',
+    payload: { summary: 'Second chained mutation.' },
+  };
+  const first = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: {
+      tickets: [ticket({
+        id: firstOperation.ticket_id,
+        claim: activeClaim,
+      })],
+    },
+    operations: [firstOperation, laterOperation],
+  }));
+  assert.deepEqual(first.violationCodes, []);
+  assert.deepEqual(
+    first.mutationJournal.map(({ sequence }) => sequence),
+    [1, 2],
+  );
+  assert.equal(first.mutationJournal[0].previous_entry_sha256, 'genesis');
+  assert.match(first.mutationJournal[1].previous_entry_sha256, /^[a-f0-9]{64}$/);
+
+  for (const [name, mutate, message] of [
+    ['omitted sequence', (journal) => {
+      delete journal[0].sequence;
+    }, 'sequence'],
+    ['duplicate sequence', (journal) => {
+      journal[1].sequence = journal[0].sequence;
+    }, 'sequence'],
+    ['gap sequence', (journal) => {
+      journal[1].sequence += 1;
+    }, 'sequence'],
+    ['forged predecessor', (journal) => {
+      journal[1].previous_entry_sha256 = '0'.repeat(64);
+    }, 'previous_entry_sha256'],
+  ]) {
+    await t.test(name, () => {
+      const mutationJournal = structuredClone(first.mutationJournal);
+      mutate(mutationJournal);
+      assert.throws(
+        () => evaluateRecoveryTraceStrict(strictTrace({
+          initialState: first.finalState,
+          mutationJournal,
+          operations: [],
+        })),
+        (error) => error.code === 'malformed-input' && new RegExp(message).test(error.message),
+      );
+    });
+  }
+
+  const restarted = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: first.finalState,
+    mutationJournal: first.mutationJournal,
+    operations: [{
+      ...firstOperation,
+      mutation_key: 'mutation:journal-chain-restarted',
+      expected_revision: 3,
+      progress_key: 'progress:journal-chain-restarted',
+      payload: { summary: 'Mutation appended after a valid split restart.' },
+    }],
+  }));
+  assert.deepEqual(restarted.violationCodes, []);
+  assert.equal(restarted.mutationJournal.at(-1).sequence, 3);
+  assert.equal(restarted.finalState.tickets[0].revision, 4);
+});
+
+test('reordering no-op journal entries is rejected by the predecessor chain', () => {
+  const activeClaim = liveClaim('journal-no-op-chain');
+  const operation = {
+    operation: 'record_progress',
+    mutation_key: 'mutation:journal-no-op-first',
+    ticket_id: 'ticket-journal-no-op-chain',
+    expected_revision: 1,
+    claim_token: activeClaim.claim_token,
+    owner_id: activeClaim.owner_id,
+    session_id: activeClaim.session_id,
+    progress_key: 'progress:journal-no-op',
+    payload: { summary: 'Stable no-op progress.' },
+  };
+  const noOp = {
+    ...operation,
+    mutation_key: 'mutation:journal-no-op-second',
+    expected_revision: 2,
+  };
+  const anotherNoOp = {
+    ...operation,
+    mutation_key: 'mutation:journal-no-op-third',
+    expected_revision: 2,
+  };
+  const first = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: {
+      tickets: [ticket({
+        id: operation.ticket_id,
+        claim: activeClaim,
+      })],
+    },
+    operations: [operation, noOp, anotherNoOp],
+  }));
+  assert.deepEqual(first.violationCodes, []);
+  assert.equal(first.mutationJournal.length, 3);
+  assert.throws(
+    () => evaluateRecoveryTraceStrict(strictTrace({
+      initialState: first.finalState,
+      mutationJournal: [
+        first.mutationJournal[0],
+        first.mutationJournal[2],
+        first.mutationJournal[1],
+      ],
+      operations: [],
+    })),
+    (error) => error.code === 'malformed-input'
+      && /sequence|previous_entry_sha256/.test(error.message),
+  );
+});
+
+test('no-op timestamps use durable authority and unauthenticated no-ops are not journaled', async (t) => {
+  const activeClaim = liveClaim('no-op-timestamps');
+  const intent = {
+    operation: 'record_task_intent',
+    mutation_key: 'mutation:no-op-intent',
+    ticket_id: 'task-no-op-intent',
+    expected_revision: 1,
+    claim_token: activeClaim.claim_token,
+    owner_id: activeClaim.owner_id,
+    session_id: activeClaim.session_id,
+    intent: 'Retain the existing task intent.',
+    idempotency_key: 'no-op-intent',
+    authorization_reference: 'authorization:no-op-intent',
+    reconciliation_method: 'Look up no-op-intent.',
+  };
+  const intentState = {
+    tickets: [ticket({
+      id: intent.ticket_id,
+      type: 'task',
+      claim: activeClaim,
+      task_action: {
+        intent: intent.intent,
+        idempotency_key: intent.idempotency_key,
+        authorization_reference: intent.authorization_reference,
+        reconciliation_method: intent.reconciliation_method,
+        state: 'intended',
+      },
+    })],
+  };
+  const intentResult = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: intentState,
+    operations: [intent],
+  }));
+  assert.deepEqual(intentResult.violationCodes, []);
+  assert.deepEqual(intentResult.mutationJournal, []);
+
+  await t.test('receipt', () => {
+    const receipt = {
+      external_system: 'vendor-api',
+      idempotency_key: 'no-op-receipt',
+      result: 'succeeded',
+      lookup_reference: 'vendor:no-op-receipt',
+    };
+    const operation = {
+      operation: 'record_task_receipt',
+      mutation_key: 'mutation:no-op-receipt',
+      ticket_id: 'task-no-op-receipt',
+      expected_revision: 1,
+      claim_token: activeClaim.claim_token,
+      owner_id: activeClaim.owner_id,
+      session_id: activeClaim.session_id,
+      idempotency_key: receipt.idempotency_key,
+      outcome: receipt.result,
+      receipt,
+    };
+    const result = evaluateRecoveryTraceStrict(strictTrace({
+      initialState: {
+        tickets: [ticket({
+          id: operation.ticket_id,
+          type: 'task',
+          claim: activeClaim,
+          task_action: {
+            ...intendedTaskAction('no-op-receipt'),
+            idempotency_key: receipt.idempotency_key,
+            state: 'succeeded',
+            external_receipt: receipt,
+          },
+        })],
+        external_actions: [{
+          ticket_id: operation.ticket_id,
+          idempotency_key: receipt.idempotency_key,
+          external_system: receipt.external_system,
+          lookup_reference: receipt.lookup_reference,
+          outcome: receipt.result,
+          performed_at: '2026-08-23T19:30:00.000Z',
+        }],
+      },
+      operations: [operation],
+    }));
+    assert.deepEqual(result.violationCodes, []);
+    assert.equal(result.mutationJournal.length, 1);
+    assert.equal(
+      result.mutationJournal[0].committed_at,
+      '2026-08-23T19:30:00.000Z',
+    );
+
+    const forgedJournal = structuredClone(result.mutationJournal);
+    forgedJournal[0].committed_at = '2026-08-23T19:45:00.000Z';
+    const forged = evaluateRecoveryTraceStrict(strictTrace({
+      initialState: result.finalState,
+      mutationJournal: forgedJournal,
+      operations: [operation],
+    }));
+    assertCompactNoMutation(forged, 0, 'mutation-journal-conflict');
+
+    const withoutAuthority = evaluateRecoveryTraceStrict(strictTrace({
+      initialState: {
+        tickets: [ticket({
+          id: operation.ticket_id,
+          type: 'task',
+          claim: activeClaim,
+          task_action: {
+            ...intendedTaskAction('no-op-receipt-no-authority'),
+            idempotency_key: receipt.idempotency_key,
+            state: 'succeeded',
+            external_receipt: receipt,
+          },
+        })],
+      },
+      operations: [{
+        ...operation,
+        mutation_key: 'mutation:no-op-receipt-no-authority',
+      }],
+    }));
+    assert.deepEqual(withoutAuthority.violationCodes, []);
+    assert.deepEqual(withoutAuthority.mutationJournal, []);
+  });
+
+  await t.test('progress', () => {
+    const operation = {
+      operation: 'record_progress',
+      mutation_key: 'mutation:no-op-progress',
+      ticket_id: 'ticket-no-op-progress',
+      expected_revision: 2,
+      claim_token: activeClaim.claim_token,
+      owner_id: activeClaim.owner_id,
+      session_id: activeClaim.session_id,
+      progress_key: 'progress:no-op-progress',
+      payload: { summary: 'Existing progress.' },
+    };
+    const existing = {
+      progress_key: operation.progress_key,
+      payload: operation.payload,
+      recorded_at: '2026-08-23T19:00:00.000Z',
+      revision: 2,
+    };
+    const result = evaluateRecoveryTraceStrict(strictTrace({
+      initialState: {
+        tickets: [ticket({
+          id: operation.ticket_id,
+          revision: 2,
+          claim: activeClaim,
+          progress_records: [existing],
+        })],
+      },
+      operations: [operation],
+    }));
+    assert.deepEqual(result.violationCodes, []);
+    assert.equal(result.mutationJournal[0].committed_at, existing.recorded_at);
+    const forgedJournal = structuredClone(result.mutationJournal);
+    forgedJournal[0].committed_at = '2026-08-23T19:45:00.000Z';
+    const forged = evaluateRecoveryTraceStrict(strictTrace({
+      initialState: result.finalState,
+      mutationJournal: forgedJournal,
+      operations: [operation],
+    }));
+    assertCompactNoMutation(forged, 0, 'mutation-journal-conflict');
+  });
+
+  await t.test('release replay', () => {
+    const operation = {
+      operation: 'release_claim',
+      mutation_key: 'mutation:no-op-release',
+      ticket_id: 'ticket-no-op-release',
+      expected_revision: 1,
+      claim_token: activeClaim.claim_token,
+      owner_id: activeClaim.owner_id,
+      session_id: activeClaim.session_id,
+    };
+    const first = evaluateRecoveryTraceStrict(strictTrace({
+      initialState: {
+        tickets: [ticket({
+          id: operation.ticket_id,
+          claim: activeClaim,
+        })],
+      },
+      operations: [operation],
+    }));
+    assert.equal(first.mutationJournal[0].result.event_at, first.mutationJournal[0].committed_at);
+
+    const forgedJournal = structuredClone(first.mutationJournal);
+    forgedJournal[0].committed_at = '2026-08-23T19:45:00.000Z';
+    const forged = evaluateRecoveryTraceStrict(strictTrace({
+      initialState: first.finalState,
+      mutationJournal: forgedJournal,
+      operations: [operation],
+    }));
+    assertCompactNoMutation(forged, 0, 'mutation-journal-conflict');
+  });
+});
+
+test('durable journal cap preflights append capacity and round-trips at the exact boundary', () => {
+  const activeClaim = liveClaim('journal-cap');
+  const operations = Array.from(
+    { length: DURABLE_JOURNAL_CAP },
+    (_, index) => {
+      const ticketIndex = Math.floor(index / 2);
+      const ticketRevision = (index % 2) + 1;
+      return {
+        operation: 'record_progress',
+        mutation_key: `mutation:journal-cap-${index}`,
+        ticket_id: `ticket-journal-cap-${ticketIndex}`,
+        expected_revision: ticketRevision,
+        claim_token: activeClaim.claim_token,
+        owner_id: activeClaim.owner_id,
+        session_id: activeClaim.session_id,
+        progress_key: `progress:journal-cap-${index}`,
+        payload: { summary: `Journal cap progress ${index}.` },
+      };
+    },
+  );
+  const first = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: {
+      tickets: Array.from({ length: DURABLE_JOURNAL_CAP / 2 }, (_, index) => ticket({
+        id: `ticket-journal-cap-${index}`,
+        claim: activeClaim,
+      })),
+    },
+    operations,
+  }));
+  assert.deepEqual(first.violationCodes, []);
+  assert.equal(first.mutationJournal.length, DURABLE_JOURNAL_CAP);
+
+  const roundTrip = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: first.finalState,
+    mutationJournal: first.mutationJournal,
+  }));
+  assert.equal(roundTrip.valid, true);
+  assert.deepEqual(roundTrip.finalState, first.finalState);
+  assert.deepEqual(roundTrip.mutationJournal, first.mutationJournal);
+
+  const beyondLimit = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: first.finalState,
+    mutationJournal: first.mutationJournal,
+    operations: [{
+      ...operations[0],
+      mutation_key: 'mutation:journal-cap-overflow',
+      ticket_id: 'ticket-journal-cap-0',
+      expected_revision: 3,
+      progress_key: 'progress:journal-cap-overflow',
+    }],
+  }));
+  assert.deepEqual(beyondLimit.violationCodes, ['journal-capacity-exceeded']);
+  assert.equal(
+    beyondLimit.finalStateSha256,
+    first.finalStateSha256,
+  );
+  assert.deepEqual(beyondLimit.finalState, first.finalState);
+  assert.deepEqual(beyondLimit.mutationJournal, first.mutationJournal);
+});
+
+test('journal capacity preflight is atomic across multiple possible appends', () => {
+  const activeClaim = liveClaim('journal-cap-preflight');
+  const existingOperations = Array.from(
+    { length: DURABLE_JOURNAL_CAP - 1 },
+    (_, index) => {
+      const ticketIndex = Math.floor(index / 2);
+      const ticketRevision = (index % 2) + 1;
+      return {
+        operation: 'record_progress',
+        mutation_key: `mutation:journal-cap-preflight-${index}`,
+        ticket_id: `ticket-journal-cap-preflight-${ticketIndex}`,
+        expected_revision: ticketRevision,
+        claim_token: activeClaim.claim_token,
+        owner_id: activeClaim.owner_id,
+        session_id: activeClaim.session_id,
+        progress_key: `progress:journal-cap-preflight-${index}`,
+        payload: { summary: `Journal preflight progress ${index}.` },
+      };
+    },
+  );
+  const first = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: {
+      tickets: [
+        ...Array.from({ length: 64 }, (_, index) => ticket({
+          id: `ticket-journal-cap-preflight-${index}`,
+          claim: activeClaim,
+        })),
+        ticket({
+          id: 'ticket-journal-cap-preflight-target',
+          claim: activeClaim,
+        }),
+      ],
+    },
+    operations: existingOperations,
+  }));
+  assert.deepEqual(first.violationCodes, []);
+  assert.equal(first.mutationJournal.length, DURABLE_JOURNAL_CAP - 1);
+
+  const nextOperation = {
+    ...existingOperations[0],
+    mutation_key: 'mutation:journal-cap-preflight-next',
+    ticket_id: 'ticket-journal-cap-preflight-target',
+    expected_revision: 1,
+    progress_key: 'progress:journal-cap-preflight-next',
+  };
+  const overflow = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: first.finalState,
+    mutationJournal: first.mutationJournal,
+    operations: [
+      nextOperation,
+      {
+        ...nextOperation,
+        mutation_key: 'mutation:journal-cap-preflight-after',
+        expected_revision: 2,
+        progress_key: 'progress:journal-cap-preflight-after',
+      },
+    ],
+  }));
+  assert.deepEqual(overflow.violationCodes, ['journal-capacity-exceeded']);
+  assert.ok(overflow.transitions.every((transition) =>
+    transition.beforeStateSha256 === transition.afterStateSha256));
+  assert.deepEqual(overflow.finalState, first.finalState);
+  assert.deepEqual(overflow.mutationJournal, first.mutationJournal);
+});
+
+test('journal-only recovery rejects a missing operation input despite a plausible digest', () => {
+  const scenario = replayScenario('record_progress');
+  const first = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: { tickets: [scenario.ticket] },
+    operations: [scenario.operation],
+  }));
+  const forged = structuredClone(first.mutationJournal);
+  delete forged[0].operation_input;
+  forged[0].fingerprint_sha256 = 'a'.repeat(64);
+  assert.throws(
+    () => evaluateRecoveryTraceStrict(strictTrace({
+      initialState: first.finalState,
+      mutationJournal: forged,
+      operations: [scenario.operation],
+    })),
+    (error) => error.code === 'malformed-input'
+      && /operation_input/.test(error.message),
+  );
+});
+
+test('durable no-op mutation receipts bind task-intent keys across invocations', () => {
+  const activeClaim = liveClaim('durable-no-op-intent');
+  const operation = {
+    operation: 'record_task_intent',
+    mutation_key: 'mutation:durable-no-op-intent',
+    ticket_id: 'task-durable-no-op-intent',
+    expected_revision: 1,
+    claim_token: activeClaim.claim_token,
+    owner_id: activeClaim.owner_id,
+    session_id: activeClaim.session_id,
+    intent: 'Retain the existing task intent.',
+    idempotency_key: 'durable-no-op-intent',
+    authorization_reference: 'authorization:durable-no-op-intent',
+    reconciliation_method: 'Look up durable-no-op-intent.',
+  };
+  const initialState = {
+    tickets: [ticket({
+      id: operation.ticket_id,
+      type: 'task',
+      claim: activeClaim,
+      task_action: {
+        intent: operation.intent,
+        idempotency_key: operation.idempotency_key,
+        authorization_reference: operation.authorization_reference,
+        reconciliation_method: operation.reconciliation_method,
+        state: 'intended',
+      },
+    })],
+  };
+  const first = evaluateRecoveryTraceStrict(strictTrace({
+    initialState,
+    operations: [operation],
+  }));
+  assert.deepEqual(first.violationCodes, []);
+  assert.equal(first.mutationJournal.length, 0);
+  assert.equal(first.finalState.mutation_receipts.length, 1);
+  assert.equal(first.finalState.mutation_receipts[0].mutation_key, operation.mutation_key);
+
+  const replay = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: first.finalState,
+    operations: [operation],
+  }));
+  assert.deepEqual(replay.violationCodes, []);
+  assert.equal(replay.transitions[0].replayed, true);
+  assert.deepEqual(replay.finalState, first.finalState);
+  assert.deepEqual(replay.mutationJournal, []);
+
+  const conflictingBlock = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: first.finalState,
+    operations: [{
+      operation: 'block_ticket',
+      mutation_key: operation.mutation_key,
+      ticket_id: operation.ticket_id,
+      expected_revision: 1,
+      claim_token: activeClaim.claim_token,
+      owner_id: activeClaim.owner_id,
+      session_id: activeClaim.session_id,
+      confirmed: true,
+      reason: 'Conflicting operation.',
+      evidence_reference: 'evidence:durable-no-op-conflict',
+      actor_id: activeClaim.owner_id,
+    }],
+  }));
+  assert.deepEqual(conflictingBlock.violationCodes, ['mutation-key-conflict']);
+  assert.deepEqual(conflictingBlock.finalState, first.finalState);
+});
+
+test('durable no-op mutation receipts preserve exact receipt replays across split invocations', () => {
+  const activeClaim = liveClaim('durable-no-op-receipt');
+  const receipt = {
+    external_system: 'vendor-api',
+    idempotency_key: 'durable-no-op-receipt',
+    result: 'succeeded',
+    lookup_reference: 'vendor:durable-no-op-receipt',
+  };
+  const operation = {
+    operation: 'record_task_receipt',
+    mutation_key: 'mutation:durable-no-op-receipt',
+    ticket_id: 'task-durable-no-op-receipt',
+    expected_revision: 1,
+    claim_token: activeClaim.claim_token,
+    owner_id: activeClaim.owner_id,
+    session_id: activeClaim.session_id,
+    idempotency_key: receipt.idempotency_key,
+    outcome: receipt.result,
+    receipt,
+  };
+  const initialState = {
+    tickets: [ticket({
+      id: operation.ticket_id,
+      type: 'task',
+      claim: activeClaim,
+      task_action: {
+        ...intendedTaskAction('durable-no-op-receipt'),
+        idempotency_key: receipt.idempotency_key,
+        state: 'succeeded',
+        external_receipt: receipt,
+      },
+    })],
+  };
+  const first = evaluateRecoveryTraceStrict(strictTrace({
+    initialState,
+    operations: [operation],
+  }));
+  assert.deepEqual(first.violationCodes, []);
+  assert.equal(first.mutationJournal.length, 0);
+  assert.equal(first.finalState.mutation_receipts.length, 1);
+
+  const replay = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: first.finalState,
+    operations: [operation],
+  }));
+  assert.deepEqual(replay.violationCodes, []);
+  assert.equal(replay.transitions[0].replayed, true);
+  assert.deepEqual(replay.transitions[0].mutationResult, first.transitions[0].mutationResult);
+  assert.deepEqual(replay.finalState, first.finalState);
+});
+
+test('durable no-op receipts replay from their historical journal sequence', () => {
+  const activeClaim = liveClaim('durable-no-op-historical');
+  const priorProgress = {
+    operation: 'record_progress',
+    mutation_key: 'mutation:durable-no-op-historical-prior',
+    ticket_id: 'task-durable-no-op-historical',
+    expected_revision: 1,
+    claim_token: activeClaim.claim_token,
+    owner_id: activeClaim.owner_id,
+    session_id: activeClaim.session_id,
+    progress_key: 'progress:durable-no-op-historical-prior',
+    payload: { summary: 'Advance the journal before the receipt.' },
+  };
+  const intent = {
+    operation: 'record_task_intent',
+    mutation_key: 'mutation:durable-no-op-historical-intent',
+    ticket_id: 'task-durable-no-op-historical',
+    expected_revision: 2,
+    claim_token: activeClaim.claim_token,
+    owner_id: activeClaim.owner_id,
+    session_id: activeClaim.session_id,
+    intent: 'Replay the historical task intent.',
+    idempotency_key: 'durable-no-op-historical-intent',
+    authorization_reference: 'authorization:durable-no-op-historical',
+    reconciliation_method: 'Look up durable-no-op-historical-intent.',
+  };
+  const laterProgress = {
+    operation: 'record_progress',
+    mutation_key: 'mutation:durable-no-op-historical-later',
+    ticket_id: intent.ticket_id,
+    expected_revision: 2,
+    claim_token: activeClaim.claim_token,
+    owner_id: activeClaim.owner_id,
+    session_id: activeClaim.session_id,
+    progress_key: 'progress:durable-no-op-historical-later',
+    payload: { summary: 'Advance the ticket after the receipt.' },
+  };
+  const first = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: {
+      tickets: [ticket({
+        id: intent.ticket_id,
+        type: 'task',
+        claim: activeClaim,
+        task_action: {
+          intent: intent.intent,
+          idempotency_key: intent.idempotency_key,
+          authorization_reference: intent.authorization_reference,
+          reconciliation_method: intent.reconciliation_method,
+          state: 'intended',
+        },
+      })],
+    },
+    operations: [priorProgress, intent, laterProgress, intent],
+  }));
+  assert.deepEqual(first.violationCodes, []);
+  assert.equal(first.mutationJournal.length, 2);
+  assert.equal(first.finalState.mutation_receipts[0].journal_sequence, 1);
+  assert.equal(first.finalState.tickets.find(({ id }) => id === intent.ticket_id).revision, 3);
+  assert.equal(first.transitions[3].replayed, true);
+  assert.deepEqual(
+    first.transitions[3].mutationResult,
+    first.transitions[1].mutationResult,
+  );
+  assertCompactNoMutation(first, 3);
+
+  const splitReplay = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: first.finalState,
+    mutationJournal: first.mutationJournal,
+    operations: [intent],
+  }));
+  assert.deepEqual(splitReplay.violationCodes, []);
+  assert.equal(splitReplay.transitions[0].replayed, true);
+  assert.deepEqual(
+    splitReplay.transitions[0].mutationResult,
+    first.transitions[1].mutationResult,
+  );
+  assertCompactNoMutation(splitReplay, 0);
+
+  const changed = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: first.finalState,
+    mutationJournal: first.mutationJournal,
+    operations: [{
+      ...intent,
+      intent: 'Changed historical task intent.',
+    }],
+  }));
+  assertCompactNoMutation(changed, 0, 'mutation-key-conflict');
+
+  const forgedSequence = structuredClone(first.finalState);
+  forgedSequence.mutation_receipts[0].journal_sequence = 0;
+  const forgedSequenceResult = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: forgedSequence,
+    mutationJournal: first.mutationJournal,
+    operations: [intent],
+  }));
+  assertCompactNoMutation(forgedSequenceResult, 0, 'mutation-journal-conflict');
+
+  const overflowingSequence = structuredClone(first.finalState);
+  overflowingSequence.mutation_receipts[0].journal_sequence =
+    first.mutationJournal.length + 1;
+  const overflowingSequenceResult = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: overflowingSequence,
+    mutationJournal: first.mutationJournal,
+    operations: [intent],
+  }));
+  assertCompactNoMutation(overflowingSequenceResult, 0, 'mutation-journal-conflict');
+
+  for (const [mutate, violation] of [
+    [(receipt) => {
+      receipt.map_id = 'map-forged';
+    }, 'mutation-journal-conflict'],
+    [(receipt) => {
+      receipt.ticket_id = 'ticket-forged';
+    }, 'mutation-key-conflict'],
+    [(receipt) => {
+      receipt.result.idempotency_key = 'result-forged';
+    }, 'mutation-journal-conflict'],
+  ]) {
+    const forged = structuredClone(first.finalState);
+    mutate(forged.mutation_receipts[0]);
+    const result = evaluateRecoveryTraceStrict(strictTrace({
+      initialState: forged,
+      mutationJournal: first.mutationJournal,
+      operations: [intent],
+    }));
+    assertCompactNoMutation(result, 0, violation);
+  }
+
+  const missingHistory = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: first.finalState,
+    operations: [intent],
+  }));
+  assertCompactNoMutation(missingHistory, 0, 'mutation-journal-conflict');
+
+  const divergent = structuredClone(first.finalState);
+  divergent.tickets
+    .find(({ id }) => id === intent.ticket_id)
+    .progress_records[0].payload.summary = 'Divergent current final state.';
+  const divergentResult = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: divergent,
+    mutationJournal: first.mutationJournal,
+    operations: [intent],
+  }));
+  assertCompactNoMutation(divergentResult, 0, 'mutation-journal-conflict');
+});
+
+test('durable no-op task receipts replay after later progress on the ticket', () => {
+  const activeClaim = liveClaim('durable-no-op-task-receipt-history');
+  const receipt = {
+    external_system: 'vendor-api',
+    idempotency_key: 'durable-no-op-task-receipt-history',
+    result: 'succeeded',
+    lookup_reference: 'vendor:durable-no-op-task-receipt-history',
+  };
+  const operation = {
+    operation: 'record_task_receipt',
+    mutation_key: 'mutation:durable-no-op-task-receipt-history',
+    ticket_id: 'task-durable-no-op-task-receipt-history',
+    expected_revision: 1,
+    claim_token: activeClaim.claim_token,
+    owner_id: activeClaim.owner_id,
+    session_id: activeClaim.session_id,
+    idempotency_key: receipt.idempotency_key,
+    outcome: receipt.result,
+    receipt,
+  };
+  const laterProgress = {
+    operation: 'record_progress',
+    mutation_key: 'mutation:durable-no-op-task-receipt-history-later',
+    ticket_id: operation.ticket_id,
+    expected_revision: 1,
+    claim_token: activeClaim.claim_token,
+    owner_id: activeClaim.owner_id,
+    session_id: activeClaim.session_id,
+    progress_key: 'progress:durable-no-op-task-receipt-history-later',
+    payload: { summary: 'Advance the ticket after the receipt.' },
+  };
+  const first = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: {
+      tickets: [ticket({
+        id: operation.ticket_id,
+        type: 'task',
+        claim: activeClaim,
+        task_action: {
+          ...intendedTaskAction('durable-no-op-task-receipt-history'),
+          idempotency_key: receipt.idempotency_key,
+          state: 'succeeded',
+          external_receipt: receipt,
+        },
+      })],
+    },
+    operations: [operation, laterProgress],
+  }));
+  assert.deepEqual(first.violationCodes, []);
+  assert.equal(first.mutationJournal.length, 1);
+  assert.equal(first.finalState.mutation_receipts[0].journal_sequence, 0);
+
+  const replay = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: first.finalState,
+    mutationJournal: first.mutationJournal,
+    operations: [operation],
+  }));
+  assert.deepEqual(replay.violationCodes, []);
+  assert.equal(replay.transitions[0].replayed, true);
+  assert.deepEqual(replay.transitions[0].mutationResult, first.transitions[0].mutationResult);
+  assert.deepEqual(replay.finalState, first.finalState);
+});
+
+test('durable no-op receipts remain compatible with surrounding journal history', () => {
+  const activeClaim = liveClaim('durable-no-op-history');
+  const intent = {
+    operation: 'record_task_intent',
+    mutation_key: 'mutation:durable-no-op-history-intent',
+    ticket_id: 'task-durable-no-op-history',
+    expected_revision: 1,
+    claim_token: activeClaim.claim_token,
+    owner_id: activeClaim.owner_id,
+    session_id: activeClaim.session_id,
+    intent: 'Retain the existing task intent.',
+    idempotency_key: 'durable-no-op-history-intent',
+    authorization_reference: 'authorization:durable-no-op-history',
+    reconciliation_method: 'Look up durable-no-op-history-intent.',
+  };
+  const progress = {
+    operation: 'record_progress',
+    mutation_key: 'mutation:durable-no-op-history-progress',
+    ticket_id: 'ticket-durable-no-op-history',
+    expected_revision: 1,
+    claim_token: activeClaim.claim_token,
+    owner_id: activeClaim.owner_id,
+    session_id: activeClaim.session_id,
+    progress_key: 'progress:durable-no-op-history',
+    payload: { summary: 'Journaled state before a durable no-op.' },
+  };
+  const first = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: {
+      tickets: [
+        ticket({
+          id: intent.ticket_id,
+          type: 'task',
+          claim: activeClaim,
+          task_action: {
+            intent: intent.intent,
+            idempotency_key: intent.idempotency_key,
+            authorization_reference: intent.authorization_reference,
+            reconciliation_method: intent.reconciliation_method,
+            state: 'intended',
+          },
+        }),
+        ticket({
+          id: progress.ticket_id,
+          claim: activeClaim,
+        }),
+      ],
+    },
+    operations: [progress, intent],
+  }));
+  assert.deepEqual(first.violationCodes, []);
+  assert.equal(first.mutationJournal.length, 1);
+  assert.equal(first.finalState.mutation_receipts.length, 1);
+
+  const restarted = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: first.finalState,
+    mutationJournal: first.mutationJournal,
+  }));
+  assert.deepEqual(restarted.violationCodes, []);
+  assert.deepEqual(restarted.finalState, first.finalState);
+  assert.deepEqual(restarted.mutationJournal, first.mutationJournal);
+});
+
+test('mutation receipt indexes reject forged or overflowing durable entries', () => {
+  const activeClaim = liveClaim('durable-no-op-index');
+  const operation = {
+    operation: 'record_task_intent',
+    mutation_key: 'mutation:durable-no-op-index',
+    ticket_id: 'task-durable-no-op-index',
+    expected_revision: 1,
+    claim_token: activeClaim.claim_token,
+    owner_id: activeClaim.owner_id,
+    session_id: activeClaim.session_id,
+    intent: 'Retain the existing task intent.',
+    idempotency_key: 'durable-no-op-index',
+    authorization_reference: 'authorization:durable-no-op-index',
+    reconciliation_method: 'Look up durable-no-op-index.',
+  };
+  const valid = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: {
+      tickets: [ticket({
+        id: operation.ticket_id,
+        type: 'task',
+        claim: activeClaim,
+        task_action: {
+          intent: operation.intent,
+          idempotency_key: operation.idempotency_key,
+          authorization_reference: operation.authorization_reference,
+          reconciliation_method: operation.reconciliation_method,
+          state: 'intended',
+        },
+      })],
+    },
+    operations: [operation],
+  }));
+  const forged = structuredClone(valid.finalState);
+  forged.mutation_receipts[0].fingerprint_sha256 = 'f'.repeat(64);
+  const forgedResult = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: forged,
+    operations: [operation],
+  }));
+  assert.deepEqual(forgedResult.violationCodes, ['mutation-key-conflict']);
+  assert.deepEqual(forgedResult.finalState, forged);
+
+  const overflow = structuredClone(valid.finalState);
+  overflow.mutation_receipts = Array.from(
+    { length: MUTATION_RECEIPT_CAP + 1 },
+    (_, index) => ({
+      ...valid.finalState.mutation_receipts[0],
+      mutation_key: `mutation:overflow-${index}`,
+    }),
+  );
+  assert.throws(
+    () => evaluateRecoveryTraceStrict(strictTrace({ initialState: overflow })),
+    (error) => error.code === 'malformed-input'
+      && /mutation_receipts/.test(error.message),
+  );
+
+  const duplicate = structuredClone(valid.finalState);
+  duplicate.mutation_receipts = [
+    duplicate.mutation_receipts[0],
+    duplicate.mutation_receipts[0],
+  ];
+  assert.throws(
+    () => evaluateRecoveryTraceStrict(strictTrace({ initialState: duplicate })),
+    (error) => error.code === 'malformed-input'
+      && /duplicate mutation keys/.test(error.message),
+  );
+});
+
+test('fully bound split replays are clock-independent and retain the committed result', async (t) => {
+  for (const operation of ['record_progress', 'record_task_receipt']) {
+    await t.test(`${operation} after lease expiry`, () => {
+      const scenario = replayScenario(operation);
+      const originalNow = '2026-08-23T20:00:00.000Z';
+      const laterNow = '2026-08-23T22:00:00.000Z';
+      const first = evaluateRecoveryTraceStrict(strictTrace({
+        now: originalNow,
+        initialState: { tickets: [scenario.ticket] },
+        operations: [scenario.operation],
+      }));
+      assert.deepEqual(first.violationCodes, []);
+      assert.equal(first.mutationJournal[0].committed_at, originalNow);
+
+      const replay = evaluateRecoveryTraceStrict(strictTrace({
+        now: laterNow,
+        initialState: first.finalState,
+        mutationJournal: first.mutationJournal,
+        operations: [scenario.operation],
+      }));
+      assert.deepEqual(replay.violationCodes, []);
+      assert.equal(replay.transitions[0].replayed, true);
+      assert.deepEqual(
+        replay.transitions[0].mutationResult,
+        first.transitions[0].mutationResult,
+      );
+      assertCompactNoMutation(replay, 0);
+      assert.deepEqual(replay.finalState, first.finalState);
+      assert.equal(replay.externalActionCount, first.externalActionCount);
+    });
+  }
+
+  await t.test('external_action after lease expiry', () => {
+    const activeClaim = liveClaim('clock-external');
+    const action = intendedTaskAction('clock-external');
+    const operation = {
+      operation: 'external_action',
+      mutation_key: action.idempotency_key,
+      ticket_id: 'task-clock-external',
+      expected_revision: 1,
+      claim_token: activeClaim.claim_token,
+      owner_id: activeClaim.owner_id,
+      session_id: activeClaim.session_id,
+      idempotency_key: action.idempotency_key,
+      external_system: 'vendor-api',
+      lookup_reference: 'vendor:clock-external',
+      outcome: 'succeeded',
+    };
+    const originalNow = '2026-08-23T20:00:00.000Z';
+    const laterNow = '2026-08-23T22:00:00.000Z';
+    const first = evaluateRecoveryTraceStrict(strictTrace({
+      now: originalNow,
+      initialState: {
+        tickets: [ticket({
+          id: operation.ticket_id,
+          type: 'task',
+          claim: activeClaim,
+          task_action: action,
+        })],
+      },
+      operations: [operation],
+    }));
+    assert.deepEqual(first.violationCodes, []);
+    assert.equal(first.externalActionCount, 1);
+
+    const replay = evaluateRecoveryTraceStrict(strictTrace({
+      now: laterNow,
+      initialState: first.finalState,
+      mutationJournal: first.mutationJournal,
+      operations: [operation],
+    }));
+    assert.deepEqual(replay.violationCodes, []);
+    assert.equal(replay.transitions[0].replayed, true);
+    assert.deepEqual(replay.transitions[0].mutationResult, first.transitions[0].mutationResult);
+    assertCompactNoMutation(replay, 0);
+    assert.deepEqual(replay.finalState, first.finalState);
+    assert.equal(replay.externalActionCount, 1);
+  });
+});
+
+test('clock-independent replay rejects altered post-state and forged committed timestamp or result', () => {
+  const scenario = replayScenario('record_progress');
+  const originalNow = '2026-08-23T20:00:00.000Z';
+  const laterNow = '2026-08-23T22:00:00.000Z';
+  const first = evaluateRecoveryTraceStrict(strictTrace({
+    now: originalNow,
+    initialState: { tickets: [scenario.ticket] },
+    operations: [scenario.operation],
+  }));
+
+  const alteredState = structuredClone(first.finalState);
+  alteredState.tickets[0].progress_records[0].payload.summary = 'Altered after commit.';
+  const alteredStateReplay = evaluateRecoveryTraceStrict(strictTrace({
+    now: laterNow,
+    initialState: alteredState,
+    mutationJournal: first.mutationJournal,
+    operations: [scenario.operation],
+  }));
+  assertCompactNoMutation(alteredStateReplay, 0, 'mutation-journal-conflict');
+  assert.equal(alteredStateReplay.transitions[0].replayed, false);
+
+  const forgedTimestamp = structuredClone(first.mutationJournal);
+  forgedTimestamp[0].committed_at = laterNow;
+  const forgedTimestampReplay = evaluateRecoveryTraceStrict(strictTrace({
+    now: laterNow,
+    initialState: first.finalState,
+    mutationJournal: forgedTimestamp,
+    operations: [scenario.operation],
+  }));
+  assertCompactNoMutation(forgedTimestampReplay, 0, 'mutation-journal-conflict');
+
+  const forgedResult = structuredClone(first.mutationJournal);
+  forgedResult[0].result.record_revision = 1;
+  const forgedResultReplay = evaluateRecoveryTraceStrict(strictTrace({
+    now: laterNow,
+    initialState: first.finalState,
+    mutationJournal: forgedResult,
+    operations: [scenario.operation],
+  }));
+  assertCompactNoMutation(forgedResultReplay, 0, 'mutation-journal-conflict');
+});
+
+test('split replay preserves release authorization after inspected unknown outcomes', () => {
+  const activeClaim = liveClaim('split-release-unknown');
+  const action = intendedTaskAction('split-release-unknown');
+  const release = {
+    operation: 'release_claim',
+    mutation_key: 'mutation:split-release-unknown',
+    ticket_id: 'task-split-release-unknown',
+    expected_revision: 3,
+    claim_token: activeClaim.claim_token,
+    owner_id: activeClaim.owner_id,
+    session_id: activeClaim.session_id,
+  };
+  const first = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: {
+      tickets: [ticket({
+        id: release.ticket_id,
+        type: 'task',
+        claim: activeClaim,
+        task_action: action,
+      })],
+    },
+    operations: [
+      {
+        operation: 'record_task_receipt',
+        mutation_key: 'mutation:split-release-unknown-receipt',
+        ticket_id: release.ticket_id,
+        expected_revision: 1,
+        claim_token: activeClaim.claim_token,
+        owner_id: activeClaim.owner_id,
+        session_id: activeClaim.session_id,
+        idempotency_key: action.idempotency_key,
+        outcome: 'unknown',
+        receipt: {
+          external_system: 'vendor-api',
+          idempotency_key: action.idempotency_key,
+          result: 'unknown',
+          lookup_reference: 'vendor:split-release-unknown',
+        },
+      },
+      {
+        operation: 'block_ticket',
+        mutation_key: 'mutation:split-release-unknown-block',
+        ticket_id: release.ticket_id,
+        expected_revision: 2,
+        claim_token: activeClaim.claim_token,
+        owner_id: activeClaim.owner_id,
+        session_id: activeClaim.session_id,
+        confirmed: true,
+        reason: 'Inspect before releasing.',
+        evidence_reference: 'evidence:split-release-unknown',
+        actor_id: activeClaim.owner_id,
+      },
+      {
+        operation: 'get_ticket',
+        ticket_id: release.ticket_id,
+        expected_revision: 3,
+        full: true,
+      },
+      release,
+    ],
+  }));
+  assert.deepEqual(first.transitions.at(-1).violationCodes, []);
+
+  const replay = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: first.finalState,
+    mutationJournal: first.mutationJournal,
+    operations: [release],
+  }));
+  assert.equal(replay.transitions[0].replayed, true);
+  assert.deepEqual(replay.transitions[0].mutationResult, first.transitions.at(-1).mutationResult);
+});
+
 test('replayed release and reclaim results restore their required read fences', async (t) => {
   await t.test('release replay', () => {
     const scenario = replayScenario('release_claim');
@@ -4102,6 +5475,1290 @@ test('replayed release and reclaim results restore their required read fences', 
     assert.equal(replay.transitions[0].inspection.requiredAtRevision, 2);
     assertCompactNoMutation(replay, 1, 'work-before-full-inspection');
   });
+});
+
+test('fully bound release and reclaim replays remain valid after confirmation', async (t) => {
+  for (const operation of ['release_claim', 'reclaim_expired_claim']) {
+    await t.test(operation, () => {
+      const scenario = replayScenario(operation);
+      const first = evaluateRecoveryTraceStrict(strictTrace({
+        initialState: { tickets: [scenario.ticket] },
+        operations: [scenario.operation],
+      }));
+      const confirmed = evaluateRecoveryTraceStrict(strictTrace({
+        initialState: first.finalState,
+        mutationJournal: first.mutationJournal,
+        operations: [{
+          operation: 'get_ticket',
+          ticket_id: scenario.ticket.id,
+          expected_revision: scenario.revision,
+          full: true,
+        }],
+      }));
+      assert.deepEqual(confirmed.violationCodes, []);
+      assert.equal(confirmed.finalState.tickets[0].recovery_hold, null);
+      assert.equal(confirmed.finalState.recovery_confirmations.length, 1);
+
+      const replay = evaluateRecoveryTraceStrict(strictTrace({
+        now: '2026-08-23T22:00:00.000Z',
+        initialState: confirmed.finalState,
+        mutationJournal: confirmed.mutationJournal,
+        operations: [scenario.operation],
+      }));
+      assert.deepEqual(replay.violationCodes, []);
+      assert.equal(replay.transitions[0].replayed, true);
+      assert.deepEqual(
+        replay.transitions[0].mutationResult,
+        first.transitions[0].mutationResult,
+      );
+      assert.deepEqual(replay.finalState, confirmed.finalState);
+    });
+  }
+});
+
+test('confirmed fence replays reject unrelated state changes and forged confirmations', async (t) => {
+  for (const operation of ['release_claim', 'reclaim_expired_claim']) {
+    await t.test(operation, async (t) => {
+      const scenario = replayScenario(operation);
+      const first = evaluateRecoveryTraceStrict(strictTrace({
+        initialState: { tickets: [scenario.ticket] },
+        operations: [scenario.operation],
+      }));
+      const confirmed = evaluateRecoveryTraceStrict(strictTrace({
+        initialState: first.finalState,
+        mutationJournal: first.mutationJournal,
+        operations: [{
+          operation: 'get_ticket',
+          ticket_id: scenario.ticket.id,
+          expected_revision: scenario.revision,
+          full: true,
+        }],
+      }));
+      assert.deepEqual(confirmed.violationCodes, []);
+
+      const altered = structuredClone(confirmed.finalState);
+      altered.tickets[0].comments.push({ note: 'Unrelated post-confirmation change.' });
+      const alteredResult = evaluateRecoveryTraceStrict(strictTrace({
+        initialState: altered,
+        mutationJournal: confirmed.mutationJournal,
+        operations: [scenario.operation],
+      }));
+      assertCompactNoMutation(alteredResult, 0, 'mutation-journal-conflict');
+
+      const baseConfirmation = confirmed.finalState.recovery_confirmations[0];
+      for (const [name, change] of [
+        ['wrong map', { map_id: 'map-forged' }],
+        ['wrong ticket', { ticket_id: 'ticket-forged' }],
+        ['wrong revision', {
+          revision: scenario.revision - 1,
+          read_result: {
+            ...baseConfirmation.read_result,
+            ticket_revision: scenario.revision - 1,
+          },
+        }],
+        ['wrong fence', {
+          fence_kind: operation === 'release_claim'
+            ? 'reclaim-inspection-required'
+            : 'release-confirmation-required',
+          read_result: {
+            ...baseConfirmation.read_result,
+            claim_absent: operation !== 'release_claim',
+          },
+        }],
+        ['wrong read result', {
+          read_result: {
+            ...baseConfirmation.read_result,
+            claim_absent: !baseConfirmation.read_result.claim_absent,
+          },
+        }],
+      ]) {
+        await t.test(`${operation}: ${name}`, () => {
+          const forged = structuredClone(confirmed.finalState);
+          forged.recovery_confirmations[0] = {
+            ...baseConfirmation,
+            ...change,
+          };
+          const result = evaluateRecoveryTraceStrict(strictTrace({
+            initialState: forged,
+            mutationJournal: confirmed.mutationJournal,
+            operations: [scenario.operation],
+          }));
+          assertCompactNoMutation(result, 0, 'mutation-journal-conflict');
+          assert.equal(result.transitions[0].replayed, false);
+        });
+      }
+    });
+  }
+});
+
+test('reclaim inspection fences survive split invocations and clear after an exact full read', () => {
+  const expiredClaim = claim({
+    claim_token: 'claim-expired-split-reclaim',
+    owner_id: 'agent-split-reclaim',
+    session_id: 'session-old-split-reclaim',
+    acquired_at: '2026-08-23T18:00:00.000Z',
+    expires_at: '2026-08-23T19:00:00.000Z',
+  });
+  const reclaim = {
+    operation: 'reclaim_expired_claim',
+    mutation_key: 'mutation:split-reclaim',
+    ticket_id: 'ticket-split-reclaim',
+    expected_revision: 1,
+    observed_claim_token: expiredClaim.claim_token,
+    new_claim_token: 'claim-new-split-reclaim',
+    owner_id: 'agent-split-reclaim',
+    session_id: 'session-new-split-reclaim',
+    lease_duration_ms: 3_600_000,
+  };
+  const progress = {
+    operation: 'record_progress',
+    mutation_key: 'mutation:split-reclaim-progress',
+    ticket_id: reclaim.ticket_id,
+    expected_revision: 2,
+    claim_token: reclaim.new_claim_token,
+    owner_id: reclaim.owner_id,
+    session_id: reclaim.session_id,
+    progress_key: 'progress:split-reclaim',
+    payload: { summary: 'Continue only after inspection.' },
+  };
+  const first = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: {
+      tickets: [ticket({
+        id: reclaim.ticket_id,
+        claim: expiredClaim,
+      })],
+    },
+    operations: [reclaim],
+  }));
+  assert.equal(first.finalState.tickets[0].recovery_hold.code, 'reclaim-inspection-required');
+
+  const resumed = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: first.finalState,
+    mutationJournal: first.mutationJournal,
+    operations: [progress],
+  }));
+  assertCompactNoMutation(resumed, 0, 'work-before-full-inspection');
+  assert.equal(resumed.finalState.tickets[0].revision, 2);
+
+  const confirmed = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: resumed.finalState,
+    mutationJournal: resumed.mutationJournal,
+    operations: [
+      {
+        operation: 'get_ticket',
+        ticket_id: reclaim.ticket_id,
+        expected_revision: 2,
+        full: true,
+      },
+      progress,
+    ],
+  }));
+  assert.deepEqual(confirmed.violationCodes, []);
+  assert.equal(confirmed.finalState.tickets[0].recovery_hold, null);
+  assert.equal(confirmed.finalState.tickets[0].revision, 3);
+});
+
+test('release confirmation fences survive split invocations and clear after an exact full read', () => {
+  const releasedClaim = liveClaim('split-release');
+  const otherClaim = liveClaim('split-release-other');
+  const release = {
+    operation: 'release_claim',
+    mutation_key: 'mutation:split-release',
+    ticket_id: 'ticket-split-release',
+    expected_revision: 1,
+    claim_token: releasedClaim.claim_token,
+    owner_id: releasedClaim.owner_id,
+    session_id: releasedClaim.session_id,
+  };
+  const progress = {
+    operation: 'record_progress',
+    mutation_key: 'mutation:split-release-progress',
+    ticket_id: 'ticket-split-release-other',
+    expected_revision: 1,
+    claim_token: otherClaim.claim_token,
+    owner_id: otherClaim.owner_id,
+    session_id: otherClaim.session_id,
+    progress_key: 'progress:split-release',
+    payload: { summary: 'Continue only after release confirmation.' },
+  };
+  const first = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: {
+      tickets: [
+        ticket({ id: release.ticket_id, claim: releasedClaim }),
+        ticket({ id: progress.ticket_id, claim: otherClaim }),
+      ],
+    },
+    operations: [release],
+  }));
+  assert.equal(first.finalState.tickets[0].recovery_hold.code, 'release-confirmation-required');
+
+  const resumed = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: first.finalState,
+    mutationJournal: first.mutationJournal,
+    operations: [progress],
+  }));
+  assertCompactNoMutation(resumed, 0, 'work-before-release-confirmation');
+  assert.equal(resumed.finalState.tickets[1].revision, 1);
+
+  const confirmed = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: resumed.finalState,
+    mutationJournal: resumed.mutationJournal,
+    operations: [
+      {
+        operation: 'get_ticket',
+        ticket_id: release.ticket_id,
+        expected_revision: 2,
+        full: true,
+      },
+      progress,
+    ],
+  }));
+  assert.deepEqual(confirmed.violationCodes, []);
+  assert.equal(confirmed.finalState.tickets[0].recovery_hold, null);
+  assert.equal(confirmed.finalState.tickets[1].revision, 2);
+});
+
+test('journal-only reclaim and release recovery reconstruct their exact read fences', async (t) => {
+  await t.test('reclaim requires inspection after recovery_hold is omitted', () => {
+    const scenario = replayScenario('reclaim_expired_claim');
+    const first = evaluateRecoveryTraceStrict(strictTrace({
+      initialState: { tickets: [scenario.ticket] },
+      operations: [scenario.operation],
+    }));
+    const restored = structuredClone(first.finalState);
+    restored.tickets.find(({ id }) => id === scenario.operation.ticket_id).recovery_hold = null;
+    const progress = {
+      operation: 'record_progress',
+      mutation_key: 'mutation:journal-only-reclaim-progress',
+      ticket_id: scenario.operation.ticket_id,
+      expected_revision: scenario.revision,
+      claim_token: scenario.operation.new_claim_token,
+      owner_id: scenario.operation.owner_id,
+      session_id: scenario.operation.session_id,
+      progress_key: 'progress:journal-only-reclaim',
+      payload: { summary: 'Only after the reconstructed inspection.' },
+    };
+
+    const blocked = evaluateRecoveryTraceStrict(strictTrace({
+      initialState: restored,
+      mutationJournal: first.mutationJournal,
+      operations: [progress],
+    }));
+    assertCompactNoMutation(blocked, 0, 'work-before-full-inspection');
+
+    const confirmed = evaluateRecoveryTraceStrict(strictTrace({
+      initialState: restored,
+      mutationJournal: first.mutationJournal,
+      operations: [
+        {
+          operation: 'get_ticket',
+          ticket_id: scenario.operation.ticket_id,
+          expected_revision: scenario.revision,
+          full: true,
+        },
+        progress,
+      ],
+    }));
+    assert.deepEqual(confirmed.violationCodes, []);
+    assert.equal(confirmed.finalState.tickets[0].recovery_hold, null);
+    assert.equal(confirmed.finalState.tickets[0].revision, scenario.revision + 1);
+  });
+
+  await t.test('release requires confirmation after recovery_hold is omitted', () => {
+    const scenario = replayScenario('release_claim');
+    const otherClaim = liveClaim('journal-only-release-other');
+    const first = evaluateRecoveryTraceStrict(strictTrace({
+      initialState: {
+        tickets: [
+          scenario.ticket,
+          ticket({
+            id: 'ticket-journal-only-release-other',
+            claim: otherClaim,
+          }),
+        ],
+      },
+      operations: [scenario.operation],
+    }));
+    const restored = structuredClone(first.finalState);
+    restored.tickets.find(({ id }) => id === scenario.operation.ticket_id).recovery_hold = null;
+    const progress = {
+      operation: 'record_progress',
+      mutation_key: 'mutation:journal-only-release-progress',
+      ticket_id: 'ticket-journal-only-release-other',
+      expected_revision: 1,
+      claim_token: otherClaim.claim_token,
+      owner_id: otherClaim.owner_id,
+      session_id: otherClaim.session_id,
+      progress_key: 'progress:journal-only-release',
+      payload: { summary: 'Only after the reconstructed confirmation.' },
+    };
+
+    const blocked = evaluateRecoveryTraceStrict(strictTrace({
+      initialState: restored,
+      mutationJournal: first.mutationJournal,
+      operations: [progress],
+    }));
+    assertCompactNoMutation(blocked, 0, 'work-before-release-confirmation');
+
+    const confirmed = evaluateRecoveryTraceStrict(strictTrace({
+      initialState: restored,
+      mutationJournal: first.mutationJournal,
+      operations: [
+        {
+          operation: 'get_ticket',
+          ticket_id: scenario.operation.ticket_id,
+          expected_revision: scenario.revision,
+          full: true,
+        },
+        progress,
+      ],
+    }));
+    assert.deepEqual(confirmed.violationCodes, []);
+    assert.equal(
+      confirmed.finalState.tickets.find(({ id }) => id === scenario.operation.ticket_id)
+        .recovery_hold,
+      null,
+    );
+    assert.equal(
+      confirmed.finalState.tickets.find(({ id }) => id === progress.ticket_id).revision,
+      2,
+    );
+  });
+});
+
+test('journal-only fence recovery rejects altered journal bindings', async (t) => {
+  const scenario = replayScenario('reclaim_expired_claim');
+  const first = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: { tickets: [scenario.ticket] },
+    operations: [scenario.operation],
+  }));
+  const restored = structuredClone(first.finalState);
+  restored.tickets[0].recovery_hold = null;
+  const progress = {
+    operation: 'record_progress',
+    mutation_key: 'mutation:journal-only-altered-progress',
+    ticket_id: scenario.operation.ticket_id,
+    expected_revision: scenario.revision,
+    claim_token: scenario.operation.new_claim_token,
+    owner_id: scenario.operation.owner_id,
+    session_id: scenario.operation.session_id,
+    progress_key: 'progress:journal-only-altered',
+    payload: { summary: 'Must not run from an altered journal.' },
+  };
+  const alterations = [
+    ['map', { map_id: 'map-other' }],
+    ['ticket', { ticket_id: 'ticket-other' }],
+    ['fingerprint', { fingerprint_sha256: '0'.repeat(64) }],
+    ['before hash', { before_state_sha256: '0'.repeat(64) }],
+    ['after hash', { after_state_sha256: '0'.repeat(64) }],
+    ['revision', { result: { ...first.mutationJournal[0].result, ticket_revision: 3 } }],
+    ['result claim', {
+      result: {
+        ...first.mutationJournal[0].result,
+        claim_token: 'claim-forged-journal-only',
+      },
+    }],
+    ['time', { committed_at: '2026-08-23T19:30:00.000Z' }],
+  ];
+
+  for (const [name, alteration] of alterations) {
+    await t.test(name, () => {
+      const mutationJournal = [{
+        ...first.mutationJournal[0],
+        ...alteration,
+      }];
+      if (name === 'ticket' || name === 'fingerprint') {
+        assert.throws(
+          () => evaluateRecoveryTraceStrict(strictTrace({
+            initialState: restored,
+            mutationJournal,
+            operations: [progress],
+          })),
+          (error) => error.code === 'malformed-input'
+            && /operation_input/.test(error.message),
+        );
+        return;
+      }
+      const result = evaluateRecoveryTraceStrict(strictTrace({
+        initialState: restored,
+        mutationJournal,
+        operations: [progress],
+      }));
+      assertCompactNoMutation(result, 0, 'mutation-journal-conflict');
+      assert.equal(result.finalState.tickets[0].revision, scenario.revision);
+    });
+  }
+});
+
+test('confirmed reclaim and release fences remain cleared across a third invocation', async (t) => {
+  await t.test('reclaim confirmation is durable', () => {
+    const scenario = replayScenario('reclaim_expired_claim');
+    const first = evaluateRecoveryTraceStrict(strictTrace({
+      initialState: { tickets: [scenario.ticket] },
+      operations: [scenario.operation],
+    }));
+    const confirmed = evaluateRecoveryTraceStrict(strictTrace({
+      initialState: first.finalState,
+      mutationJournal: first.mutationJournal,
+      operations: [{
+        operation: 'get_ticket',
+        ticket_id: scenario.ticket.id,
+        expected_revision: scenario.revision,
+        full: true,
+      }],
+    }));
+    assert.deepEqual(confirmed.violationCodes, []);
+
+    const progress = {
+      operation: 'record_progress',
+      mutation_key: 'mutation:third-invocation-reclaim',
+      ticket_id: scenario.ticket.id,
+      expected_revision: scenario.revision,
+      claim_token: scenario.operation.new_claim_token,
+      owner_id: scenario.operation.owner_id,
+      session_id: scenario.operation.session_id,
+      progress_key: 'progress:third-invocation-reclaim',
+      payload: { summary: 'Continue after the durable reclaim confirmation.' },
+    };
+    const third = evaluateRecoveryTraceStrict(strictTrace({
+      initialState: confirmed.finalState,
+      mutationJournal: confirmed.mutationJournal,
+      operations: [progress],
+    }));
+    assert.deepEqual(third.violationCodes, []);
+    assert.equal(third.finalState.tickets[0].revision, scenario.revision + 1);
+    assert.deepEqual(
+      third.finalState.recovery_confirmations,
+      confirmed.finalState.recovery_confirmations,
+    );
+  });
+
+  await t.test('release confirmation is durable', () => {
+    const scenario = replayScenario('release_claim');
+    const otherClaim = liveClaim('third-invocation-release-other');
+    const first = evaluateRecoveryTraceStrict(strictTrace({
+      initialState: {
+        tickets: [
+          scenario.ticket,
+          ticket({
+            id: 'ticket-third-invocation-release-other',
+            claim: otherClaim,
+          }),
+        ],
+      },
+      operations: [scenario.operation],
+    }));
+    const confirmed = evaluateRecoveryTraceStrict(strictTrace({
+      initialState: first.finalState,
+      mutationJournal: first.mutationJournal,
+      operations: [{
+        operation: 'get_ticket',
+        ticket_id: scenario.ticket.id,
+        expected_revision: scenario.revision,
+        full: true,
+      }],
+    }));
+    assert.deepEqual(confirmed.violationCodes, []);
+
+    const progress = {
+      operation: 'record_progress',
+      mutation_key: 'mutation:third-invocation-release',
+      ticket_id: 'ticket-third-invocation-release-other',
+      expected_revision: 1,
+      claim_token: otherClaim.claim_token,
+      owner_id: otherClaim.owner_id,
+      session_id: otherClaim.session_id,
+      progress_key: 'progress:third-invocation-release',
+      payload: { summary: 'Continue after the durable release confirmation.' },
+    };
+    const third = evaluateRecoveryTraceStrict(strictTrace({
+      initialState: confirmed.finalState,
+      mutationJournal: confirmed.mutationJournal,
+      operations: [progress],
+    }));
+    assert.deepEqual(third.violationCodes, []);
+    assert.equal(
+      third.finalState.tickets.find(({ id }) => id === progress.ticket_id).revision,
+      2,
+    );
+    assert.deepEqual(
+      third.finalState.recovery_confirmations,
+      confirmed.finalState.recovery_confirmations,
+    );
+  });
+});
+
+test('multi-ticket confirmed fences survive restart and replay without resurrecting holds', () => {
+  const claimA = liveClaim('multi-ticket-a');
+  const claimB = liveClaim('multi-ticket-b');
+  const releaseA = {
+    operation: 'release_claim',
+    mutation_key: 'mutation:multi-ticket-release-a',
+    ticket_id: 'ticket-multi-a',
+    expected_revision: 1,
+    claim_token: claimA.claim_token,
+    owner_id: claimA.owner_id,
+    session_id: claimA.session_id,
+  };
+  const releaseB = {
+    operation: 'release_claim',
+    mutation_key: 'mutation:multi-ticket-release-b',
+    ticket_id: 'ticket-multi-b',
+    expected_revision: 1,
+    claim_token: claimB.claim_token,
+    owner_id: claimB.owner_id,
+    session_id: claimB.session_id,
+  };
+  const first = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: {
+      tickets: [
+        ticket({ id: releaseA.ticket_id, claim: claimA }),
+        ticket({ id: releaseB.ticket_id, claim: claimB }),
+      ],
+    },
+    operations: [
+      releaseA,
+      {
+        operation: 'get_ticket',
+        ticket_id: releaseA.ticket_id,
+        expected_revision: 2,
+        full: true,
+      },
+      releaseB,
+      {
+        operation: 'get_ticket',
+        ticket_id: releaseB.ticket_id,
+        expected_revision: 2,
+        full: true,
+      },
+    ],
+  }));
+  assert.deepEqual(first.violationCodes, []);
+  assert.equal(first.finalState.tickets.every(({ recovery_hold: hold }) => hold === null), true);
+  assert.equal(first.finalState.recovery_confirmations.length, 2);
+
+  const restarted = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: first.finalState,
+    mutationJournal: first.mutationJournal,
+    operations: [releaseA, releaseB],
+  }));
+  assert.deepEqual(restarted.violationCodes, []);
+  assert.equal(restarted.transitions[0].replayed, true);
+  assert.equal(restarted.transitions[1].replayed, true);
+  assert.deepEqual(restarted.finalState, first.finalState);
+});
+
+test('confirmed reclaim fences survive restart after later progress or receipt mutations', async (t) => {
+  await t.test('later progress', () => {
+    const expiredClaim = claim({
+      claim_token: 'claim-restart-progress-old',
+      owner_id: 'agent-restart-progress',
+      session_id: 'session-restart-progress-old',
+      acquired_at: '2026-08-23T18:00:00.000Z',
+      expires_at: '2026-08-23T19:00:00.000Z',
+    });
+    const reclaim = {
+      operation: 'reclaim_expired_claim',
+      mutation_key: 'mutation:restart-progress-reclaim',
+      ticket_id: 'ticket-restart-progress',
+      expected_revision: 1,
+      observed_claim_token: expiredClaim.claim_token,
+      new_claim_token: 'claim-restart-progress-new',
+      owner_id: expiredClaim.owner_id,
+      session_id: 'session-restart-progress-new',
+      lease_duration_ms: 3_600_000,
+    };
+    const progress = {
+      operation: 'record_progress',
+      mutation_key: 'mutation:restart-progress-record',
+      ticket_id: reclaim.ticket_id,
+      expected_revision: 2,
+      claim_token: reclaim.new_claim_token,
+      owner_id: reclaim.owner_id,
+      session_id: reclaim.session_id,
+      progress_key: 'progress:restart-progress',
+      payload: { summary: 'Recorded after the confirmed reclaim fence.' },
+    };
+    const first = evaluateRecoveryTraceStrict(strictTrace({
+      initialState: {
+        tickets: [ticket({ id: reclaim.ticket_id, claim: expiredClaim })],
+      },
+      operations: [
+        reclaim,
+        {
+          operation: 'get_ticket',
+          ticket_id: reclaim.ticket_id,
+          expected_revision: 2,
+          full: true,
+        },
+        progress,
+      ],
+    }));
+    assert.deepEqual(first.violationCodes, []);
+
+    const restarted = evaluateRecoveryTraceStrict(strictTrace({
+      initialState: first.finalState,
+      mutationJournal: first.mutationJournal,
+      operations: [],
+    }));
+    assert.deepEqual(restarted.violationCodes, []);
+    assert.equal(restarted.finalState.tickets[0].recovery_hold, null);
+    assert.deepEqual(
+      restarted.finalState.recovery_confirmations,
+      first.finalState.recovery_confirmations,
+    );
+    assert.deepEqual(
+      restarted.finalState.tickets[0].progress_records,
+      first.finalState.tickets[0].progress_records,
+    );
+  });
+
+  await t.test('later receipt', () => {
+    const expiredClaim = claim({
+      claim_token: 'claim-restart-receipt-old',
+      owner_id: 'agent-restart-receipt',
+      session_id: 'session-restart-receipt-old',
+      acquired_at: '2026-08-23T18:00:00.000Z',
+      expires_at: '2026-08-23T19:00:00.000Z',
+    });
+    const action = intendedTaskAction('restart-receipt');
+    const reclaim = {
+      operation: 'reclaim_expired_claim',
+      mutation_key: 'mutation:restart-receipt-reclaim',
+      ticket_id: 'task-restart-receipt',
+      expected_revision: 1,
+      observed_claim_token: expiredClaim.claim_token,
+      new_claim_token: 'claim-restart-receipt-new',
+      owner_id: expiredClaim.owner_id,
+      session_id: 'session-restart-receipt-new',
+      lease_duration_ms: 3_600_000,
+    };
+    const receipt = {
+      operation: 'record_task_receipt',
+      mutation_key: 'mutation:restart-receipt-record',
+      ticket_id: reclaim.ticket_id,
+      expected_revision: 2,
+      claim_token: reclaim.new_claim_token,
+      owner_id: reclaim.owner_id,
+      session_id: reclaim.session_id,
+      idempotency_key: action.idempotency_key,
+      outcome: 'succeeded',
+      receipt: {
+        external_system: 'vendor-api',
+        idempotency_key: action.idempotency_key,
+        result: 'succeeded',
+        lookup_reference: 'vendor:restart-receipt',
+      },
+    };
+    const first = evaluateRecoveryTraceStrict(strictTrace({
+      initialState: {
+        tickets: [ticket({
+          id: reclaim.ticket_id,
+          type: 'task',
+          claim: expiredClaim,
+          task_action: action,
+        })],
+      },
+      operations: [
+        reclaim,
+        {
+          operation: 'get_ticket',
+          ticket_id: reclaim.ticket_id,
+          expected_revision: 2,
+          full: true,
+        },
+        receipt,
+      ],
+    }));
+    assert.deepEqual(first.violationCodes, []);
+
+    const restarted = evaluateRecoveryTraceStrict(strictTrace({
+      initialState: first.finalState,
+      mutationJournal: first.mutationJournal,
+      operations: [],
+    }));
+    assert.deepEqual(restarted.violationCodes, []);
+    assert.equal(restarted.finalState.tickets[0].recovery_hold, null);
+    assert.equal(restarted.finalState.tickets[0].task_action.state, 'succeeded');
+    assert.deepEqual(
+      restarted.finalState.recovery_confirmations,
+      first.finalState.recovery_confirmations,
+    );
+  });
+});
+
+test('repeated fences for one ticket preserve each historical confirmation on restart', () => {
+  const expiredClaim = claim({
+    claim_token: 'claim-repeated-fence-old',
+    owner_id: 'agent-repeated-fence',
+    session_id: 'session-repeated-fence-old',
+    acquired_at: '2026-08-23T18:00:00.000Z',
+    expires_at: '2026-08-23T19:00:00.000Z',
+  });
+  const reclaim = {
+    operation: 'reclaim_expired_claim',
+    mutation_key: 'mutation:repeated-fence-reclaim',
+    ticket_id: 'ticket-repeated-fence',
+    expected_revision: 1,
+    observed_claim_token: expiredClaim.claim_token,
+    new_claim_token: 'claim-repeated-fence-new',
+    owner_id: expiredClaim.owner_id,
+    session_id: 'session-repeated-fence-new',
+    lease_duration_ms: 3_600_000,
+  };
+  const release = {
+    operation: 'release_claim',
+    mutation_key: 'mutation:repeated-fence-release',
+    ticket_id: reclaim.ticket_id,
+    expected_revision: 2,
+    claim_token: reclaim.new_claim_token,
+    owner_id: reclaim.owner_id,
+    session_id: reclaim.session_id,
+  };
+  const first = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: {
+      tickets: [ticket({ id: reclaim.ticket_id, claim: expiredClaim })],
+    },
+    operations: [
+      reclaim,
+      {
+        operation: 'get_ticket',
+        ticket_id: reclaim.ticket_id,
+        expected_revision: 2,
+        full: true,
+      },
+      release,
+      {
+        operation: 'get_ticket',
+        ticket_id: release.ticket_id,
+        expected_revision: 3,
+        full: true,
+      },
+    ],
+  }));
+  assert.deepEqual(first.violationCodes, []);
+  assert.equal(first.finalState.tickets[0].recovery_hold, null);
+  assert.equal(first.finalState.recovery_confirmations.length, 2);
+
+  const restarted = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: first.finalState,
+    mutationJournal: first.mutationJournal,
+    operations: [],
+  }));
+  assert.deepEqual(restarted.violationCodes, []);
+  assert.equal(restarted.finalState.tickets[0].recovery_hold, null);
+  assert.deepEqual(
+    restarted.finalState.recovery_confirmations,
+    first.finalState.recovery_confirmations,
+  );
+});
+
+test('restart rejects reordered, missing, duplicate, forged, or unrelated confirmation history', async (t) => {
+  const claimA = liveClaim('restart-history-a');
+  const claimB = liveClaim('restart-history-b');
+  const releaseA = {
+    operation: 'release_claim',
+    mutation_key: 'mutation:restart-history-release-a',
+    ticket_id: 'ticket-restart-history-a',
+    expected_revision: 1,
+    claim_token: claimA.claim_token,
+    owner_id: claimA.owner_id,
+    session_id: claimA.session_id,
+  };
+  const releaseB = {
+    operation: 'release_claim',
+    mutation_key: 'mutation:restart-history-release-b',
+    ticket_id: 'ticket-restart-history-b',
+    expected_revision: 1,
+    claim_token: claimB.claim_token,
+    owner_id: claimB.owner_id,
+    session_id: claimB.session_id,
+  };
+  const first = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: {
+      tickets: [
+        ticket({ id: releaseA.ticket_id, claim: claimA }),
+        ticket({ id: releaseB.ticket_id, claim: claimB }),
+      ],
+    },
+    operations: [
+      releaseA,
+      {
+        operation: 'get_ticket',
+        ticket_id: releaseA.ticket_id,
+        expected_revision: 2,
+        full: true,
+      },
+      releaseB,
+      {
+        operation: 'get_ticket',
+        ticket_id: releaseB.ticket_id,
+        expected_revision: 2,
+        full: true,
+      },
+    ],
+  }));
+  assert.deepEqual(first.violationCodes, []);
+  const confirmations = first.finalState.recovery_confirmations;
+  assert.throws(
+    () => evaluateRecoveryTraceStrict(strictTrace({
+      initialState: first.finalState,
+      mutationJournal: [first.mutationJournal[1], first.mutationJournal[0]],
+      operations: [],
+    })),
+    (error) => error.code === 'malformed-input'
+      && /sequence|previous_entry_sha256/.test(error.message),
+  );
+  const cases = [
+    ['missing confirmation', {
+      initialState: {
+        ...first.finalState,
+        recovery_confirmations: [confirmations[0]],
+      },
+    }],
+    ['duplicate confirmation', {
+      initialState: {
+        ...first.finalState,
+        recovery_confirmations: [...confirmations, structuredClone(confirmations[0])],
+      },
+    }],
+    ['forged confirmation', {
+      initialState: {
+        ...first.finalState,
+        recovery_confirmations: confirmations.map((confirmation, index) =>
+          index === 0
+            ? {
+              ...confirmation,
+              read_result: { ...confirmation.read_result, claim_absent: false },
+            }
+            : confirmation),
+      },
+    }],
+    ['altered unrelated state', {
+      initialState: {
+        ...first.finalState,
+        tickets: first.finalState.tickets.map((candidate) =>
+          candidate.id === releaseB.ticket_id
+            ? { ...candidate, comments: [{ note: 'forged unrelated state' }] }
+            : candidate),
+      },
+    }],
+  ];
+  for (const [name, overrides] of cases) {
+    await t.test(name, () => {
+      const result = evaluateRecoveryTraceStrict(strictTrace({
+        initialState: first.finalState,
+        mutationJournal: first.mutationJournal,
+        ...overrides,
+      }));
+      assert.deepEqual(result.violationCodes, ['mutation-journal-conflict']);
+      assert.equal(result.valid, false);
+    });
+  }
+});
+
+test('a missing fence confirmation reconstructs the required recovery fence', () => {
+  const scenario = replayScenario('reclaim_expired_claim');
+  const first = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: { tickets: [scenario.ticket] },
+    operations: [scenario.operation],
+  }));
+  const restored = structuredClone(first.finalState);
+  restored.tickets[0].recovery_hold = null;
+  const progress = {
+    operation: 'record_progress',
+    mutation_key: 'mutation:missing-reclaim-confirmation',
+    ticket_id: scenario.ticket.id,
+    expected_revision: scenario.revision,
+    claim_token: scenario.operation.new_claim_token,
+    owner_id: scenario.operation.owner_id,
+    session_id: scenario.operation.session_id,
+    progress_key: 'progress:missing-reclaim-confirmation',
+    payload: { summary: 'Must not proceed without confirmation.' },
+  };
+  const result = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: restored,
+    mutationJournal: first.mutationJournal,
+    operations: [progress],
+  }));
+  assertCompactNoMutation(result, 0, 'work-before-full-inspection');
+});
+
+test('forged or ambiguous durable fence confirmations fail closed', async (t) => {
+  const scenario = replayScenario('reclaim_expired_claim');
+  const first = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: { tickets: [scenario.ticket] },
+    operations: [scenario.operation],
+  }));
+  const baseConfirmation = {
+    map_id: 'map-recovery',
+    ticket_id: scenario.ticket.id,
+    revision: scenario.revision,
+    fence_kind: 'reclaim-inspection-required',
+    read_result: {
+      ticket_revision: scenario.revision,
+      full: true,
+      claim_absent: false,
+    },
+  };
+  const progress = {
+    operation: 'record_progress',
+    mutation_key: 'mutation:forged-reclaim-confirmation',
+    ticket_id: scenario.ticket.id,
+    expected_revision: scenario.revision,
+    claim_token: scenario.operation.new_claim_token,
+    owner_id: scenario.operation.owner_id,
+    session_id: scenario.operation.session_id,
+    progress_key: 'progress:forged-reclaim-confirmation',
+    payload: { summary: 'Must fail closed for forged confirmation.' },
+  };
+  for (const [name, confirmations] of [
+    ['wrong map', [{ ...baseConfirmation, map_id: 'map-forged' }]],
+    ['stale revision', [{
+      ...baseConfirmation,
+      revision: 1,
+      read_result: { ...baseConfirmation.read_result, ticket_revision: 1 },
+    }]],
+    ['wrong fence kind', [{
+      ...baseConfirmation,
+      fence_kind: 'release-confirmation-required',
+      read_result: { ...baseConfirmation.read_result, claim_absent: true },
+    }]],
+    ['wrong read result', [{
+      ...baseConfirmation,
+      read_result: { ...baseConfirmation.read_result, claim_absent: true },
+    }]],
+    ['ambiguous', [baseConfirmation, structuredClone(baseConfirmation)]],
+  ]) {
+    await t.test(name, () => {
+      const restored = structuredClone(first.finalState);
+      restored.tickets[0].recovery_hold = null;
+      restored.recovery_confirmations = confirmations;
+      const result = evaluateRecoveryTraceStrict(strictTrace({
+        initialState: restored,
+        mutationJournal: first.mutationJournal,
+        operations: [progress],
+      }));
+      assertCompactNoMutation(result, 0, 'mutation-journal-conflict');
+    });
+  }
+
+  const contradictory = structuredClone(first.finalState);
+  contradictory.recovery_confirmations = [baseConfirmation];
+  const contradiction = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: contradictory,
+    mutationJournal: first.mutationJournal,
+    operations: [progress],
+  }));
+  assertCompactNoMutation(contradiction, 0, 'mutation-journal-conflict');
+});
+
+test('preexisting progress journals a stable no-op across changed invocation times', () => {
+  const activeClaim = claim({
+    claim_token: 'claim-preexisting-progress',
+    owner_id: 'agent-preexisting-progress',
+    session_id: 'session-preexisting-progress',
+    acquired_at: '2026-08-23T18:00:00.000Z',
+    expires_at: '2026-08-23T23:00:00.000Z',
+  });
+  const existing = {
+    progress_key: 'progress-preexisting',
+    payload: { summary: 'Recorded by an earlier invocation.' },
+    recorded_at: '2026-08-23T19:00:00.000Z',
+    revision: 2,
+  };
+  const operation = {
+    operation: 'record_progress',
+    mutation_key: 'mutation:preexisting-progress',
+    ticket_id: 'ticket-preexisting-progress',
+    expected_revision: 2,
+    claim_token: activeClaim.claim_token,
+    owner_id: activeClaim.owner_id,
+    session_id: activeClaim.session_id,
+    progress_key: existing.progress_key,
+    payload: existing.payload,
+  };
+  const initialState = {
+    tickets: [ticket({
+      id: operation.ticket_id,
+      revision: 2,
+      claim: activeClaim,
+      progress_records: [existing],
+    })],
+  };
+  const first = evaluateRecoveryTraceStrict(strictTrace({
+    now: '2026-08-23T20:00:00.000Z',
+    initialState,
+    operations: [operation],
+  }));
+  assert.deepEqual(first.violationCodes, []);
+  assert.equal(first.mutationJournal.length, 1);
+  assert.deepEqual(first.mutationJournal[0].result, {
+    ticket_revision: existing.revision,
+    progress_key: existing.progress_key,
+    record_revision: existing.revision,
+    recorded_at: existing.recorded_at,
+    no_op: true,
+  });
+  assert.equal(
+    first.mutationJournal[0].before_state_sha256,
+    first.mutationJournal[0].after_state_sha256,
+  );
+  assert.deepEqual(first.finalState.tickets[0].progress_records, [existing]);
+
+  const replay = evaluateRecoveryTraceStrict(strictTrace({
+    now: '2026-08-23T20:30:00.000Z',
+    initialState: first.finalState,
+    mutationJournal: first.mutationJournal,
+    operations: [operation],
+  }));
+  assert.deepEqual(replay.violationCodes, []);
+  assert.equal(replay.transitions[0].replayed, true);
+  assert.deepEqual(replay.transitions[0].mutationResult, first.transitions[0].mutationResult);
+  assert.deepEqual(replay.mutationJournal, first.mutationJournal);
+  assert.deepEqual(replay.finalState, first.finalState);
+
+  for (const conflictingOperation of [
+    { ...operation, progress_key: 'progress:conflicting-reuse' },
+    { ...operation, payload: { summary: 'Conflicting replacement.' } },
+  ]) {
+    const conflict = evaluateRecoveryTraceStrict(strictTrace({
+      now: '2026-08-23T20:30:00.000Z',
+      initialState: first.finalState,
+      mutationJournal: first.mutationJournal,
+      operations: [conflictingOperation],
+    }));
+    assertCompactNoMutation(conflict, 0, 'mutation-key-conflict');
+  }
+});
+
+test('ambiguous journal-only fence candidates fail closed', () => {
+  const scenario = replayScenario('reclaim_expired_claim');
+  const first = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: { tickets: [scenario.ticket] },
+    operations: [scenario.operation],
+  }));
+  const second = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: { tickets: [scenario.ticket] },
+    operations: [{
+      ...scenario.operation,
+      mutation_key: 'mutation:replay-reclaim-expired-claim-conflict',
+    }],
+  }));
+  const restored = structuredClone(first.finalState);
+  restored.tickets[0].recovery_hold = null;
+  const chainedSecond = {
+    ...second.mutationJournal[0],
+    sequence: 2,
+    previous_entry_sha256: journalDigest(first.mutationJournal[0]),
+  };
+  const result = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: restored,
+    mutationJournal: [first.mutationJournal[0], chainedSecond],
+    operations: [{
+      operation: 'record_progress',
+      mutation_key: 'mutation:journal-only-ambiguous-progress',
+      ticket_id: scenario.operation.ticket_id,
+      expected_revision: scenario.revision,
+      claim_token: scenario.operation.new_claim_token,
+      owner_id: scenario.operation.owner_id,
+      session_id: scenario.operation.session_id,
+      progress_key: 'progress:journal-only-ambiguous',
+      payload: { summary: 'Ambiguous fence candidates must block work.' },
+    }],
+  }));
+  assertCompactNoMutation(result, 0, 'mutation-journal-conflict');
+  assert.equal(result.finalState.tickets[0].revision, scenario.revision);
+});
+
+test('persisted recovery holds must agree with journal-only fence candidates', () => {
+  const scenario = replayScenario('release_claim');
+  const otherClaim = liveClaim('journal-hold-disagreement-other');
+  const first = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: {
+      tickets: [
+        scenario.ticket,
+        ticket({
+          id: 'ticket-journal-hold-disagreement-other',
+          claim: otherClaim,
+        }),
+      ],
+    },
+    operations: [scenario.operation],
+  }));
+  const restored = structuredClone(first.finalState);
+  restored.tickets.find(({ id }) => id === scenario.operation.ticket_id).recovery_hold = {
+    code: 'reclaim-inspection-required',
+    required_at_revision: scenario.revision,
+  };
+  const result = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: restored,
+    mutationJournal: first.mutationJournal,
+    operations: [{
+      operation: 'record_progress',
+      mutation_key: 'mutation:journal-hold-disagreement',
+      ticket_id: 'ticket-journal-hold-disagreement-other',
+      expected_revision: 1,
+      claim_token: otherClaim.claim_token,
+      owner_id: otherClaim.owner_id,
+      session_id: otherClaim.session_id,
+      progress_key: 'progress:journal-hold-disagreement',
+      payload: { summary: 'Disagreement must fail closed.' },
+    }],
+  }));
+  assertCompactNoMutation(result, 0, 'mutation-journal-conflict');
+  assert.equal(
+    result.finalState.tickets.find(({ id }) => id === scenario.operation.ticket_id)
+      .recovery_hold.code,
+    'reclaim-inspection-required',
+  );
+});
+
+test('journal replay rejects forged, stale, mismatched, and foreign state bindings', async (t) => {
+  const scenario = replayScenario('release_claim');
+  const first = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: { tickets: [scenario.ticket] },
+    operations: [scenario.operation],
+  }));
+
+  const cases = [
+    {
+      name: 'forged post-state digest',
+      input: strictTrace({
+        initialState: first.finalState,
+        mutationJournal: [{
+          ...first.mutationJournal[0],
+          after_state_sha256: '0'.repeat(64),
+        }],
+        operations: [scenario.operation],
+      }),
+      violation: 'mutation-journal-conflict',
+    },
+    {
+      name: 'mismatched recorded result',
+      input: strictTrace({
+        initialState: first.finalState,
+        mutationJournal: [{
+          ...first.mutationJournal[0],
+          result: {
+            ...first.mutationJournal[0].result,
+            ticket_revision: 3,
+          },
+        }],
+        operations: [scenario.operation],
+      }),
+      violation: 'mutation-journal-conflict',
+    },
+    {
+      name: 'wrong current revision and state',
+      input: strictTrace({
+        initialState: { tickets: [scenario.ticket] },
+        mutationJournal: first.mutationJournal,
+        operations: [scenario.operation],
+      }),
+      violation: 'mutation-journal-conflict',
+    },
+    {
+      name: 'cross-ticket reuse',
+      input: strictTrace({
+        initialState: {
+          tickets: [
+            ticket({
+              id: 'ticket-foreign-replay',
+              claim: scenario.ticket.claim,
+            }),
+          ],
+        },
+        mutationJournal: first.mutationJournal,
+        operations: [{
+          ...scenario.operation,
+          ticket_id: 'ticket-foreign-replay',
+        }],
+      }),
+      violation: 'mutation-key-conflict',
+    },
+    {
+      name: 'cross-map reuse',
+      input: strictTrace({
+        map_id: 'map-foreign-replay',
+        initialState: {
+          tickets: [{
+            ...first.finalState.tickets[0],
+            parent_map_id: 'map-foreign-replay',
+          }],
+        },
+        mutationJournal: [{
+          ...first.mutationJournal[0],
+          map_id: 'map-recovery',
+        }],
+        operations: [scenario.operation],
+      }),
+      violation: 'mutation-journal-conflict',
+    },
+  ];
+
+  for (const scenarioCase of cases) {
+    await t.test(scenarioCase.name, () => {
+      const result = evaluateRecoveryTraceStrict(scenarioCase.input);
+      assertCompactNoMutation(result, 0, scenarioCase.violation);
+      assert.equal(result.transitions[0].replayed, false);
+    });
+  }
+});
+
+test('caller-supplied mutation journals fail closed when required bindings are omitted', async (t) => {
+  const scenario = replayScenario('release_claim');
+  const first = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: { tickets: [scenario.ticket] },
+    operations: [scenario.operation],
+  }));
+  const requiredBindings = [
+    'sequence',
+    'previous_entry_sha256',
+    'map_id',
+    'before_state_sha256',
+    'after_state_sha256',
+    'fingerprint_sha256',
+    'operation_input',
+    'mutation_key',
+    'ticket_id',
+    'committed_at',
+    'result',
+  ];
+
+  for (const binding of requiredBindings) {
+    await t.test(`missing ${binding}`, () => {
+      const entry = structuredClone(first.mutationJournal[0]);
+      delete entry[binding];
+      assert.throws(
+        () => evaluateRecoveryTraceStrict(strictTrace({
+          initialState: first.finalState,
+          mutationJournal: [entry],
+          operations: [scenario.operation],
+        })),
+        (error) => error.code === 'malformed-input'
+          && error.message.includes(`mutationJournal[0].${binding}`),
+      );
+    });
+  }
+});
+
+test('journal replay rejects a forged pre-state digest', () => {
+  const scenario = replayScenario('release_claim');
+  const first = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: { tickets: [scenario.ticket] },
+    operations: [scenario.operation],
+  }));
+  const result = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: first.finalState,
+    mutationJournal: [{
+      ...first.mutationJournal[0],
+      before_state_sha256: '0'.repeat(64),
+    }],
+    operations: [scenario.operation],
+  }));
+  assertCompactNoMutation(result, 0, 'mutation-journal-conflict');
+  assert.equal(result.transitions[0].replayed, false);
 });
 
 test('reclaim transfers pending receipt recovery to the fresh claim', () => {
@@ -4455,7 +7112,7 @@ test('strict RFC3339 accepts qualified instants and rejects invalid grammar or c
   for (const value of [
     '2024-02-29T23:59:59Z',
     '2024-02-29T23:59:59.1Z',
-    '2024-02-29T23:59:59.123456+14:00',
+    '2024-02-29T23:59:59.123+14:00',
     '2024-02-29T23:59:59-00:00',
   ]) {
     await t.test(`valid ${value}`, () => {
@@ -4464,6 +7121,7 @@ test('strict RFC3339 accepts qualified instants and rejects invalid grammar or c
     });
   }
   for (const value of [
+    '2024-02-29T23:59:59.123456+14:00',
     '2024-02-29 23:59:59Z',
     '2024-02-29T23:59:59+1400',
     '2023-02-29T23:59:59Z',
@@ -4479,10 +7137,36 @@ test('strict RFC3339 accepts qualified instants and rejects invalid grammar or c
     await t.test(`invalid ${value}`, () => {
       assert.throws(
         () => evaluateRecoveryTraceStrict(strictTrace({ now: value })),
-        (error) => error.code === 'malformed-input' && /RFC 3339|timestamp/i.test(error.message),
+        (error) => error.code === 'malformed-input'
+          && /RFC 3339|timestamp|fractional/i.test(error.message),
       );
     });
   }
+});
+
+test('rejects sub-millisecond claim ordering instead of truncating precision', () => {
+  const input = strictTrace({
+    now: '2024-02-29T23:59:59.0009Z',
+    initialState: {
+      tickets: [
+        ticket({
+          id: 'sub-millisecond-claim',
+          claim: claim({
+            claim_token: 'sub-millisecond-claim-token',
+            owner_id: 'agent-sub-millisecond',
+            session_id: 'session-sub-millisecond',
+            acquired_at: '2024-02-29T23:59:59.0009Z',
+            expires_at: '2024-02-29T23:59:59.0010Z',
+          }),
+        }),
+      ],
+    },
+  });
+  assert.throws(
+    () => evaluateRecoveryTraceStrict(input),
+    (error) => error.code === 'malformed-input'
+      && /RFC 3339|timestamp|fractional/i.test(error.message),
+  );
 });
 
 function exhaustedScenario(operation) {

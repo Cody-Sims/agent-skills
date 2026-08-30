@@ -6,8 +6,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- Added a research-backed feature opportunity roadmap covering skills, workflow
+  packs, catalog and evaluation tooling, and operational discovery work.
+
 ### Changed
 
+- Wayfinder now continues safe frontier work automatically with one claim at a
+  time, protected budgets and reserves, substantive stop conditions, and
+  automatic clear-map handoff while retaining its plan-only and safety
+  boundaries.
 - Bound verified maturity evidence to a unique, self-typed artifact for the
   current complete skill tree, rejecting duplicated, relabeled, or stale
   evidence during registry generation.
@@ -16,6 +25,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   post-release read fences, strict RFC 3339 timestamps, checked revisions,
   bounded inputs and journals, coherent progress history, and compact
   hash-and-delta transitions.
+- Tightened Wayfinder autonomy and recovery traces to millisecond timestamp
+  precision, pre-consolidation worker barriers, inspected stopped cycles,
+  trusted UTF-8 token accounting, a capped coherent journal with mandatory
+  operation-input fingerprints, durable mutation receipts, canonical
+  multi-ticket restart reconstruction, and post-confirmation replay fences.
 
 ## [0.2.0] - 2026-08-24
 

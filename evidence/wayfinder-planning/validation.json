@@ -2,16 +2,40 @@
   "schemaVersion": 1,
   "evidenceType": "structural-validation",
   "skill": "wayfinder-planning",
-  "skillSha256": "bef7c4093fdd784ff46e680d7908d42bad82c7a607873da82f42d30ddae6952a",
-  "evaluatedAt": "2026-08-24",
+  "skillSha256": "c87f47172398e6dc58785e5848d9c966f580876f8eb30813e4c664134bf54f91",
+  "evaluatedAt": "2026-08-29",
   "profile": "experimental-entry",
   "checks": [
     {
-      "command": "node scripts/validate-skills.mjs",
+      "command": "node --test tests/wayfinder-autonomy.test.mjs tests/wayfinder-autonomy-contract.test.mjs tests/wayfinder-planning-recovery.test.mjs",
       "status": "passed"
     },
     {
-      "command": "npm run validate:portable",
+      "command": "node --test --test-name-pattern \"durable no-op receipts replay from their historical journal sequence\" tests/wayfinder-planning-recovery.test.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "npm test",
+      "status": "passed"
+    },
+    {
+      "command": "npm run validate",
+      "status": "passed"
+    },
+    {
+      "command": "npm run eval:validate",
+      "status": "passed"
+    },
+    {
+      "command": "npm run eval:smoke",
+      "status": "passed"
+    },
+    {
+      "command": "npm run routing:smoke",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/validate-skills.mjs --profile portable",
       "status": "passed"
     },
     {
@@ -19,11 +43,39 @@
       "status": "passed"
     },
     {
-      "command": "node --test tests/wayfinder-planning-recovery.test.mjs",
+      "command": "node --check skills/wayfinder-planning/scripts/autonomy-contract.mjs && node --check skills/wayfinder-planning/scripts/recovery-contract.mjs && node -e \"const fs=require('node:fs');const r=JSON.parse(fs.readFileSync('registry/skills.json','utf8'));const s=r.skills.find(({name})=>name==='wayfinder-planning');const expected=['assets/map-template.md','assets/ticket-template.md','references/autonomy-loop.md','references/tracker-contract.md','references/upstream-attribution.md','scripts/autonomy-contract.mjs','scripts/recovery-contract.mjs'];if(s.version!=='2.0.0'||s.resources.length!==expected.length||JSON.stringify(s.resources)!==JSON.stringify(expected)||expected.some((p)=>!fs.existsSync('skills/wayfinder-planning/'+p))) process.exit(1);\"",
       "status": "passed"
     },
     {
-      "command": "node --check skills/wayfinder-planning/scripts/recovery-contract.mjs",
+      "command": "node --test tests/generate-registry.test.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "npm run pack:validate",
+      "status": "passed"
+    },
+    {
+      "command": "npm run pack:smoke",
+      "status": "passed"
+    },
+    {
+      "command": "git show HEAD:registry/skills.json > .registry-head.json && npm run registry:check -- --previous .registry-head.json --as-of 2026-08-29 && rm -f .registry-head.json",
+      "status": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/validate-skills.mjs --format json | node -e \"let s='';process.stdin.on('data',(chunk)=>s+=chunk).on('end',()=>{const r=JSON.parse(s);if(!r.ok||r.diagnostics.some(({file,rule})=>file==='skills/wayfinder-planning/SKILL.md'&&/token/i.test(rule)))process.exit(1);});\"",
+      "status": "passed"
+    },
+    {
+      "command": "node --input-type=module -e \"import {existsSync,readFileSync} from 'node:fs';import {resolve} from 'node:path';import {extractLinkTargets} from './scripts/lib/skills.mjs';const root='skills/wayfinder-planning';const body=readFileSync(root+'/SKILL.md','utf8');for(const {target} of extractLinkTargets(body)){const local=target.split(/[?#]/,1)[0];if(local&&!/^[a-z][a-z0-9+.-]*:/i.test(local)&&!existsSync(resolve(root,local)))process.exit(1);}const reference=readFileSync(root+'/references/autonomy-loop.md','utf8');if(!reference.includes('## Contents')||!reference.includes('[Trace records and phase allowlists](#trace-records-and-phase-allowlists)'))process.exit(1);\"",
+      "status": "passed"
+    },
+    {
+      "command": "node -e \"const fs=require('node:fs');const read=(p)=>fs.readFileSync(p,'utf8');const r=JSON.parse(read('registry/discovery.json'));const l=JSON.parse(read('registry/lifecycle.json'));if(!read('README.md').includes('docs/product/feature-opportunities.md')||!read('README.md').includes('bounded autonomous decision loops')||!r.skills['wayfinder-planning'].tags.includes('autonomous')||!r.skills['wayfinder-planning'].outputs.some(({type})=>type==='decision-loop-report')||!read('CHANGELOG.md').includes('Wayfinder now continues safe frontier work automatically')||l.skills['wayfinder-planning'].lastReviewedAt!=='2026-08-29'||l.skills['wayfinder-planning'].reviewDueAt!=='2027-08-29')process.exit(1);\"",
       "status": "passed"
     }
   ]

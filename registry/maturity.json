@@ -129,19 +129,19 @@
     },
     "wayfinder-planning": {
       "status": "verified",
-      "lastEvaluatedAt": "2026-08-24",
+      "lastEvaluatedAt": "2026-08-29",
       "evidence": [
         {
           "type": "structural-validation",
           "reference": "evidence/wayfinder-planning/validation.json",
-          "sha256": "77b4a3a140319e530f5ac3fafc7bbed6522b8a138a9306f634407285795414ff",
-          "recordedAt": "2026-08-24"
+          "sha256": "c77baa62ee4aa3c3caee65426143ea7656c64e4f6d690fc68313ff55f5bcb58a",
+          "recordedAt": "2026-08-29"
         },
         {
           "type": "maintainer-approval",
           "reference": "evidence/wayfinder-planning/approval.json",
-          "sha256": "b9a0ec3861ae1ddbaa53028e117d275bb46bc0c9f81759dd8be28ae469a360f2",
-          "recordedAt": "2026-08-24"
+          "sha256": "24d7c9abed056c1ac276a32fc8a4a99f1fd86b9584aaa06dad3262c34fa8612f",
+          "recordedAt": "2026-08-29"
         }
       ]
     }

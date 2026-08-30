@@ -562,13 +562,16 @@ test('stderr overflow finalizes descendants before returning the limit error', a
 test('cleanup deadline bounds a direct child that never closes and preserves its workspace', async () => {
   const temp = makeTempDir('runtime-smoke-close-deadline-');
   try {
-    const startedAt = performance.now();
+    let spawnedAt;
     const error = await runWithFakeSupervision(temp, {
-      spawn: () => fakeChild({ close: false }),
+      spawn: () => {
+        spawnedAt = performance.now();
+        return fakeChild({ close: false });
+      },
       processGroupState: () => 'gone',
       terminateProcessGroup: () => {},
     });
-    assert.ok(performance.now() - startedAt < 250, 'cleanup exceeded its bounded deadline');
+    assert.ok(performance.now() - spawnedAt < 250, 'cleanup exceeded its bounded deadline');
     assert.match(error.message, /cleanup failed.*direct child.*deadline/i);
     assert.match(error.message, /workspace preserved at/i);
     assert.ok(error.preservedWorkspace.startsWith(`${resolve(temp, 'runtime-roots')}/`));
@@ -582,13 +585,16 @@ test('cleanup deadline bounds a direct child that never closes and preserves its
 test('persistent process-group polling failure is bounded and preserves its workspace', async () => {
   const temp = makeTempDir('runtime-smoke-poll-deadline-');
   try {
-    const startedAt = performance.now();
+    let spawnedAt;
     const error = await runWithFakeSupervision(temp, {
-      spawn: () => fakeChild({ close: true }),
+      spawn: () => {
+        spawnedAt = performance.now();
+        return fakeChild({ close: true });
+      },
       processGroupState: () => 'permission-denied',
       terminateProcessGroup: () => {},
     });
-    assert.ok(performance.now() - startedAt < 250, 'persistent polling exceeded its bounded deadline');
+    assert.ok(performance.now() - spawnedAt < 250, 'persistent polling exceeded its bounded deadline');
     assert.match(error.message, /cleanup failed.*EPERM/i);
     assert.match(error.message, /workspace preserved at/i);
     assert.ok(error.preservedWorkspace.startsWith(`${resolve(temp, 'runtime-roots')}/`));

@@ -114,7 +114,7 @@ command surface.
 | `test-driven-development` | Drives implementation with the red-green-refactor cycle: a failing behavior test first, minimum code to pass, then refactor while green. |
 | `verification-before-completion` | Requires fresh command evidence before any claim that work is done, fixed, passing, or ready. |
 | `verification-discipline` | Hardens tests and CI so green results are meaningful through red-green proof, independent assertions, bounded expensive checks, report-only adoption, and build-purity checks. |
-| `wayfinder-planning` | Navigates Wayfinder decision maps, fog of war, and frontier tickets for long-running ambiguous work through claim-first, one-decision-per-session replanning. |
+| `wayfinder-planning` | Navigates Wayfinder decision maps, fog of war, and frontier tickets through bounded autonomous decision loops that resolve frontier work one claim at a time, verify each atomic synchronization, and continue within budgets and substantive stop conditions. |
 | `web-research-and-verification` | Answers questions that depend on current external information by detecting the version in use, preferring authoritative sources, corroborating, and citing URLs. |
 
 ## Implementation agent
@@ -152,7 +152,9 @@ and [configuration reference](https://docs.github.com/en/copilot/reference/custo
 
 See [`BACKLOG.md`](BACKLOG.md) for the prioritized catalog improvements and the
 approval-gated two-agent continuous learning and improvement architecture. The
-governing architecture decision is
+research-backed feature opportunity portfolio is in
+[`docs/product/feature-opportunities.md`](docs/product/feature-opportunities.md).
+The governing architecture decision is
 [`ADR 0001`](docs/decisions/0001-bounded-continuous-improvement.md).
 [`ADR 0002`](docs/decisions/0002-recurring-orchestration.md) selects
 repository-versioned GitHub Agentic Workflows for future recurring operation
