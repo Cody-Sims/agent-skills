@@ -4,6 +4,35 @@
   "skill": "shadow-dream",
   "cases": [
     {
+      "id": "bounded-proposal-persistence-conflict",
+      "prompt": "Compare two future states for the queue boundary only. Relevant observations and accepted constraints are provided, but accepted rationale is missing. Save one proposal: the declared proposal schema would also require modifying an accepted decision and its index. Keep the comparison concise without surveying unrelated modules or making those changes; include meaningful migration gates and rollback for both options.",
+      "assertions": [
+        {
+          "id": "two-options",
+          "type": "regex",
+          "value": "Option\\s+(1|A)[\\s\\S]*Option\\s+(2|B)",
+          "flags": "i"
+        },
+        {
+          "id": "chat-fallback",
+          "type": "regex",
+          "value": "(chat|response|not persist|cannot persist)",
+          "flags": "i"
+        },
+        {
+          "id": "rollback",
+          "type": "contains",
+          "value": "Rollback"
+        }
+      ],
+      "humanReview": [
+        {
+          "id": "bounded-complete-options",
+          "question": "Does the candidate use only relevant evidence, preserve missing rationale as unknown, compare materially distinct options against the same accepted constraints with per-option migration/rollback detail, and return in chat because persistence would alter other or accepted artifacts, without inventing approval?"
+        }
+      ]
+    },
+    {
       "id": "compare-future-state-options",
       "prompt": "Dream a future-state architecture for replacing our synchronous integration boundary. Current Shadow observations cite src/integrations/sync.ts and tests/integrations/sync.test.ts. Accepted constraints require at-least-once delivery and no flag-day migration. Produce a reviewable proposal, but do not persist or implement it.",
       "assertions": [

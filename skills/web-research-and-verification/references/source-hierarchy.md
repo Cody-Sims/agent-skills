@@ -1,12 +1,10 @@
 # Source Hierarchy
 
-How to rank sources by authority and decide when a claim is adequately supported.
-Use it alongside the main workflow's "Choose Sources" step.
+Read when source authority, sufficiency, or conflict needs judgment.
 
 ## Ranking
 
-Sources are ranked from most to least authoritative. Prefer the highest available
-tier that addresses the exact version and question.
+Prefer the highest tier matching the exact version and claim.
 
 ### Tier 1: Primary and authoritative
 
@@ -18,8 +16,8 @@ The source defines or implements the thing in question.
 * The source code itself, including inline documentation and type signatures.
 * Official security advisories and vulnerability databases for CVE claims.
 
-These are definitive. When they are clear and version-matched, a single Tier 1
-source can support a claim, though a second confirmation is still valuable.
+Tier 1 is necessary for exact versions, signatures, flags, parameters, and
+defaults. Authority alone does not waive required corroboration.
 
 ### Tier 2: Reputable secondary
 
@@ -30,20 +28,18 @@ The source is credible and traceable to a primary, but is not itself definitive.
 * Conference talks and papers by recognized authors.
 * Highly rated answers that quote and link official documentation.
 
-Use these to explain or locate primary material. Confirm the underlying fact
-against a Tier 1 source before relying on it for anything material.
+Use for leads/explanation; confirm material facts against Tier 1 when available.
 
 ### Tier 3: Low-trust
 
-The source is unattributed, unverifiable, or incentivized.
+The source is unattributed, unverifiable, or weakly accountable.
 
 * Anonymous blogs and tutorials without citations.
 * Forum comments and chat logs.
 * Content-farm and machine-generated pages.
 * Aggregators that restate other pages without attribution.
 
-Use these only as leads pointing toward a primary source. Never present a Tier 3
-claim as fact on its own.
+Use only as leads; never as sole factual evidence.
 
 ## Judging Authority
 
@@ -51,22 +47,30 @@ claim as fact on its own.
 * **Version match** — Does it address the exact version in use? Documentation for
   another major version is a frequent cause of wrong answers.
 * **Recency** — Is it current, and has a later release changed the behavior?
-* **Corroboration** — Does an independent source agree?
+* **Corroboration** — Does independent evidence agree? Mirrored/copied pages do
+  not count twice; docs and implementation/release evidence must independently
+  support the actual claim, even when published by the same maintainer.
 * **Specificity** — Does it address the precise question, or only something nearby?
 
 ## When Sources Conflict
 
-1. Prefer the more authoritative tier.
-2. Among equal tiers, prefer the one matching the version in use.
-3. Among equal and version-matched sources, prefer the more recent.
-4. If a credible conflict remains, report both positions, cite each, and state
-   which is better supported and why.
+1. Prefer authority, then exact version match, then recency within that version.
+   Newer docs for another version do not establish installed behavior.
+2. Report credible unresolved conflicts with both citations and the basis for
+   any preference. Do not silently combine incompatible signatures/defaults.
 
 ## Sufficiency
 
-* A material factual claim needs at least one Tier 1 source, or two independent
-  Tier 2 sources when no Tier 1 source is reachable.
-* A version number, API signature, flag, or default value must come from Tier 1;
-  never infer these from secondary description alone.
-* When the available evidence does not meet this bar, label the claim as unknown
-  rather than overstating confidence.
+1. Corroborate material external claims with independent evidence, including a
+   version-matched Tier 1 source. When Tier 1 is unreachable, two independent
+   Tier 2 sources may support non-signature facts; disclose the limitation.
+2. Security/safety, legal/compliance, irreversible, disputed, and rapidly changing
+   claims require corroboration. Do not replace primary advisories or exact
+   API/version evidence with secondary agreement.
+3. Routine installed syntax/defaults may use version-matched authoritative
+   help/source alone if no risk, deprecation, or conflict exists. Cite the exact
+   local command/path and disclose this single-source exception. It says nothing
+   about current hosted behavior.
+4. If required evidence is missing or contradictory, label the claim unknown.
+   Stop at the bounded research limit and state unavailable corroboration rather
+   than fabricating certainty.

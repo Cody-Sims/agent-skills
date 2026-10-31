@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "name": "code-review-routing",
+  "trials": 3,
+  "cases": [
+    {
+      "id": "review-pr-correctness",
+      "split": "training",
+      "prompt": "Review this pull request diff for correctness, missing edge-case tests, and realistic performance regressions.",
+      "expected": ["code-review"],
+      "excluded": ["systematic-debugging"]
+    },
+    {
+      "id": "review-staged-patch",
+      "split": "training",
+      "prompt": "Examine my staged patch and give severity-ranked findings with file and line references. Do not edit the code.",
+      "expected": ["code-review"],
+      "excluded": ["refactoring-and-dead-code-removal"]
+    },
+    {
+      "id": "judge-merge-readiness",
+      "split": "validation",
+      "prompt": "Is this proposed change safe to merge? Check the actual diff against its stated intent, error handling, and existing module boundaries.",
+      "expected": ["code-review"],
+      "excluded": ["planning-and-task-breakdown"]
+    },
+    {
+      "id": "audit-auth-vulnerabilities",
+      "split": "training",
+      "prompt": "Audit this authentication endpoint for exploitable authorization bypasses, injection, and leaked credentials.",
+      "expected": ["security-review"],
+      "excluded": ["code-review"]
+    },
+    {
+      "id": "implement-test-first-feature",
+      "split": "validation",
+      "prompt": "Implement the agreed pagination behavior test-first: observe a failing behavior test, make it pass, then refactor while green.",
+      "expected": ["test-driven-development"],
+      "excluded": ["code-review"]
+    }
+  ]
+}

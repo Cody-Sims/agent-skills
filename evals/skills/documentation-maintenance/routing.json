@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "name": "documentation-maintenance-routing",
+  "trials": 3,
+  "cases": [
+    {
+      "id": "update-cli-docs",
+      "split": "training",
+      "prompt": "The CLI flags changed. Update the README setup instructions, command reference, and user-facing changelog to match the implemented interface.",
+      "expected": ["documentation-maintenance"],
+      "excluded": ["requirements-and-spec-writing"]
+    },
+    {
+      "id": "supersede-conventional-adr",
+      "split": "training",
+      "prompt": "Write a new numbered Markdown ADR for this approved database decision and link the accepted ADR it supersedes without rewriting its history.",
+      "expected": ["documentation-maintenance"],
+      "excluded": ["shadow-architecture"]
+    },
+    {
+      "id": "repair-api-examples",
+      "split": "validation",
+      "prompt": "The API implementation renamed this parameter and added an error response. Fix stale signatures, examples, and relative links in the existing API documentation.",
+      "expected": ["documentation-maintenance"],
+      "excluded": ["test-driven-development"]
+    },
+    {
+      "id": "specify-unclear-product",
+      "split": "training",
+      "prompt": "Turn this vague export feature request into agreed requirements with privacy constraints, non-goals, and observable acceptance criteria before coding.",
+      "expected": ["requirements-and-spec-writing"],
+      "excluded": ["documentation-maintenance"]
+    },
+    {
+      "id": "maintain-shadow-record",
+      "split": "validation",
+      "prompt": "Record this explicitly approved architecture decision in the repository-owned .shadow graph and update its authoritative index while preserving accepted history.",
+      "expected": ["shadow-architecture"],
+      "excluded": ["documentation-maintenance"]
+    }
+  ]
+}

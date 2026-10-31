@@ -31,6 +31,17 @@
       "excluded": []
     },
     {
+      "id": "validation-positive-bounded-status",
+      "split": "validation",
+      "prompt": "Inspect hosted Copilot task 123 by its known ID, report the observed model and PR, and stop monitoring when the read budget expires without launching anything.",
+      "expected": [
+        "copilot-cloud-agent"
+      ],
+      "excluded": [
+        "parallel-worktree-delivery"
+      ]
+    },
+    {
       "id": "training-negative-skill",
       "split": "training",
       "prompt": "Create a new Agent Skill scaffold with portable frontmatter, routing fixtures, and behavior evaluations.",

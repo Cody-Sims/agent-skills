@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "name": "parallel-worktree-delivery-routing",
+  "trials": 3,
+  "cases": [
+    { "id": "training-fleet", "split": "training", "prompt": "Run a local worktree fleet for three independent implementation streams, assign exclusive ownership, and integrate their branches.", "expected": ["parallel-worktree-delivery"], "excluded": ["copilot-cloud-agent"] },
+    { "id": "training-waves", "split": "training", "prompt": "Execute this approved migration in dependency waves using separate agent branches and isolated worktrees, with per-merge gates.", "expected": ["parallel-worktree-delivery"], "excluded": ["planning-and-task-breakdown"] },
+    { "id": "validation-integration", "split": "validation", "prompt": "Integrate completed local worker branches one at a time and prevent their checks from racing shared build outputs.", "expected": ["parallel-worktree-delivery"], "excluded": ["copilot-cloud-agent"] },
+    { "id": "training-plan-only", "split": "training", "prompt": "Break this approved specification into tasks and identify independent work, but do not launch agents or create worktrees.", "expected": ["planning-and-task-breakdown"], "excluded": ["parallel-worktree-delivery"] },
+    { "id": "validation-hosted-task", "split": "validation", "prompt": "Launch a GitHub-hosted Copilot cloud-agent task using GPT-5.6 Sol and return its task URL.", "expected": ["copilot-cloud-agent"], "excluded": ["parallel-worktree-delivery"] }
+  ]
+}

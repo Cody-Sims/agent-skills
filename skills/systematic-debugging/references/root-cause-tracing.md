@@ -40,7 +40,9 @@ The same halving applies to configuration, feature flags, and data records.
 When the failure is new and a past state worked:
 
 1. Identify a known-good revision and a known-bad revision.
-2. Check out the midpoint and run the reproduction command.
+2. Use a clean, authorized checkout isolated from concurrent work. Do not switch
+   revisions in a shared or dirty working tree. Check out the midpoint there and
+   run the reproduction command.
 3. Mark the midpoint good or bad and repeat on the remaining range.
 4. `git bisect run <command>` automates this when the command exits nonzero on
    failure. Ensure the command is deterministic first.

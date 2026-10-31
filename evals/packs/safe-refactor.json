@@ -1,19 +1,19 @@
 {
   "schemaVersion": 1,
   "name": "safe-refactor-composition",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "source": {
-    "registrySha256": "96cc2b05f427ed1f1180ec8749a14ec7a5e17951bcef15b5b53a40f0e496250c",
-    "memberTreeSha256": "cd60d5fe7238f2232044579b2fdf4aa5bba606cfea016dc2187fdccbae6ac05a",
+    "registrySha256": "f66fabe39b82fc21efd2ceb6371f605d9f8a3fdd1d3e1954bc341c9a0125ce79",
+    "memberTreeSha256": "48b2b8628bc20e1c280956ba895029e4672c3fd875675d0e4bd29e4459fe64dc",
     "suitePath": "evals/packs/safe-refactor.json"
   },
   "pack": {
     "name": "safe-refactor",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "members": [
       {
         "name": "code-review",
-        "version": "1.0.0"
+        "version": "1.1.0"
       },
       {
         "name": "codebase-exploration",
@@ -21,11 +21,11 @@
       },
       {
         "name": "refactoring-and-dead-code-removal",
-        "version": "1.0.0"
+        "version": "1.1.0"
       },
       {
         "name": "test-driven-development",
-        "version": "1.0.0"
+        "version": "1.1.0"
       },
       {
         "name": "verification-before-completion",

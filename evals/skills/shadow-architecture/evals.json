@@ -4,6 +4,29 @@
   "skill": "shadow-architecture",
   "cases": [
     {
+      "id": "bounded-mechanical-maintenance",
+      "prompt": "Synchronize only one .shadow index entry with its existing reviewed record. The README declares a custom legacy path and schema, permits mechanical synchronization, and promises that this legacy shape remains readable. Do not migrate the graph, rewrite the decision, gather observations, or re-render anything. Explain the bounded validation and approval boundary.",
+      "assertions": [
+        {
+          "id": "declared-authority",
+          "type": "contains",
+          "value": ".shadow/README.md"
+        },
+        {
+          "id": "preserve-legacy",
+          "type": "regex",
+          "value": "(preserv|retain|remain)[\\s\\S]{0,120}(legacy|readable|compatib)",
+          "flags": "i"
+        }
+      ],
+      "humanReview": [
+        {
+          "id": "operation-specific-disclosure",
+          "question": "Does the candidate follow the declared custom authority, perform only index synchronization and necessary integrity validation, skip setup/migration/render workflows, preserve record meaning and provenance, and distinguish policy-permitted mechanical work from exact-revision human approval for semantic changes?"
+        }
+      ]
+    },
+    {
       "id": "setup-and-migrate",
       "prompt": "Create a minimal .shadow graph for this repository, but preserve compatibility with the existing decision files if any are found. Define the authority and v2 migration approach before changing records.",
       "assertions": [

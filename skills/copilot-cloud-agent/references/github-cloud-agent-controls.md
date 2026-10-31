@@ -1,8 +1,9 @@
 # GitHub Cloud-Agent API and Model Controls
 
-Verified against GitHub documentation on 2026-07-27. These APIs are in public
-preview and their model allowlists can change, so re-check the linked sources
-before each launch.
+Snapshot verified against GitHub documentation on 2026-07-27, not a live guarantee.
+The APIs were in public preview; request shapes, limits, and model allowlists can
+change. Before launch, recheck the applicable API and requested-model sources;
+for known-task status alone, do not fetch unrelated model-comparison pages.
 
 ## Hosted task endpoint
 
@@ -12,13 +13,13 @@ GitHub documents:
 POST /agents/repos/{owner}/{repo}/tasks
 ```
 
-The request accepts `prompt`, `model`, `custom_agent`,
-`create_pull_request`, `base_ref`, and `head_ref`. Omitting `model` uses Auto
-selection. The task response and subsequent task read expose the task state and
-session model.
+The documented snapshot accepts `prompt`, `model`, `custom_agent`,
+`create_pull_request`, `base_ref`, and `head_ref`. Omitted `model` means Auto.
+Record the task ID/URL and read the task back for state, model, refs, and artifacts.
 
-Use a current user-to-server token through the authenticated GitHub client. Do not
-print, persist, or place tokens in prompts, task bodies, branches, or logs.
+Use a current user-to-server token through an authenticated client such as `gh api`.
+Never print/persist credentials in prompts, bodies, branches, or logs. After an
+uncertain POST response, inspect matching tasks before retrying.
 
 Sources:
 
@@ -27,17 +28,17 @@ Sources:
 
 ## GPT-5.6 Sol
 
-GitHub's cloud-agent model picker lists GPT-5.6 Sol. GitHub's model comparison
-describes it as suited to "complex reasoning over large codebases and long-running
-agentic work." The API identifier used for explicit selection is:
+The verified model-picker snapshot lists GPT-5.6 Sol, described as suited to
+"complex reasoning over large codebases and long-running agentic work." Verify
+current availability before using the explicit identifier:
 
 ```json
 { "model": "gpt-5.6-sol" }
 ```
 
-Availability still depends on the user's plan and organization model policy.
-Treat an API `422` or policy denial as a failed explicit selection; do not
-silently fall back.
+Availability depends on plan/organization policy. Surface `422`/policy denial as
+failed explicit selection; never silently fall back. Preserve the exact observed
+session model, including provider prefixes, rather than claiming Auto selected Sol.
 
 Sources:
 
@@ -47,25 +48,25 @@ Sources:
 
 ## Unsupported launch controls
 
-The documented hosted task and issue-assignment request shapes have a `model`
-field but no reasoning-effort or context-window field. As of the verification
-date, the cloud API does not provide a supported way to request:
+As of the verification date, hosted task/assignment shapes document `model`, not
+reasoning-effort or context-window fields. They provide no supported request for:
 
 - `high` reasoning effort;
 - `long_context`;
 - a 1M-token context window; or
 - any exact context allocation.
 
-Copilot CLI may expose local flags with similar names. Those flags apply to the
-local CLI runtime and are not evidence of cloud API support.
-
-State this as an API limitation, not as a claim about the model's undisclosed
-internal limits.
+Installed CLI help establishes local flags only, not cloud API support. State the
+dated API limitation, not undisclosed model limits; selecting a model guarantees
+neither effort nor exact context allocation. Recheck this section's API sources
+only when answering control questions or forming a launch request.
 
 ## Operational limits
 
-GitHub documents a maximum cloud-agent session length of 59 minutes. A timed-out
-session requires triage; it is not a successful completion.
+The snapshot documents a 59-minute maximum session; recheck when planning session
+duration. Do not poll for that entire limit by default: use a stated read/time
+budget with backoff and rate-limit handling. A timed-out session needs triage,
+not a success report. Unknown states/fields remain unknown until verified.
 
 Source:
 

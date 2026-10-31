@@ -1,71 +1,56 @@
 ---
 name: parallel-worktree-delivery
-description: Executes multi-agent, multi-branch git worktree delivery with ownership partitions, dependency waves, branch integration, merge conflict handling, and post-merge gates. Use when running worktree fleets, integration branches, or wave-based migrations where checkout collisions are a risk; do not use merely to identify parallel tasks or for a single small change.
+description: "Executes multi-agent Git worktree fleets with exclusive ownership, dependency waves, serialized integration, and merge gates. Use when delivering independent streams on separate branches/worktrees; not for task planning alone, one small change, or GitHub-hosted cloud agents."
 license: MIT
 metadata:
-  version: "1.0.0"
-  author: Cody-Sims
-  tier: experimental
+  version: "1.1.0"
+  author: "Cody-Sims"
+  tier: "experimental"
 ---
 
 # Parallel Worktree Delivery
 
-Run a fleet of agents without checkout collisions by giving every work stream its
-own git worktree, branch, file-ownership boundary, and integration gate.
+Run only an authorized fleet; loading is not consent to spawn, install, or mutate
+Git/remote state.
 
-## Start
+## Prepare
 
-1. Read the repository instructions for every path that any stream may edit.
-2. Inspect the current state:
-   ```bash
-   git branch --show-current
-   git status --short
-   git worktree list
-   ```
-3. Choose one integration branch and one branch/worktree per independent stream.
-4. Load [references/fleet-setup.md](references/fleet-setup.md) before creating
-   worktrees, sharing prerequisites, or prompting worker agents.
-5. Load [references/integration-playbook.md](references/integration-playbook.md)
-   before merging worker branches back together.
+1. Read path instructions; inspect branch/status/worktrees/operations and verify
+   base/integration checkout. Never stash, commit, switch, or overwrite others'
+   live work.
+2. Bound streams/concurrency/time/cost to approved resources. Delegate substantial
+   independent work only; honor requested runtime/model, invent no controls.
+3. Assign separate branches/worktrees and exclusive files; sequence dependencies
+   in waves. Coordinator owns shared files; exact-section exceptions serialize writes.
+4. Read [fleet setup](references/fleet-setup.md) for setup/dispatch. Isolate or
+   serialize writable dependencies, caches, outputs, databases, and ports.
+   No concurrent shared installs; bound CPU-heavy jobs.
 
-## Plan the wave
+## Dispatch and collect
 
-- Parallelize only streams with independent write ownership and no true ordering
-  dependency.
-- Split dependent work into waves. For example, create shared modules in one wave,
-  then migrate broad call sites in a later wave.
-- Assign every stream an exclusive file set. If a shared file cannot be avoided,
-  assign exact sections or one-line edits and require the worker to flag that edit
-  in its report.
-- Keep append-only shared files such as changelogs on the orchestrator's merge
-  checklist because they conflict often.
-- Treat the primary checkout as live: if another human or agent owns uncommitted
-  work there, do not stash, commit, or overwrite it.
-
-## Prompt each worker
-
-Every worker prompt must include:
-
-- The branch, worktree path, and base branch.
-- The exact paths or sections it owns and a statement that no other files may be
-  edited except explicitly named boundary edits.
-- Required setup notes, including whether dependencies are shared or isolated.
-- The narrow checks it should run before reporting.
-- A requirement to report cross-boundary changes instead of making them when not
-  authorized.
+1. Supply objective/stop, branch/worktree/base, ownership, instructions/setup,
+   scoped checks, and allowed actions. Workers report cross-boundary needs, not edit.
+2. Record IDs/tips; continue independent work. Use notifications/bounded known-ID
+   waits, not tight polling/discovery or duplicate workers. Collect paths/commits,
+   exact checks/results, conflicts, and boundary requests.
 
 ## Integrate
 
-1. Merge one stream branch into the integration branch.
-2. Resolve only that branch's conflicts.
-3. Run the repository's required gate after each merge, not only after the final
-   pile-up.
-4. Keep cross-cutting fixes with the orchestrator unless one stream clearly owns
-   the affected files.
-5. Review the final diff and stage explicit paths only.
+1. Read [integration playbook](references/integration-playbook.md) before merges.
+   Freeze tips; review ownership/full diffs. Serialize integration/shared Git
+   administration in the clean coordinator checkout.
+2. Merge one stream at a time; reconcile both conflict intents. Stop on unresolved
+   ownership/behavior disagreements or failed checks.
+3. Run all repository-required **per-merge** gates after each merge. Without a
+   mandated full gate, check integrated changes/interactions. Never substitute
+   worker/pre-merge evidence or defer required gates to the final wave.
+4. Coordinator owns integration fixes; rerun affected checks/required gates before
+   another merge without resource races. Review final diff/required final gates;
+   no unchanged scoped reruns solely for handoff. Stage explicit owned paths;
+   remote writes/clean-worktree cleanup need consent.
 
 ## Output
 
-Report the wave plan, ownership map, worker branches, validation after each merge,
-conflicts resolved, cross-cutting orchestrator fixes, and any existing skill or
-instruction that should be changed later.
+Return waves/ownership, worker IDs/integrated tips, per-merge checks/results,
+conflicts/fixes, and pending work/blockers. No transcript dump; distinguish local
+integration from remote delivery.

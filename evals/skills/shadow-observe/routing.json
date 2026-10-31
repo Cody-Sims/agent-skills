@@ -4,6 +4,20 @@
   "trials": 3,
   "cases": [
     {
+      "id": "training-positive-candidate-provenance",
+      "split": "training",
+      "prompt": "Generate current-architecture candidate observations for .shadow from this bounded worker slice, retaining source revision, dirty-worktree state, evidence, and unknowns.",
+      "expected": ["shadow-observe"],
+      "excluded": ["codebase-exploration", "shadow-architecture"]
+    },
+    {
+      "id": "training-negative-record-reviewed-decision",
+      "split": "training",
+      "prompt": "The observations have been reviewed and a human approval record exists. Record the resulting accepted architecture decision and update its .shadow index.",
+      "expected": ["shadow-architecture"],
+      "excluded": ["shadow-observe"]
+    },
+    {
       "id": "training-run-shadow",
       "split": "training",
       "prompt": "Run Shadow on the current authentication boundary and return evidence-linked candidate observations without changing the decision graph.",

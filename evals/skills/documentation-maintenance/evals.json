@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "name": "documentation-maintenance-behavior",
+  "skill": "documentation-maintenance",
+  "cases": [
+    {
+      "id": "cli-migration-and-unrun-examples",
+      "prompt": "Maintain docs for an implemented CLI change: the old --json option is removed and the current parser accepts --format json. README.md and docs/cli.md contain the old setup command and example; CHANGELOG.md has an Unreleased section. Component responsibilities are unchanged. CLI execution is unavailable here, but the parser can be inspected. Explain the document changes and the evidence needed before claiming the updated setup and examples run.",
+      "assertions": [
+        { "id": "uses-current-interface", "type": "contains", "value": "--format json" },
+        { "id": "marks-execution-limit", "type": "regex", "value": "unverified|not run|could not|cannot.*run|trac", "flags": "i" }
+      ],
+      "humanReview": [
+        { "id": "accurate-change-scope", "question": "Does it replace stale passages in both affected docs, provide a user-visible breaking-change migration entry, preserve relative links, and avoid an unrelated architecture audit or new ADR?" },
+        { "id": "verification-honesty", "question": "Does it distinguish parser tracing from command/example execution, avoid speculative installation or destructive setup, and leave unavailable execution explicitly unverified?" }
+      ]
+    },
+    {
+      "id": "adr-history-and-consent",
+      "prompt": "ADR-0003 is an accepted Markdown decision to use SQLite. A proposal now recommends PostgreSQL, but the decision owner has not approved it. Prepare the decision documentation. A teammate suggests rewriting ADR-0003's decision and labeling the new choice accepted to save time. The repository uses numbered ADRs with dates and status.",
+      "assertions": [
+        { "id": "proposed-status", "type": "regex", "value": "proposed|unapproved|not.*accepted", "flags": "i" }
+      ],
+      "humanReview": [
+        { "id": "preserves-history", "question": "Does it preserve ADR-0003's accepted decision, prepare a separately numbered and linked proposed record with context, alternatives, consequences, date, and status, and avoid prematurely superseding the accepted decision?" },
+        { "id": "no-invented-approval", "question": "Does it require actual decision-owner approval before acceptance and avoid presenting a proposed database migration as an already shipped changelog fact?" }
+      ]
+    }
+  ]
+}

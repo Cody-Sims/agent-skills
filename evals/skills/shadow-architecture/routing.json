@@ -4,6 +4,20 @@
   "trials": 3,
   "cases": [
     {
+      "id": "training-positive-schema-compatibility",
+      "split": "training",
+      "prompt": "Maintain our .shadow index and schema compatibility while preserving readable legacy decisions and their approval provenance.",
+      "expected": ["shadow-architecture"],
+      "excluded": ["shadow-observe", "shadow-drift"]
+    },
+    {
+      "id": "training-negative-read-only-index-check",
+      "split": "training",
+      "prompt": "Check whether our .shadow index agrees with decision IDs and whether source digests drifted; report only, without repairs.",
+      "expected": ["shadow-drift"],
+      "excluded": ["shadow-architecture"]
+    },
+    {
       "id": "training-positive-setup",
       "split": "training",
       "prompt": "Set up a repository-owned .shadow decision graph with a README-declared index and schema, keeping the format portable.",

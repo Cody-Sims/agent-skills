@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "name": "verification-discipline-routing",
+  "trials": 3,
+  "cases": [
+    { "id": "discipline-training-vacuous-test", "split": "training", "prompt": "This reset test stays green when the production reset assignment is removed. Audit its credibility and repair the assertion with a reversible mutation proof.", "expected": ["verification-discipline"], "excluded": ["test-driven-development"] },
+    { "id": "discipline-training-gate-invariant", "split": "training", "prompt": "Our invariant script is never invoked by CI and its test copies production logic. Harden the existing validation rather than add a product feature.", "expected": ["verification-discipline"], "excluded": ["verification-before-completion"] },
+    { "id": "discipline-validation-build-purity", "split": "validation", "prompt": "Investigate a validation gate that reports green despite dirty tracked build output and unbounded CPU checks; make its guarantees credible.", "expected": ["verification-discipline"], "excluded": ["documentation-maintenance"] },
+    { "id": "discipline-training-feature-neighbor", "split": "training", "prompt": "Implement a new checkout retry feature using a failing behavior test first, then minimum production code; no existing test credibility problem is suspected.", "expected": ["test-driven-development"], "excluded": ["verification-discipline"] },
+    { "id": "discipline-validation-completion-neighbor", "split": "validation", "prompt": "Run the relevant post-change command and inspect the artifact before saying the task is complete; there is no need to redesign the existing tests or gates.", "expected": ["verification-before-completion"], "excluded": ["verification-discipline"] }
+  ]
+}

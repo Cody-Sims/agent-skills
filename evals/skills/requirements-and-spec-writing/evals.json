@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "name": "requirements-and-spec-writing-behavior",
+  "skill": "requirements-and-spec-writing",
+  "cases": [
+    {
+      "id": "unapproved-privacy-decisions",
+      "prompt": "In a non-interactive handoff, the request is 'add shareable report exports'. Current reports are private to their owners; no sharing audience, retention, or revocation policy has been agreed. The decision owner is unavailable. A teammate suggests assuming public links never expire and starting implementation. Produce the appropriate specification handoff and identify what prevents implementation.",
+      "assertions": [
+        { "id": "unapproved-draft", "type": "regex", "value": "draft|unapproved|not.*approved", "flags": "i" }
+      ],
+      "humanReview": [
+        { "id": "consent-and-consequential-unknowns", "question": "Does it keep the result explicitly unapproved, preserve the existing privacy fact, treat public access/retention/revocation as consequential owner decisions rather than minor assumptions, and stop before implementation without inventing consent?" },
+        { "id": "complete-bounded-handoff", "question": "Does the draft cover the template's specification sections with checkable provisional requirements, non-goals, trust/error boundaries, alternatives, rollout/rollback unknowns, and decision owners without creating extra plans or auditing unrelated architecture?" }
+      ]
+    },
+    {
+      "id": "confirmed-intent-no-reconfirmation",
+      "prompt": "The requester already confirmed this restatement: owners can delete their own reports, never other owners' reports. Existing API documentation states owner identity is authenticated and failed deletes return a structured 403 error. Repository conventions require a written specification inline, not a new file. Draft the spec with testable requirements, acceptance criteria, labeled assumptions, and any genuinely unresolved decisions; the draft itself has not yet been approved.",
+      "assertions": [
+        { "id": "checkable-criteria", "type": "regex", "value": "acceptance|criteria", "flags": "i" },
+        { "id": "draft-status", "type": "regex", "value": "draft|unapproved|pending.*(?:agreement|approval)", "flags": "i" }
+      ],
+      "humanReview": [
+        { "id": "facts-and-coverage", "question": "Does it cite the supplied confirmed intent and API facts, pair every requirement with observable success/error criteria, include the full spec section order, and label unresolved rollout, rollback, or policy decisions instead of guessing?" },
+        { "id": "efficient-approval-gate", "question": "Does it avoid asking the requester to reconfirm already agreed intent, return inline without extra files or unrelated test runs, and still require approval of the completed specification before implementation?" }
+      ]
+    }
+  ]
+}

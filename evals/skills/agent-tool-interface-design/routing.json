@@ -4,6 +4,20 @@
   "trials": 3,
   "cases": [
     {
+      "id": "training-positive-sdk-wrapper",
+      "split": "training",
+      "prompt": "Choose a narrow agent-facing wrapper over our existing SDK, with bounded output, explicit state handles, and a comparison against direct MCP.",
+      "expected": ["agent-tool-interface-design"],
+      "excluded": ["skill-creator"]
+    },
+    {
+      "id": "training-negative-approved-task-plan",
+      "split": "training",
+      "prompt": "The CLI-versus-MCP decision and interface specification are approved. Split implementation into dependency-ordered tasks with ownership and verification commands.",
+      "expected": ["planning-and-task-breakdown"],
+      "excluded": ["agent-tool-interface-design"]
+    },
+    {
       "id": "training-positive-cli-versus-mcp",
       "split": "training",
       "prompt": "Decide whether this agent integration should use an existing CLI, a small local wrapper, an MCP server, or a hybrid code-execution adapter.",

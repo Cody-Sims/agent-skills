@@ -1,31 +1,31 @@
 {
   "schemaVersion": 1,
   "name": "release-readiness-composition",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "source": {
-    "registrySha256": "96cc2b05f427ed1f1180ec8749a14ec7a5e17951bcef15b5b53a40f0e496250c",
-    "memberTreeSha256": "9ae326961df3b2650164a1b551900a626e46ea8fcbfbbe3758111fff37e0899a",
+    "registrySha256": "f66fabe39b82fc21efd2ceb6371f605d9f8a3fdd1d3e1954bc341c9a0125ce79",
+    "memberTreeSha256": "d76e7e8374dec4815f325721e916cb867830cf1235e39249ad088b3a9c61a0f1",
     "suitePath": "evals/packs/release-readiness.json"
   },
   "pack": {
     "name": "release-readiness",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "members": [
       {
         "name": "code-review",
-        "version": "1.0.0"
+        "version": "1.1.0"
       },
       {
         "name": "documentation-maintenance",
-        "version": "1.0.0"
+        "version": "1.1.0"
       },
       {
         "name": "git-and-pr-workflow",
-        "version": "1.0.0"
+        "version": "1.1.0"
       },
       {
         "name": "security-review",
-        "version": "1.0.0"
+        "version": "1.1.0"
       },
       {
         "name": "verification-before-completion",

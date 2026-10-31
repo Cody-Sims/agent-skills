@@ -33,7 +33,7 @@ if (/before reporting.*complete|fresh targeted validation.*original symptom/i.te
 if (/current version of this external API|primary documentation.*authoritative URLs/i.test(request.prompt)) {
   selectedSkills = ['web-research-and-verification'];
 }
-if (/existing CLI, direct MCP tools|agent integration.*CLI.*code-execution adapter|MCP setup exposes.*tools.*agent-facing interface|Benchmark direct MCP calls.*code-over-MCP/i.test(request.prompt)) {
+if (/existing CLI, direct MCP tools|agent integration.*CLI.*code-execution adapter|MCP setup exposes.*tools.*agent-facing interface|Benchmark direct MCP calls.*code-over-MCP|agent-facing wrapper.*SDK/i.test(request.prompt)) {
   selectedSkills = ['agent-tool-interface-design'];
 }
 if (/Wayfinder.*decision map|claim one.*frontier.*decision/i.test(request.prompt)) {
@@ -46,7 +46,7 @@ if (/rebase this completed feature branch|atomic commit.*pull request/i.test(req
 if (/authentication|threat model|OAuth confused-deputy/i.test(request.prompt)) {
   selectedSkills = ['security-review'];
 }
-if (/approved specification|sequence the accepted/i.test(request.prompt)) {
+if (/approved specification|sequence the accepted|interface specification (?:is|are) approved/i.test(request.prompt)) {
   selectedSkills = ['planning-and-task-breakdown'];
 }
 if (/Wayfinder handoff.*specification is approved/i.test(request.prompt)) {

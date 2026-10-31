@@ -4,6 +4,30 @@
   "skill": "agent-tool-interface-design",
   "cases": [
     {
+      "id": "bounded-interface-comparison",
+      "prompt": "Our stable local CLI already implements the one read-only operation agents need. Give a bounded interface decision without dumping every SDK method or probing unrelated services. Benchmark counters are unavailable; do not invent savings or claim one tool is automatically cheaper. Preserve consent, recovery, and the approval-gated implementation handoff.",
+      "assertions": [
+        {
+          "id": "reuse-existing-capability",
+          "type": "regex",
+          "value": "(reuse|prefer|choose|start with)[\\s\\S]{0,100}(existing|stable|local)[\\s\\S]{0,60}CLI",
+          "flags": "i"
+        },
+        {
+          "id": "measurement-gap",
+          "type": "regex",
+          "value": "(unknown|unavailable|not measured|unmeasured)",
+          "flags": "i"
+        }
+      ],
+      "humanReview": [
+        {
+          "id": "conditional-detail-without-shortcuts",
+          "question": "Does the response select the smallest sufficient interface, load command/API details only for the selected operation, avoid broad discovery or fabricated efficiency, and retain bounded output, authority, idempotency/reconciliation, and independently approved implementation gates?"
+        }
+      ]
+    },
+    {
       "id": "prefer-existing-local-cli",
       "prompt": "Our coding agents need repository and pull-request data. We already standardize on the authenticated GitHub CLI, every target agent has a shell, and the proposed GitHub MCP server exposes dozens of tools. Choose an interface and define the contract we should implement.",
       "assertions": [

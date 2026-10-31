@@ -4,6 +4,20 @@
   "trials": 3,
   "cases": [
     {
+      "id": "training-positive-rollback-options",
+      "split": "training",
+      "prompt": "Compare materially different future architectures under accepted Shadow constraints, including per-option migration gates and rollback, as a proposal only.",
+      "expected": ["shadow-dream"],
+      "excluded": ["shadow-architecture", "planning-and-task-breakdown"]
+    },
+    {
+      "id": "training-negative-approved-history",
+      "split": "training",
+      "prompt": "Use this human approval artifact to record the selected architecture and supersede its old accepted .shadow decision, preserving history.",
+      "expected": ["shadow-architecture"],
+      "excluded": ["shadow-dream"]
+    },
+    {
       "id": "training-dream-options",
       "split": "training",
       "prompt": "Dream several evidence-linked future-state architecture options from our Shadow observations and accepted constraints, then recommend one.",

@@ -4,6 +4,34 @@
   "skill": "shadow-observe",
   "cases": [
     {
+      "id": "bounded-truncated-inventory",
+      "prompt": "Run Shadow on src/payments only, at depth 2 and no more than 20 inventory entries. The inventory reaches the limit and lists a symlink to another repository. Return observations from accessible in-scope evidence only; do not expand the scan, follow the link, write artifacts, or imply that truncated output proves the whole boundary was inspected.",
+      "assertions": [
+        {
+          "id": "bounded-report",
+          "type": "contains",
+          "value": "Scope"
+        },
+        {
+          "id": "incomplete-evidence",
+          "type": "regex",
+          "value": "(truncat|limit|unknown|uninspected)",
+          "flags": "i"
+        },
+        {
+          "id": "candidate-artifacts",
+          "type": "contains",
+          "value": "Candidate artifacts"
+        }
+      ],
+      "humanReview": [
+        {
+          "id": "boundedness-and-evidence",
+          "question": "Does the candidate respect the exact path/depth/entry bounds without follow-up scope expansion or symlink traversal, report the stopping reason and incomplete evidence, distinguish supported claims from inference/unknowns, capture provenance, and leave the graph and source unchanged?"
+        }
+      ]
+    },
+    {
       "id": "bounded-read-only-report",
       "prompt": "Run Shadow on the authentication boundary only. Scan current dependencies and generate architecture observations, but do not write files or change the .shadow graph.",
       "assertions": [

@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "name": "security-review-routing",
+  "trials": 3,
+  "cases": [
+    { "id": "security-training-tenant-audit", "split": "training", "prompt": "Audit this authenticated document export endpoint for cross-tenant authorization bypass and leaked credentials.", "expected": ["security-review"], "excluded": ["code-review"] },
+    { "id": "security-training-threat-model", "split": "training", "prompt": "Threat model a webhook integration whose callers choose URLs; check SSRF, redirect validation, and untrusted payloads.", "expected": ["security-review"], "excluded": ["agent-tool-interface-design"] },
+    { "id": "security-validation-agent-input", "split": "validation", "prompt": "Find exploitable weaknesses in our agent's handling of retrieved pages, privileged model output, and new dependencies before release.", "expected": ["security-review"], "excluded": ["skill-creator"] },
+    { "id": "security-training-correctness-neighbor", "split": "training", "prompt": "Review this pull request for pagination regressions, edge cases, and missing tests, not a vulnerability audit.", "expected": ["code-review"], "excluded": ["security-review"] },
+    { "id": "security-validation-authoring-neighbor", "split": "validation", "prompt": "Shorten the security-review SKILL.md workflow and repair its routing fixtures without dropping safety rules; do not perform a vulnerability audit.", "expected": ["skill-creator"], "excluded": ["security-review"] }
+  ]
+}

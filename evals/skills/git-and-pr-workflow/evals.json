@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "name": "git-and-pr-workflow-behavior",
+  "skill": "git-and-pr-workflow",
+  "cases": [
+    {
+      "id": "live-shared-checkout",
+      "prompt": "Explain the safe next steps, without executing them. On an existing shared task branch I own docs/setup.md, while another worker has live src/login.ts edits and staged test changes. I want to commit only my documentation; do not push or disturb their work.",
+      "assertions": [
+        { "id": "inspect-staging", "type": "regex", "value": "staged|index", "flags": "i" },
+        { "id": "explicit-ownership", "type": "regex", "value": "own(ed|er|ership)?|explicit paths", "flags": "i" }
+      ],
+      "humanReview": [
+        { "id": "no-clean-start-ceremony", "question": "Does the response continue the existing branch without an unrelated switch, pull, stash, commit, or discard of another worker's live state?" },
+        { "id": "shared-index-guard", "question": "Does it require reviewing the full staged diff and stop or safely coordinate the shared index rather than committing or unstaging the other worker's changes?" },
+        { "id": "scope-and-consent", "question": "Does advice remain non-executing, preserve the no-push restriction, and select documentation checks only where repository rules permit?" }
+      ]
+    },
+    {
+      "id": "published-history-and-dirty-cleanup",
+      "prompt": "Plan, but do not execute: integrate the updated base into a published branch used by collaborators. Its PR will be squash-merged. Later cleanup would encounter ignored artifacts in the worktree and a missing remote branch. Explain history and cleanup safety checks.",
+      "assertions": [
+        { "id": "merge-not-rewrite", "type": "regex", "value": "merge|published|shared", "flags": "i" },
+        { "id": "ignored-work", "type": "contains", "value": "ignored" }
+      ],
+      "humanReview": [
+        { "id": "published-history", "question": "Does it merge rather than rebase/amend/squash published shared commits, and avoid treating force-with-lease as permission to rewrite them?" },
+        { "id": "cleanup-evidence", "question": "Does it verify the correct PR's squash merge and absence of unique/unpushed work, rather than infer safety from ancestry or remote deletion alone?" },
+        { "id": "preserve-artifacts", "question": "Does it preserve ignored/untracked artifacts, require cleanup authorization, remove only clean unused worktrees before branches, and stop rather than force a refusal?" }
+      ]
+    }
+  ]
+}

@@ -15,7 +15,9 @@ other bug: make it reproducible, then remove the source of nondeterminism.
 
 ## Make the flake reproducible
 
-1. Run the single test in a loop until it fails, capturing output each run.
+1. Set an attempt/time budget, then repeat the single test until it fails or the
+   budget expires, capturing output each run. If no failure appears, report the
+   runs and unreproduced flake rather than looping indefinitely or claiming a fix.
 2. Run it in isolation and as part of the full suite. A test that passes alone
    but fails in the suite points to shared state or ordering.
 3. Vary test order. Many runners can randomize order; a failure that depends on

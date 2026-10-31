@@ -3,13 +3,13 @@
   "skills": [
     {
       "name": "agent-tool-interface-design",
-      "description": "Designs and evaluates agent-facing CLI tools, code-execution adapters, MCP servers, and hybrid code-over-MCP interfaces using context, composability, state, security, and portability trade-offs. Use when reducing MCP tool sprawl, wrapping APIs for agents, choosing CLI versus MCP, or benchmarking an agent tool interface.",
-      "version": "1.0.0",
+      "description": "Designs and benchmarks agent-facing CLI, MCP, constrained code, and code-over-MCP interfaces. Use when reducing MCP tool sprawl, wrapping APIs for agents, choosing CLI versus MCP, or comparing interface cost, state, security, and portability; not for skill authoring or an existing server's security review.",
+      "version": "1.1.0",
       "license": "MIT",
       "tier": "experimental",
       "maturity": {
-        "status": "verified",
-        "lastEvaluatedAt": "2026-08-24",
+        "status": "unverified",
+        "lastEvaluatedAt": null,
         "evidence": [
           {
             "type": "structural-validation",
@@ -103,7 +103,7 @@
       },
       "path": "skills/agent-tool-interface-design",
       "skillFile": "skills/agent-tool-interface-design/SKILL.md",
-      "sha256": "9fa6fd8a32dcabddf504a81eb98f28e473c7c1aa81faa5f9f52e50b4c256ab4b",
+      "sha256": "b7cb8c7704aa92eedcc71c938c038dadf570d9c331f741fa70020ec99bc59fb0",
       "resources": [
         "assets/interface-evaluation-template.md",
         "references/decision-matrix.md",
@@ -112,8 +112,8 @@
     },
     {
       "name": "code-review",
-      "description": "Reviews a diff, pull request, or set of staged changes for correctness, tests, error and edge cases, security, performance, readability, and architectural fit, then reports severity-ranked, actionable findings with file and line references. Use when reviewing a PR, examining staged or unstaged changes, giving feedback on a patch, or deciding whether a change is safe to merge.",
-      "version": "1.0.0",
+      "description": "Reviews diffs for correctness, tests, edge cases, security, performance, and maintainability. Use when reviewing a PR, patch, or staged/unstaged changes for merge readiness; stays read-only, unlike implementation or dedicated vulnerability audits.",
+      "version": "1.1.0",
       "license": "MIT",
       "tier": "core",
       "maturity": {
@@ -188,7 +188,7 @@
       },
       "path": "skills/code-review",
       "skillFile": "skills/code-review/SKILL.md",
-      "sha256": "50aa64ec203e5e6cf1648cd30dd9ee8b6897c5dc1c81b07ead385a4b62845e43",
+      "sha256": "9591fb8c4096ee8bad2a38a396a2b9bc6e9b1ff1629a7f5b180040c266add623",
       "resources": [
         "references/review-checklist.md"
       ]
@@ -278,13 +278,13 @@
     },
     {
       "name": "copilot-cloud-agent",
-      "description": "Launches and monitors GitHub Copilot cloud-agent tasks through supported GitHub APIs, selecting explicit models, recording task and pull-request IDs, and distinguishing hosted controls from local CLI flags. Use when starting cloud agents, running hosted loops, assigning issues to Copilot, choosing GPT-5.6 Sol, or checking cloud-agent status; do not use for local subagents or git worktree fleets.",
-      "version": "1.0.0",
+      "description": "Launches and monitors GitHub-hosted Copilot tasks with explicit models and durable task/PR IDs. Use when starting cloud agents, assigning issues to hosted Copilot, selecting GPT-5.6 Sol, or checking cloud-task status; not for local CLI subagents or Git worktree fleets.",
+      "version": "1.1.0",
       "license": "MIT",
       "tier": "experimental",
       "maturity": {
-        "status": "verified",
-        "lastEvaluatedAt": "2026-07-27",
+        "status": "unverified",
+        "lastEvaluatedAt": null,
         "evidence": [
           {
             "type": "structural-validation",
@@ -369,15 +369,15 @@
       },
       "path": "skills/copilot-cloud-agent",
       "skillFile": "skills/copilot-cloud-agent/SKILL.md",
-      "sha256": "5c55fe5bda3425f612771e3d3d0fa243ac5d9a9c19792141a4808e986ed91ed0",
+      "sha256": "50007aa4bf693baa6590825b0a96eb73e5e9c084ea19337b276eae3ffc0e4b3f",
       "resources": [
         "references/github-cloud-agent-controls.md"
       ]
     },
     {
       "name": "documentation-maintenance",
-      "description": "Keeps README, API docs, architecture notes, ADRs, and changelogs accurate when code changes by identifying which documents a change invalidates, documenting rationale, keeping setup instructions and examples runnable, updating the changelog with user-visible changes, and removing stale content. Use when code, configuration, commands, interfaces, or behavior change and documentation must be updated, or when writing an ADR or changelog entry.",
-      "version": "1.0.0",
+      "description": "Updates README, API docs, architecture notes, ADRs, and changelogs to match current code. Use when a code/configuration change invalidates documentation, or when writing an ADR or changelog entry; not for new requirements or maintaining a .shadow decision graph.",
+      "version": "1.1.0",
       "license": "MIT",
       "tier": "core",
       "maturity": {
@@ -456,7 +456,7 @@
       },
       "path": "skills/documentation-maintenance",
       "skillFile": "skills/documentation-maintenance/SKILL.md",
-      "sha256": "d0edc5ca357eae0fb7f288f56e20ddbcc63b1aef59799288d2a22a5764dd6144",
+      "sha256": "44c993a04b77b2a487bfb5334664941425fcd2dd9d880b1ad68e0535d6ffe740",
       "resources": [
         "assets/adr-template.md",
         "assets/changelog-entry.md"
@@ -464,8 +464,8 @@
     },
     {
       "name": "external-skill-review",
-      "description": "Reviews third-party agent skills as untrusted code before installing or updating them, assessing provenance, license, the full file tree, scripts, hidden Unicode, network and secret access, destructive commands, tool permissions, and supply-chain risk. Use when installing, updating, vetting, or auditing an external skill, a gh skill install candidate, or any skill from an untrusted repository.",
-      "version": "1.0.1",
+      "description": "Reviews third-party agent skills before install or update for provenance, license, complete-tree behavior, permissions, and supply-chain risk. Use when vetting an external skill, a gh skill install candidate, or an untrusted skill repository; not for authoring first-party skills or general code review.",
+      "version": "1.1.0",
       "license": "MIT",
       "tier": "core",
       "maturity": {
@@ -541,15 +541,15 @@
       },
       "path": "skills/external-skill-review",
       "skillFile": "skills/external-skill-review/SKILL.md",
-      "sha256": "0879292f06d4c35c1c505b8320486120af7d129db6c94d08a0b309939178e104",
+      "sha256": "c30e789e4fd54a4eeb81e210bb276af8eef894f4228a6edaa6ab02b62408f880",
       "resources": [
         "references/inspection-checklist.md"
       ]
     },
     {
       "name": "git-and-pr-workflow",
-      "description": "Guides Git branching, atomic commits, rebasing, resolving merge conflicts, worktrees, pull request descriptions, and safely finishing a branch. Use when creating branches, staging and committing changes, rebasing or squashing, resolving conflicts, opening or updating a pull request, or cleaning up after merge.",
-      "version": "1.0.0",
+      "description": "Guides safe Git branches, atomic commits, rebases, conflicts, pull requests, and post-merge cleanup. Use when branching, staging or committing, tidying local history, resolving conflicts, or opening or updating a PR; use parallel-worktree-delivery for multi-agent worktree fleets.",
+      "version": "1.1.0",
       "license": "MIT",
       "tier": "core",
       "maturity": {
@@ -626,7 +626,7 @@
       },
       "path": "skills/git-and-pr-workflow",
       "skillFile": "skills/git-and-pr-workflow/SKILL.md",
-      "sha256": "ccfb5c1aa0b695fcc0a6b5970904d9bfc68443b19243328087c9d6ee3aff0c5a",
+      "sha256": "bb5854fb3fdd235df7383f21c63dd4118fdf45db4153d05fca2f3cf2d1a3a9ac",
       "resources": [
         "references/commit-messages.md",
         "references/worktrees-and-conflicts.md"
@@ -634,13 +634,13 @@
     },
     {
       "name": "parallel-worktree-delivery",
-      "description": "Executes multi-agent, multi-branch git worktree delivery with ownership partitions, dependency waves, branch integration, merge conflict handling, and post-merge gates. Use when running worktree fleets, integration branches, or wave-based migrations where checkout collisions are a risk; do not use merely to identify parallel tasks or for a single small change.",
-      "version": "1.0.0",
+      "description": "Executes multi-agent Git worktree fleets with exclusive ownership, dependency waves, serialized integration, and merge gates. Use when delivering independent streams on separate branches/worktrees; not for task planning alone, one small change, or GitHub-hosted cloud agents.",
+      "version": "1.1.0",
       "license": "MIT",
       "tier": "experimental",
       "maturity": {
-        "status": "verified",
-        "lastEvaluatedAt": "2026-07-27",
+        "status": "unverified",
+        "lastEvaluatedAt": null,
         "evidence": [
           {
             "type": "structural-validation",
@@ -726,7 +726,7 @@
       },
       "path": "skills/parallel-worktree-delivery",
       "skillFile": "skills/parallel-worktree-delivery/SKILL.md",
-      "sha256": "2f8477db9268f9452a1f09786ebc3021ceb17a6306ef49c53b64ec0a84657e2d",
+      "sha256": "5cedddb0e9d890571bdf0827c98ef06b8957603924580062adfdb1f8e4935beb",
       "resources": [
         "references/fleet-setup.md",
         "references/integration-playbook.md"
@@ -817,8 +817,8 @@
     },
     {
       "name": "refactoring-and-dead-code-removal",
-      "description": "Changes code structure without changing behavior and removes unused code safely by establishing a passing baseline, making one mechanical change at a time, re-running tests between steps, and proving code is dead before deleting it. Use when cleaning up, simplifying, restructuring, extracting, renaming, or deleting suspected unused code, imports, functions, or files.",
-      "version": "1.0.0",
+      "description": "Refactors structure and removes proven dead code without changing observable behavior. Use when simplifying, extracting, renaming, moving, or deleting suspected unused code; requires a passing baseline and deletion evidence, not a defect fix or new behavior.",
+      "version": "1.1.0",
       "license": "MIT",
       "tier": "core",
       "maturity": {
@@ -894,15 +894,15 @@
       },
       "path": "skills/refactoring-and-dead-code-removal",
       "skillFile": "skills/refactoring-and-dead-code-removal/SKILL.md",
-      "sha256": "b3e0e013c1b31954f5caaadb21459a27818eef555b6d900c1417fe69f8d7238a",
+      "sha256": "35100d1343f30e5f29cac355e6890f72d8cf27336ffb6e5ee41d61a6ffb246fb",
       "resources": [
         "references/dead-code-evidence.md"
       ]
     },
     {
       "name": "repository-agent-bootstrap",
-      "description": "Audits and bootstraps repository-owned agent customization including AGENTS.md, repository and path-scoped instructions, custom agents, and skills, without overwriting established conventions. Use to set up, review, or maintain a repository's agent guidance, add a skill or agent, or fix overlapping, stale, or overly broad customization.",
-      "version": "1.0.1",
+      "description": "Audits and improves repository-owned AGENTS.md, scoped instructions, custom agents, and skill discovery without replacing conventions. Use when setting up or maintaining repository agent guidance, integrating an agent or skill, or fixing conflicting or overly broad customization; not for routine code edits, global preferences, or standalone skill authoring.",
+      "version": "1.1.0",
       "license": "MIT",
       "tier": "core",
       "maturity": {
@@ -978,15 +978,15 @@
       },
       "path": "skills/repository-agent-bootstrap",
       "skillFile": "skills/repository-agent-bootstrap/SKILL.md",
-      "sha256": "136dd9aa26a6449f0b9383fcaf280e4f90075cb296a35fa51f457ea53764afe2",
+      "sha256": "8a5463b5cf04dbb427e30d4589ecbc2faa90d673a8b9c89b54d0c6e84c3dfecd",
       "resources": [
         "references/artifact-selection.md"
       ]
     },
     {
       "name": "requirements-and-spec-writing",
-      "description": "Turns an ambiguous or large request into an agreed written specification before implementation, covering objective, users and use cases, requirements, non-goals, interfaces and data contracts, security and privacy, error and edge cases, acceptance criteria, open questions, alternatives considered, and rollout and rollback. Use when a request is vague, scope or acceptance criteria are unclear, or the user asks for a spec, requirements, or a design before coding begins.",
-      "version": "1.0.0",
+      "description": "Turns unclear requests into agreed, testable specifications before implementation. Use when a request is vague or large, scope/acceptance criteria are unclear, or a spec, requirements, or design is requested; not for decomposing an approved spec or a small well-defined edit.",
+      "version": "1.1.0",
       "license": "MIT",
       "tier": "core",
       "maturity": {
@@ -1061,15 +1061,15 @@
       },
       "path": "skills/requirements-and-spec-writing",
       "skillFile": "skills/requirements-and-spec-writing/SKILL.md",
-      "sha256": "95b907ce5d7ae5c2797c4a1a42d46cc532015e71eb0b2eeda752638238a6e8a5",
+      "sha256": "76a58287cb352493f6a3a58dceebc11848a240bf51cae9c2f3baa2d83b0c7899",
       "resources": [
         "assets/spec-template.md"
       ]
     },
     {
       "name": "security-review",
-      "description": "Performs threat-focused security review of a code change or component using STRIDE, checking authentication, authorization and ownership, input validation, injection, deserialization, SSRF, secrets handling, dependency and supply-chain risk, cryptography, and untrusted data including prompt injection. Use when reviewing a diff, feature, endpoint, or integration for vulnerabilities, threat modeling, or hardening before merge or release.",
-      "version": "1.0.0",
+      "description": "Reviews code changes and components for exploitable vulnerabilities using STRIDE, trust-boundary tracing, and evidence-ranked findings. Use when auditing security, threat modeling, or hardening endpoints and integrations against authorization, injection, SSRF, secrets, supply-chain, or prompt-injection risks; not for ordinary correctness review or skill authoring.",
+      "version": "1.1.0",
       "license": "MIT",
       "tier": "core",
       "maturity": {
@@ -1145,7 +1145,7 @@
       },
       "path": "skills/security-review",
       "skillFile": "skills/security-review/SKILL.md",
-      "sha256": "b42dc8e62e4fc02d0e341699e9d0b56169fc5742f98b2f00f1038101157f1bdb",
+      "sha256": "0e12cbecdc7dc720026e6b8317dea41e81d212c381df6aa3e5347920411ba668",
       "resources": [
         "references/secrets-and-dependencies.md",
         "references/threat-checklist.md"
@@ -1153,8 +1153,8 @@
     },
     {
       "name": "shadow-architecture",
-      "description": "Sets up and maintains a repository-owned .shadow graph, manages approved decision lifecycles and index or schema compatibility, supersedes accepted history, and renders reviewed records. Use when creating or migrating .shadow, recording approved architecture decisions, maintaining its index or schema, superseding accepted decisions, or generating derived views from reviewed records; not for discovering observations, imagining future states, or checking drift.",
-      "version": "2.0.0",
+      "description": "Maintains repository-owned .shadow graphs and approved decision history. Use when creating or migrating .shadow, recording approved decisions, maintaining indexes or schemas, superseding accepted history, or rendering reviewed records; not for observation discovery, future-state proposals, or drift checks.",
+      "version": "2.1.0",
       "license": "MIT",
       "tier": "core",
       "maturity": {
@@ -1232,20 +1232,20 @@
       },
       "path": "skills/shadow-architecture",
       "skillFile": "skills/shadow-architecture/SKILL.md",
-      "sha256": "c63ef395e52091f3ac1663370b9f64f1ee9ff2850082bdc64311e6523ba800fc",
+      "sha256": "ce9bb77d48fe74eb7515d070f5c61765e0e999c80ce3d5413d53d8b1b9fb55cd",
       "resources": [
         "references/shadow-conventions.md"
       ]
     },
     {
       "name": "shadow-dream",
-      "description": "Generates evidence-linked future-state architecture options and a reviewable proposal from Shadow observations and accepted constraints, including target states, tradeoffs, migration paths, rollback, risks, and a recommendation. Use when asked to dream, explore architecture options, compare future-state architecture, define a target state, or propose a migration path; excludes product requirements and specifications handled by requirements-and-spec-writing and implementation task planning handled by planning-and-task-breakdown.",
-      "version": "1.0.0",
+      "description": "Proposes evidence-linked future-state architecture options from Shadow observations and accepted constraints. Use when asked to dream, compare architecture options, define a target state, or propose migration and rollback; not for product specifications, implementation tasks, accepted decision recording, or implementation.",
+      "version": "1.1.0",
       "license": "MIT",
       "tier": "experimental",
       "maturity": {
-        "status": "verified",
-        "lastEvaluatedAt": "2026-08-23",
+        "status": "unverified",
+        "lastEvaluatedAt": null,
         "evidence": [
           {
             "type": "structural-validation",
@@ -1330,18 +1330,18 @@
       },
       "path": "skills/shadow-dream",
       "skillFile": "skills/shadow-dream/SKILL.md",
-      "sha256": "942f9aab639f79f55388b1a464bcb0a6e3c167563e8e164a299eb6b49334e85e",
+      "sha256": "e7edd83e48fc4713dfe683bb89d143881c9d17cce24b0f30af5fcdd922d04f4d",
       "resources": []
     },
     {
       "name": "shadow-drift",
-      "description": "Checks repository-owned .shadow decision graphs read-only, validates architecture drift, stale decisions, relations, evidence, indexes, and derived output, and reports aligned, drifted, stale, and unknown findings. Use when asked to check Shadow, validate .shadow, investigate architecture drift, or identify stale decisions; not for general completion verification, pull-request review, documentation maintenance, observation capture, speculative architecture, or repairing the graph.",
-      "version": "1.0.0",
+      "description": "Checks .shadow graph integrity and implementation drift read-only. Use when asked to check Shadow, validate .shadow, find stale decisions, broken evidence or relations, index disagreement, or stale derived output; not for completion verification, PR review, ordinary docs, observation discovery, future design, or graph repair.",
+      "version": "1.1.0",
       "license": "MIT",
       "tier": "experimental",
       "maturity": {
-        "status": "verified",
-        "lastEvaluatedAt": "2026-08-23",
+        "status": "unverified",
+        "lastEvaluatedAt": null,
         "evidence": [
           {
             "type": "structural-validation",
@@ -1426,7 +1426,7 @@
       },
       "path": "skills/shadow-drift",
       "skillFile": "skills/shadow-drift/SKILL.md",
-      "sha256": "e3a64f9f1ca7185f59a41622327f9d15343a86905fba370251842101cdb054f4",
+      "sha256": "22af5ac9f0e13e7acaf5eaa6d12b9f3ec3816cb4fe0ae0932993062cc00fa30d",
       "resources": [
         "references/reference-json-layout.md",
         "scripts/validate-shadow.mjs"
@@ -1434,13 +1434,13 @@
     },
     {
       "name": "shadow-observe",
-      "description": "Runs bounded, read-only Shadow repository analysis to generate evidence-linked candidate architecture observations, map boundaries and dependencies, and separate verified claims, inference, and unknowns. Use when asked to run Shadow, scan architecture, generate observations, or map boundaries or dependencies for a repository-owned .shadow graph; unlike codebase-exploration, it does not orient an unfamiliar codebase or locate change sites, and it does not create decisions, propose future state, or repair drift.",
-      "version": "1.0.0",
+      "description": "Generates bounded, evidence-linked candidate architecture observations. Use when asked to run Shadow, scan current architecture, or map boundaries and dependencies for .shadow; not for unfamiliar-codebase orientation, locating change sites, decision creation or repair, future states, or drift checks.",
+      "version": "1.1.0",
       "license": "MIT",
       "tier": "experimental",
       "maturity": {
-        "status": "verified",
-        "lastEvaluatedAt": "2026-08-23",
+        "status": "unverified",
+        "lastEvaluatedAt": null,
         "evidence": [
           {
             "type": "structural-validation",
@@ -1525,7 +1525,7 @@
       },
       "path": "skills/shadow-observe",
       "skillFile": "skills/shadow-observe/SKILL.md",
-      "sha256": "b0b072310597d2a4bb579a73db12e0bbae4df5ccb1ee0716759c10c0e721225d",
+      "sha256": "20f1c400d449454a83aba5bb72c571b3d6d20858c75571ff7fcb4a4f95107d51",
       "resources": [
         "references/observation-records.md",
         "scripts/inventory.mjs"
@@ -1619,8 +1619,8 @@
     },
     {
       "name": "systematic-debugging",
-      "description": "Diagnoses bugs, failing tests, build failures, crashes, exceptions, stack traces, and unexpected or intermittent behavior by reproducing the failure, capturing exact error output, isolating the root cause, and fixing the cause rather than the symptom. Use when something is broken, a test or build fails, output is wrong, or a defect must be traced to its origin.",
-      "version": "1.0.0",
+      "description": "Diagnoses failures by reproducing exact errors, testing one hypothesis at a time, and fixing the root cause. Use when a bug, failing test/build, crash, exception, wrong output, or intermittent failure needs tracing; not for reviewing a patch or auditing already-green tests.",
+      "version": "1.1.0",
       "license": "MIT",
       "tier": "core",
       "maturity": {
@@ -1696,7 +1696,7 @@
       },
       "path": "skills/systematic-debugging",
       "skillFile": "skills/systematic-debugging/SKILL.md",
-      "sha256": "bcb845888072accf79b00173628fa427d6013dbb3b59acd9677698d652debf7d",
+      "sha256": "b7ec5730bc5b7fc74b92d2a0b0677ceaa57a311c6efea54fc9358ae9376871a1",
       "resources": [
         "references/flaky-tests.md",
         "references/root-cause-tracing.md"
@@ -1704,8 +1704,8 @@
     },
     {
       "name": "test-driven-development",
-      "description": "Drives implementation with the red-green-refactor cycle by writing a failing behavior test first, confirming it fails for the expected reason, implementing the minimum code to pass, then refactoring while green. Use when adding a feature, fixing a bug with a reproducible case, changing behavior, or whenever tests should precede or guide the implementation.",
-      "version": "1.0.0",
+      "description": "Implements behavior through a verified red-green-refactor cycle. Use when adding a feature, fixing a reproducible bug, changing behavior, or explicitly working test-first; not for auditing existing test credibility or behavior-preserving cleanup alone.",
+      "version": "1.1.0",
       "license": "MIT",
       "tier": "core",
       "maturity": {
@@ -1781,7 +1781,7 @@
       },
       "path": "skills/test-driven-development",
       "skillFile": "skills/test-driven-development/SKILL.md",
-      "sha256": "76048b40deb1229b2bb795958cf8fe120d5542543fb43159691d13c874967d59",
+      "sha256": "40358a08ddfb8e1d62d8904ba4457682339d3450ffc3002fce698278f17a53f6",
       "resources": [
         "references/test-design.md"
       ]
@@ -1870,13 +1870,13 @@
     },
     {
       "name": "verification-discipline",
-      "description": "Audits and hardens existing tests and validation so green results are meaningful by detecting vacuous assertions, copied production logic, unbounded checks, unenforced invariants, and build impurity. Use when reviewing suspicious green tests, repairing test credibility, or hardening CI gates; do not use for ordinary test-first feature implementation or routine final gate selection.",
-      "version": "1.0.0",
+      "description": "Audits and hardens existing tests and CI gates against vacuous assertions, copied production logic, unbounded checks, unenforced invariants, and dirty builds. Use when investigating suspicious green tests, repairing test credibility, or enforcing validation; not for ordinary test-first features or routine completion checks.",
+      "version": "1.1.0",
       "license": "MIT",
       "tier": "experimental",
       "maturity": {
-        "status": "verified",
-        "lastEvaluatedAt": "2026-07-27",
+        "status": "unverified",
+        "lastEvaluatedAt": null,
         "evidence": [
           {
             "type": "structural-validation",
@@ -1960,7 +1960,7 @@
       },
       "path": "skills/verification-discipline",
       "skillFile": "skills/verification-discipline/SKILL.md",
-      "sha256": "44658725e815c8aac548151882d851edbd2f4de6fcbbbd1ae0c7c2564f600970",
+      "sha256": "5555609e0d43400a64483779a6faba853443245f18c9519e7b9841138317ad4a",
       "resources": [
         "references/invariant-and-gate-patterns.md",
         "references/red-green-proof.md"
@@ -1968,13 +1968,13 @@
     },
     {
       "name": "wayfinder-planning",
-      "description": "Navigates Wayfinder decision maps, fog of war, and frontier tickets for long-running ambiguous work through bounded autonomous decision loops and claim-first replanning. Use when charting, resuming, or replanning uncertainty across sessions; not for writing a static specification, decomposing an approved spec, executing agents, Git or pull-request work, or recording durable architecture.",
-      "version": "2.0.0",
+      "description": "Navigates Wayfinder decision maps, fog of war, and frontier tickets with bounded, claim-first autonomous loops. Use when charting, resuming, or replanning multi-session uncertainty; not for static specifications, approved-spec task breakdown, agent execution, Git/PR delivery, or durable architecture recording.",
+      "version": "2.1.0",
       "license": "MIT",
       "tier": "experimental",
       "maturity": {
-        "status": "verified",
-        "lastEvaluatedAt": "2026-08-29",
+        "status": "unverified",
+        "lastEvaluatedAt": null,
         "evidence": [
           {
             "type": "structural-validation",
@@ -2083,7 +2083,7 @@
       },
       "path": "skills/wayfinder-planning",
       "skillFile": "skills/wayfinder-planning/SKILL.md",
-      "sha256": "b2eeaa9d03506a34151fa11a9b1132bea95fbd4f8d20323cc62f0892c3f29cc8",
+      "sha256": "5f7e59f1cdee0cf32b7d55ef193030e1f9afd53e9faf1730ab769fc276291768",
       "resources": [
         "assets/map-template.md",
         "assets/ticket-template.md",
@@ -2096,8 +2096,8 @@
     },
     {
       "name": "web-research-and-verification",
-      "description": "Answers questions that depend on current external information by detecting the exact version in use, preferring primary and authoritative sources, corroborating with a second source, quoting and citing URLs, and separating verified fact from inference. Use when researching APIs, libraries, standards, release notes, CVEs, or any claim where accuracy and up-to-date sourcing matter, or when a source may be deprecated.",
-      "version": "1.0.0",
+      "description": "Verifies version-sensitive external claims with authoritative sources, risk-appropriate corroboration, and citations. Use when researching APIs, libraries, standards, release notes, CVEs, current facts, or deprecations; not for repository architecture exploration or implementation alone.",
+      "version": "1.1.0",
       "license": "MIT",
       "tier": "core",
       "maturity": {
@@ -2173,7 +2173,7 @@
       },
       "path": "skills/web-research-and-verification",
       "skillFile": "skills/web-research-and-verification/SKILL.md",
-      "sha256": "23f5ba5c4172249d92de4fcace76a5b2e2cdc09f9ae531f9e28b8d0de2e031d1",
+      "sha256": "5bc2619c0f5b823910163369e39403916bd8ee1fcf3622b17401186027f588c2",
       "resources": [
         "references/source-hierarchy.md"
       ]
@@ -2183,16 +2183,16 @@
   "packs": [
     {
       "name": "feature-delivery",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "description": "Carries an agreed feature from requirements through implementation review, documentation, and completion verification.",
       "skills": [
         {
           "name": "code-review",
-          "version": "1.0.0"
+          "version": "1.1.0"
         },
         {
           "name": "documentation-maintenance",
-          "version": "1.0.0"
+          "version": "1.1.0"
         },
         {
           "name": "planning-and-task-breakdown",
@@ -2200,11 +2200,11 @@
         },
         {
           "name": "requirements-and-spec-writing",
-          "version": "1.0.0"
+          "version": "1.1.0"
         },
         {
           "name": "test-driven-development",
-          "version": "1.0.0"
+          "version": "1.1.0"
         },
         {
           "name": "verification-before-completion",
@@ -2251,24 +2251,24 @@
     },
     {
       "name": "release-readiness",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "description": "Coordinates correctness, security, documentation, and final evidence checks before release-related Git work.",
       "skills": [
         {
           "name": "code-review",
-          "version": "1.0.0"
+          "version": "1.1.0"
         },
         {
           "name": "documentation-maintenance",
-          "version": "1.0.0"
+          "version": "1.1.0"
         },
         {
           "name": "git-and-pr-workflow",
-          "version": "1.0.0"
+          "version": "1.1.0"
         },
         {
           "name": "security-review",
-          "version": "1.0.0"
+          "version": "1.1.0"
         },
         {
           "name": "verification-before-completion",
@@ -2310,12 +2310,12 @@
     },
     {
       "name": "safe-refactor",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "description": "Guides a behavior-preserving refactor from codebase mapping and tests through review and completion verification.",
       "skills": [
         {
           "name": "code-review",
-          "version": "1.0.0"
+          "version": "1.1.0"
         },
         {
           "name": "codebase-exploration",
@@ -2323,11 +2323,11 @@
         },
         {
           "name": "refactoring-and-dead-code-removal",
-          "version": "1.0.0"
+          "version": "1.1.0"
         },
         {
           "name": "test-driven-development",
-          "version": "1.0.0"
+          "version": "1.1.0"
         },
         {
           "name": "verification-before-completion",
@@ -2369,24 +2369,24 @@
     },
     {
       "name": "shadow-architecture-suite",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "description": "Carries a full Shadow architecture lifecycle from current-state observations through approved decision recording and read-only drift validation.",
       "skills": [
         {
           "name": "shadow-architecture",
-          "version": "2.0.0"
+          "version": "2.1.0"
         },
         {
           "name": "shadow-dream",
-          "version": "1.0.0"
+          "version": "1.1.0"
         },
         {
           "name": "shadow-drift",
-          "version": "1.0.0"
+          "version": "1.1.0"
         },
         {
           "name": "shadow-observe",
-          "version": "1.0.0"
+          "version": "1.1.0"
         }
       ],
       "handoffs": [

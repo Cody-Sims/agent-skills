@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "name": "systematic-debugging-behavior",
+  "skill": "systematic-debugging",
+  "cases": [
+    {
+      "id": "recover-readiness-before-diagnosis",
+      "prompt": "The smallest reproduction is npm run test:parser -- --case empty. It exits 127 with the exact error 'sh: tsx: command not found'; no parser assertion executes. The lockfile already declares tsx and documented setup is npm ci, which is authorized but has not run. A teammate recommends adding a catch to the parser instead. Explain the next diagnostic action and what evidence is needed for a fix verdict.",
+      "assertions": [
+        { "id": "identifies-readiness", "type": "regex", "value": "prerequisite|readiness|missing.*(?:tool|dependency)|environment", "flags": "i" },
+        { "id": "preserves-reproduction", "type": "contains", "value": "npm run test:parser -- --case empty" }
+      ],
+      "humanReview": [
+        { "id": "no-speculative-parser-edit", "question": "Does it identify the missing declared tool as a readiness failure, restore only the authorized documented prerequisite, rerun the same reproduction, and avoid treating a missing executable as proof of a parser bug?" },
+        { "id": "honest-stop-and-verification", "question": "Does it preserve the exact error/exit evidence, stop if setup is unavailable, and require a confirmed application cause plus regression and original-reproduction results before claiming a fix?" }
+      ]
+    },
+    {
+      "id": "bounded-flake-and-shared-checkout",
+      "prompt": "CI intermittently reports expected total 30, received 31. The test passes alone but fails after another case writes a module-level cache; the failing seed and order are recorded. Investigation is limited to five runs. The current checkout contains concurrent uncommitted edits, and someone suggests running git bisect in it or adding retries. Describe a falsifiable investigation and the evidence needed to fix and verify this flake.",
+      "assertions": [
+        { "id": "bounded-reproduction", "type": "regex", "value": "bound|budget|five|5", "flags": "i" }
+      ],
+      "humanReview": [
+        { "id": "causal-and-bounded", "question": "Does it test one cache-leak hypothesis with the captured seed/order and boundary observations, respect the five-run budget, and report an unreproduced or residual flake rather than looping indefinitely or hiding it with retries?" },
+        { "id": "safe-checkout-and-regression", "question": "Does it avoid bisection in the shared dirty checkout, require any history search to use an authorized isolated checkout, remove diagnostic probes, and demand expected regression red/green plus the original reproduction rather than one incidental green run?" }
+      ]
+    }
+  ]
+}

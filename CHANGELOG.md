@@ -13,6 +13,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- Streamlined the remaining 20 skills with scoped workflows, conditional
+  reference reads, bounded outputs, and explicit stop/handoff contracts.
+  Retained safety, ownership, evidence, and lifecycle invariants; added behavior
+  and routing scenarios without claiming unmeasured model or usage uplift.
+- Updated exact-version composition dependencies: `feature-delivery`,
+  `safe-refactor`, and `release-readiness` are 1.2.0;
+  `shadow-architecture-suite` is 1.1.0. Updated executable install examples.
+- Marked revised experimental skills' maturity as unverified pending evidence
+  for their new trees. Preserved historical artifacts and approval records;
+  did not relabel stale approvals as current or change declared tiers.
 - Shortened `codebase-exploration`, `planning-and-task-breakdown`,
   `verification-before-completion`, and `skill-creator` to explicit, scoped
   workflows suitable for GPT models in Copilot. Added exploration stop rules,

@@ -1,46 +1,47 @@
 # Fleet Setup Reference
 
-Use this reference when creating, preparing, or prompting isolated worker
-worktrees.
+Read only for authorized worktree setup or worker dispatch.
 
 ## Preconditions
 
-- Pick an integration branch that already contains the common base for the wave.
-- Confirm the current checkout is clean or that any uncommitted work belongs to
-  the current operator.
-- Verify ignored prerequisites that every worktree needs. Decide explicitly
-  whether dependency directories are shared or isolated before running a package
-  manager.
+1. Verify the integration branch/common base and live-checkout ownership. Setup
+   does not require switching, stashing, or committing primary-checkout work.
+2. Choose approved paths outside the primary working tree, available branch names,
+   and one writer for shared Git administration.
+3. Establish ignored prerequisites and resource ownership before launch: dependency
+   manifests, generated outputs, caches, databases, ports, and CPU-heavy checks.
 
 ## Worktree creation
 
-Run from the repository that owns the integration branch:
+Run from the owning repository, after verifying the variables and branch base:
 
 ```bash
 git worktree list
 git worktree add -b "$stream_branch" "$worktree_path" "$integration_branch"
 ```
 
-Name branches by stream, not by agent identity, for example
-`migration/battle-effects` or `agent/import-cycle-guard`.
+Name branches by stream, for example `migration/battle-effects`. Never force a
+branch already checked out elsewhere.
 
 ## Share ignored prerequisites deliberately
 
-If the integration checkout has a usable ignored dependency directory and the
-stream should reuse it, link and verify it explicitly. For a Node.js repository:
+Reuse a dependency directory only if manifests/lockfiles match and tools will not
+mutate it. A symlink is sharing, not isolation. For approved Node.js reuse, verify
+the source exists and destination is absent before linking:
 
 ```bash
 ln -s "$(pwd)/node_modules" "$worktree_path/node_modules"
 test -L "$worktree_path/node_modules" && readlink "$worktree_path/node_modules"
 ```
 
-If a stream intentionally needs an isolated install, document that choice before
-running package-manager commands. Some package managers can replace a dependency
-symlink with a real directory, which changes isolation and cleanup expectations.
+Isolate dependencies when manifests differ or a tool writes to them. Install only
+when repository setup requires it, manifests changed, or checks report missing
+dependencies; never concurrently install through shared symlinks. Package managers
+may replace symlinks, so recheck setup after an authorized install.
 
 ## Ownership partitioning
 
-Prefer directory-level ownership:
+Prefer exclusive directory/file ownership:
 
 | Stream type | Example ownership boundary |
 |---|---|
@@ -49,20 +50,18 @@ Prefer directory-level ownership:
 | Test infrastructure | `tests/architecture/**` and one named validation script |
 | Documentation append | Orchestrator-owned changelog and release-note entries |
 
-For shared files, partition inside the file:
-
-- One stream may own only the scripts section in a package manifest.
-- Another stream may own only dependencies in the same manifest.
-- A worker may make one exact import-export line in an index file only when the
-  prompt names that line.
+Keep shared manifests/indexes/changelogs with the coordinator. If section-level
+exceptions are necessary, name exact sections/lines and serialize edits; workers
+report all cross-boundary needs rather than broadening their own scope.
 
 ## Worker prompt template
 
 ```text
 You are working in worktree $worktree_path on branch $stream_branch based on
-$integration_branch. Own only these paths or sections: $ownership. Do not edit
-other files. If you discover a required cross-boundary change, report it instead
-of making it unless this prompt names the exact boundary edit. Follow the stated
-dependency setup. Run $checks and report validation, changed files, conflicts,
-and follow-up risks.
+$integration_branch. Complete $objective; stop at $acceptance_or_budget.
+Own only $ownership; do not edit other files or spawn additional workers.
+Report required cross-boundary changes unless explicitly authorized here.
+Allowed Git/remote actions: $actions. Dependency/resource setup: $setup.
+Run $scoped_checks; do not run coordinator gates or race shared outputs.
+Report changed paths, commit tip, exact check/results, conflicts, and blockers.
 ```

@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "skills": {
     "agent-tool-interface-design": {
-      "status": "verified",
-      "lastEvaluatedAt": "2026-08-24",
+      "status": "unverified",
+      "lastEvaluatedAt": null,
       "evidence": [
         {
           "type": "structural-validation",
@@ -20,8 +20,8 @@
       ]
     },
     "copilot-cloud-agent": {
-      "status": "verified",
-      "lastEvaluatedAt": "2026-07-27",
+      "status": "unverified",
+      "lastEvaluatedAt": null,
       "evidence": [
         {
           "type": "structural-validation",
@@ -38,8 +38,8 @@
       ]
     },
     "parallel-worktree-delivery": {
-      "status": "verified",
-      "lastEvaluatedAt": "2026-07-27",
+      "status": "unverified",
+      "lastEvaluatedAt": null,
       "evidence": [
         {
           "type": "structural-validation",
@@ -56,8 +56,8 @@
       ]
     },
     "shadow-dream": {
-      "status": "verified",
-      "lastEvaluatedAt": "2026-08-23",
+      "status": "unverified",
+      "lastEvaluatedAt": null,
       "evidence": [
         {
           "type": "structural-validation",
@@ -74,8 +74,8 @@
       ]
     },
     "shadow-drift": {
-      "status": "verified",
-      "lastEvaluatedAt": "2026-08-23",
+      "status": "unverified",
+      "lastEvaluatedAt": null,
       "evidence": [
         {
           "type": "structural-validation",
@@ -92,8 +92,8 @@
       ]
     },
     "shadow-observe": {
-      "status": "verified",
-      "lastEvaluatedAt": "2026-08-23",
+      "status": "unverified",
+      "lastEvaluatedAt": null,
       "evidence": [
         {
           "type": "structural-validation",
@@ -110,8 +110,8 @@
       ]
     },
     "verification-discipline": {
-      "status": "verified",
-      "lastEvaluatedAt": "2026-07-27",
+      "status": "unverified",
+      "lastEvaluatedAt": null,
       "evidence": [
         {
           "type": "structural-validation",
@@ -128,8 +128,8 @@
       ]
     },
     "wayfinder-planning": {
-      "status": "verified",
-      "lastEvaluatedAt": "2026-08-29",
+      "status": "unverified",
+      "lastEvaluatedAt": null,
       "evidence": [
         {
           "type": "structural-validation",

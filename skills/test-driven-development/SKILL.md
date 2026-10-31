@@ -1,101 +1,64 @@
 ---
 name: test-driven-development
-description: Drives implementation with the red-green-refactor cycle by writing a failing behavior test first, confirming it fails for the expected reason, implementing the minimum code to pass, then refactoring while green. Use when adding a feature, fixing a bug with a reproducible case, changing behavior, or whenever tests should precede or guide the implementation.
+description: "Implements behavior through a verified red-green-refactor cycle. Use when adding a feature, fixing a reproducible bug, changing behavior, or explicitly working test-first; not for auditing existing test credibility or behavior-preserving cleanup alone."
 license: MIT
 metadata:
-  version: "1.0.0"
-  author: Cody-Sims
-  tier: core
+  version: "1.1.0"
+  author: "Cody-Sims"
+  tier: "core"
 ---
 
 # Test-Driven Development
 
-## Goal
+## Contract
 
-Produce correct, well-specified code by writing a test for observable behavior
-before the implementation, then letting the failing test drive the smallest
-change that satisfies it.
+Inputs: agreed behavior/acceptance criteria, existing test conventions, and the
+repository runner. Write a behavior test and observe its expected failure
+**before production implementation**. An unobserved red step is not TDD evidence.
 
-## Core rule
+## Workflow
 
-Write the test first and watch it fail before writing production code. A test
-you never saw fail proves nothing; it may pass for the wrong reason or test
-nothing at all.
+1. Read applicable instructions, the target interface, and nearby tests. Choose
+   one small observable behavior. Use existing test files/tooling and the lowest
+   level that proves it: unit for logic, integration for boundary collaboration,
+   end-to-end only for critical flows. No automatic worker or broad repository
+   exploration is needed for a known test/change site.
+2. **Red:** write the smallest public-interface test for that behavior. Run the
+   focused case with the repository runner and inspect the failure. It must fail
+   because behavior is missing, not because of syntax, imports, missing tools,
+   or an unrelated failure. Resolve authorized setup/test defects and rerun;
+   do not implement production behavior until the intended red is observed.
+3. **Green:** implement only what the test requires. Run the focused case, then
+   affected surrounding tests, and inspect actual results. A failure means the
+   cycle is not green; do not weaken the assertion to obtain a pass.
+4. **Refactor:** improve names, structure, or duplication without new behavior.
+   Rerun affected tests after each structural edit. Additional behavior starts
+   another red step. Repeat one behavior at a time.
+5. Inspect the diff and run final affected tests plus repository-required gates.
+   Combine related selectors; do not rerun an unchanged full suite merely for
+   narration or handoff. Preserve red/green evidence for each behavior and report
+   unavailable validation rather than assuming it passes.
 
-## The cycle
+## Test quality
 
-### Red
+- Assert observable outcomes, not internal calls unless the interaction is the
+  contract. Use specific values and one clear behavior per test; cover relevant
+  branches, boundary/empty inputs, and error cases.
+- Seed/reset randomness, inject time, reset shared/global state, and await
+  observable conditions with bounded timeouts instead of fixed sleeps.
+- Avoid assertions that restate implementation or cannot realistically fail.
+  Do not test libraries/language features, trivial getters/constants/pass-through
+  code, or private structure that should remain free to change.
+- Read [test design](references/test-design.md) when choosing levels, isolating
+  nondeterminism, or assessing assertions/coverage needs deeper guidance.
 
-1. Choose one behavior to specify. Keep it small and observable.
-2. Write the smallest test that asserts that behavior through the public
-   interface, not the internals.
-3. Run the test with the repository's test command.
-4. Confirm it fails, and confirm it fails for the expected reason: the behavior
-   is missing, not a typo, import error, or unrelated failure. Read the failure
-   message to verify.
+## Stop and output
 
-### Green
+Stop if intended red or required green cannot be established. Strict TDD may be
+skipped only for generated code, throwaway exploration, or configuration-only
+changes **and** only with repository-policy or user permission; state the
+exception and remaining validation. Never silently skip ordinary behavior tests.
 
-1. Write the minimum production code that makes the test pass. Resist adding
-   behavior the test does not require.
-2. Run the focused test and confirm it passes.
-3. Run the affected surrounding tests to confirm nothing regressed.
-
-### Refactor
-
-1. Improve names, structure, and duplication while the tests stay green.
-2. Do not add behavior during refactor; that is a new Red step.
-3. Re-run the tests after each structural change.
-
-Repeat the cycle one behavior at a time.
-
-## Choosing the test level
-
-- Prefer the lowest level that can observe the behavior. Unit tests for logic
-  and branching; integration tests for collaboration across boundaries;
-  end-to-end tests sparingly for critical user flows.
-- Do not write a slow, broad test when a fast, narrow one proves the same thing.
-- Test through public interfaces so tests survive refactoring.
-
-## Deterministic tests
-
-Nondeterministic tests are worse than no tests because they train people to
-ignore failures.
-
-- Seed every random source and reset it before each test.
-- Do not depend on the wall clock, timezone, or real dates; inject the time.
-- Reset singletons, shared caches, and global state between tests.
-- Wait for conditions, not fixed durations.
-
-See [references/test-design.md](references/test-design.md) for detail.
-
-## Meaningful assertions
-
-- Assert the actual observable outcome, not that a function was merely called.
-- Prefer one clear behavioral assertion per test over many incidental ones.
-- Avoid ceremonial assertions that restate the implementation or always pass.
-- A useful test can fail; if no realistic change could make it fail, delete it.
-
-## What not to test
-
-- Third-party libraries and language features.
-- Trivial getters, constants, and pass-through code with no logic.
-- Exact internal structure that should be free to change during refactoring.
-
-Concentrate tests on behavior, branching, edge cases, and error handling.
-
-## Exceptions
-
-Skip strict TDD only for generated code, throwaway exploration, or
-configuration-only changes, and only when repository policy or the user allows
-it. Do not decide silently to skip tests for ordinary behavior changes.
-
-## Output
-
-Report the behaviors specified, the failing-then-passing evidence for each, and
-the final passing run of the affected tests.
-
-## References
-
-- [references/test-design.md](references/test-design.md) — test levels,
-  determinism techniques, assertion quality, and coverage judgment.
+Report behaviors specified, command/failure evidence for expected red, green
+results, final affected-test/gate results, and blockers. Do not claim a cycle
+completed when it failed for the wrong reason.

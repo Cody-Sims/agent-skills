@@ -1,91 +1,63 @@
 ---
 name: code-review
-description: Reviews a diff, pull request, or set of staged changes for correctness, tests, error and edge cases, security, performance, readability, and architectural fit, then reports severity-ranked, actionable findings with file and line references. Use when reviewing a PR, examining staged or unstaged changes, giving feedback on a patch, or deciding whether a change is safe to merge.
+description: "Reviews diffs for correctness, tests, edge cases, security, performance, and maintainability. Use when reviewing a PR, patch, or staged/unstaged changes for merge readiness; stays read-only, unlike implementation or dedicated vulnerability audits."
 license: MIT
 metadata:
-  version: "1.0.0"
-  author: Cody-Sims
-  tier: core
+  version: "1.1.0"
+  author: "Cody-Sims"
+  tier: "core"
 ---
 
 # Code Review
 
-## Goal
+## Contract
 
-Judge whether a change is correct, safe, and maintainable, and return specific
-findings the author can act on. Verify the code itself rather than trusting the
-description.
-
-## Core rule
-
-Review what the diff actually does, not what the title or summary claims it
-does. Confirm each claim against the code. Descriptions drift from
-implementations.
+Inputs: the diff or comparison range, intended behavior, and repository review
+rules. Output: an evidence-backed merge verdict, not an implementation.
+Stay read-only; do not fix, stage, or rewrite code during review.
 
 ## Workflow
 
-1. Establish the change set and intent. Read the diff in full and the stated
-   purpose. Determine what behavior is meant to change and what must stay the
-   same.
-2. Confirm scope. Flag unrelated changes, drive-by edits, and generated or
-   vendored files mixed into the diff. A change that does more than it claims is
-   harder to review and to revert.
-3. Review against the axes below, in order of impact.
-4. Verify claims. Trace the code paths that the description says it changed.
-   Check that tests actually exercise the new behavior and would fail without
-   the change.
-5. Collect findings with exact `file:line` locations, evidence, and a concrete
-   recommended correction.
-6. Rank by severity and separate blocking from non-blocking.
-7. Report the verdict, the findings, what you verified, and residual risk.
+1. Read applicable instructions, the stated intent, and the full diff. Confirm
+   the range and what must change or remain compatible. Judge code, not claims
+   in the PR description. Flag unrelated, generated, or vendored changes.
+2. Start with changed files and nearby tests, callers, and contracts. Use symbol
+   tools or path-scoped searches; widen only for a concrete dependency or risk.
+   Read omitted diff sections rather than treating truncated output as complete.
+   A bounded review needs no automatic worker launch or repository-wide
+   architecture audit.
+3. Assess, in impact order:
+   - Correctness: normal/boundary inputs, null/empty state, ordering, concurrency.
+   - Tests: observable outcomes, meaningful assertions, edge/error cases, and
+     whether a test would fail without the change.
+   - Failures: validation, propagation, cleanup, and consistent partial state.
+   - Security: untrusted sinks, authorization, secrets, unsafe deserialization.
+   - Performance: realistic hot-path, N+1, quadratic, or unbounded-growth risks.
+   - Maintainability and architecture: clarity, duplication, existing layering,
+     public-contract compatibility, and coupling at the changed boundary.
+   Read [the review checklist](references/review-checklist.md) when an axis needs
+   deeper checks; apply only relevant items.
+4. Trace each suspected defect to evidence and an exact `file:line`. Inspect
+   whether tests exercise the claimed behavior; run safe targeted checks when
+   they resolve uncertainty, plus any repository-required review gates.
+   Do not mutate code to prove a test fails without authorization. Distinguish
+   inspected code from executed checks; never invent results.
+5. Report only actionable findings. Exclude formatter-owned style, personal
+   preferences, and untouched code unless directly implicated. Recommend a
+   concrete correction and state impact, confidence, and blocking status.
 
-## Review axes
+## Stop and output
 
-Assess in this order; correctness first because it dominates.
+Stop when the full change and relevant risks are assessed. If scope, access, or
+validation is missing, identify the unreviewed portion and do not imply approval.
+Report:
 
-1. Correctness: Does it do what it intends across normal and boundary inputs? Look
-   for off-by-one, wrong conditionals, unhandled null or empty cases, incorrect
-   assumptions about ordering, and concurrency hazards.
-2. Tests: Do tests exist for the new behavior, assert observable outcomes, and
-   fail without the change? Look for missing edge and error cases and for tests
-   that assert nothing meaningful.
-3. Error and edge cases: Are failures handled or surfaced? Look for swallowed
-   errors, missing validation, and resources not released on the failure path.
-4. Security: Untrusted input reaching a sink, missing authorization checks,
-   injection, secrets in code or logs, and unsafe deserialization. See
-   [references/review-checklist.md](references/review-checklist.md).
-5. Performance: Accidental quadratic loops, work inside hot paths, unbounded
-   growth, and N+1 access patterns. Flag only realistic impact, not speculation.
-6. Readability and maintainability: Unclear names, dead code, duplicated logic,
-   and functions doing too much. Comment only what affects correctness or intent.
-7. Architectural fit: Does the change respect existing boundaries, layering, and
-   conventions, or does it bypass them and add coupling?
+- Verdict: **approve**, **request changes**, or **block**.
+- Findings as `file:line — problem; impact; correction`, ranked **Critical**
+  (incorrect behavior, data loss, security hole; blocking), **Required**
+  (other pre-merge defects or missing necessary tests; blocking), or **Optional**
+  (non-defect improvement; non-blocking).
+- Commands/results and code paths actually checked, plus residual risk.
 
-## What not to comment on
-
-- Formatting, spacing, quote style, and import order handled by an automatic
-  formatter or linter. Let the tool own these.
-- Personal style preferences with no correctness or clarity impact.
-- Rewrites of code the change did not touch, unless directly relevant.
-
-## Severity ranking
-
-- Critical: a defect that causes incorrect behavior, data loss, or a security
-  hole. Blocking.
-- Required: a real problem that must be fixed before merge, such as a missing
-  test for new logic or an unhandled error path. Blocking.
-- Optional: an improvement that is not a defect. Non-blocking; label it as such.
-
-State each finding as `file:line` — the problem, its impact, and the fix.
-
-## Output
-
-Report a verdict of approve, request changes, or block. Then list findings under
-Critical, Required, and Optional headings. Then state what you verified, such as
-commands run or code paths traced, and any residual risk you could not confirm.
-
-## References
-
-- [references/review-checklist.md](references/review-checklist.md) — per-axis
-  checks for correctness, tests, error handling, security, performance,
-  readability, and architecture.
+Use the severity headings for findings; omit empty headings and speculative
+filler. A clean review still needs a verdict and verification limits.

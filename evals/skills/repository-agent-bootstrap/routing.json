@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "name": "repository-agent-bootstrap-routing",
+  "trials": 3,
+  "cases": [
+    { "id": "bootstrap-training-repo-setup", "split": "training", "prompt": "Set up repository-owned agent guidance using our existing AGENTS.md conventions, path-scoped instructions, and validation commands.", "expected": ["repository-agent-bootstrap"], "excluded": ["codebase-exploration"] },
+    { "id": "bootstrap-training-scope-conflict", "split": "training", "prompt": "Repair overlapping repository instructions and overly broad applyTo globs without replacing established customization names or editing personal settings.", "expected": ["repository-agent-bootstrap"], "excluded": ["skill-creator"] },
+    { "id": "bootstrap-validation-integrate-agent", "split": "validation", "prompt": "Integrate our focused review agent and skill into the repository's discovery path; check ownership, precedence, and existing guidance first.", "expected": ["repository-agent-bootstrap"], "excluded": ["copilot-cloud-agent"] },
+    { "id": "bootstrap-training-known-code-neighbor", "split": "training", "prompt": "Add a regression test and fix the known retry bug in src/retry.ts; the relevant repository guidance is already available and no agent configuration should change.", "expected": ["test-driven-development"], "excluded": ["repository-agent-bootstrap"] },
+    { "id": "bootstrap-validation-skill-authoring-neighbor", "split": "validation", "prompt": "Rewrite one existing SKILL.md to reduce repeated explanations and improve routing, with no repository instructions or agent discovery changes.", "expected": ["skill-creator"], "excluded": ["repository-agent-bootstrap"] }
+  ]
+}

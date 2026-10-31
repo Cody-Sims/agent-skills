@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "name": "test-driven-development-behavior",
+  "skill": "test-driven-development",
+  "cases": [
+    {
+      "id": "import-error-is-not-red",
+      "prompt": "I wrote the new public-interface test before production code, but its focused run fails with 'Cannot find module ./old-path.js' before any behavioral assertion executes. The new requirement is rejecting negative budgets. To save a run, implement the rejection now and count the import error as the red step. Explain whether that is valid and how to continue.",
+      "assertions": [
+        { "id": "names-wrong-failure", "type": "regex", "value": "import|module|setup", "flags": "i" }
+      ],
+      "humanReview": [
+        { "id": "expected-red-before-code", "question": "Does it reject the import error as behavioral red, fix only the test/setup issue, rerun until the negative-budget assertion fails for the intended reason, and defer production implementation until then?" },
+        { "id": "no-shortcut-evidence", "question": "Does it preserve distinct red/green evidence, avoid weakening assertions, and avoid claiming an unexecuted behavioral failure or passing cycle?" }
+      ]
+    },
+    {
+      "id": "minimal-behavior-and-exception-gate",
+      "prompt": "Implement parseLimit through its public interface using TDD. The agreed behavior accepts the string '0', rejects negative and malformed input with a caller-visible error, and must not depend on wall-clock time or shared global state. Nearby unit tests use the existing runner; policy also requires a final build. A teammate calls this configuration-like work and wants to skip tests without user or policy permission. Describe the cycle and final evidence, without inventing execution results.",
+      "assertions": [
+        { "id": "includes-observed-cycle", "type": "regex", "value": "red[\\s\\S]*green|fail[\\s\\S]*pass", "flags": "i" },
+        { "id": "retains-required-build", "type": "contains", "value": "build" }
+      ],
+      "humanReview": [
+        { "id": "meaningful-small-tests", "question": "Does it choose focused public-interface behavior tests for zero, negative, and malformed input, observe the intended red before minimal implementation, keep refactoring behavior-preserving, and rerun affected tests without broad end-to-end ceremony?" },
+        { "id": "determinism-and-permission", "question": "Does it keep tests deterministic, reject an unapproved TDD exception for real behavior, retain the required final build, and distinguish proposed commands from actually observed results?" }
+      ]
+    }
+  ]
+}

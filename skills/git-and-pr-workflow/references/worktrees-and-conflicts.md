@@ -1,78 +1,58 @@
 # Worktrees and Conflicts
 
-Detailed guidance for isolating parallel work with worktrees and for resolving
-merge and rebase conflicts safely.
+Read for worktree isolation, conflicts, or recovery; do not run every section.
 
 ## Worktrees
 
-A worktree checks out an additional branch into its own directory that shares the
-same repository. Use one to work on a second branch without stashing, switching,
-or disturbing the current checkout.
+A worktree isolates a second checkout without stashing or switching live work.
+Use it for review/testing, independent development, or authorized history work.
 
-### When to use
-
-* Reviewing or testing another branch while your current work stays in place.
-* Running a long build or test suite on one branch while editing another.
-* Isolating a risky rebase or conflict resolution from your main checkout.
-
-### Commands
-
-1. Create a worktree for a new branch:
-   `git worktree add ../<dir> -b <branch>`.
-2. Create a worktree for an existing branch:
-   `git worktree add ../<dir> <branch>`.
-3. List active worktrees: `git worktree list`.
-4. Remove a worktree when finished: `git worktree remove ../<dir>`.
-5. Prune records of manually deleted worktree directories:
-   `git worktree prune`.
-
-### Rules
-
-* A branch can be checked out in only one worktree at a time.
-* Keep worktree directories outside the main working tree so they are never staged
-  or committed by accident.
-* Remove a worktree before deleting its branch.
+1. Inspect `git worktree list`; verify the base and approved destination. A branch
+   can be checked out in only one worktree. Never override that protection.
+2. Create a new branch with `git worktree add -b <branch> <path> <base>`, or an
+   available existing branch with `git worktree add <path> <branch>`.
+3. Keep destinations outside the primary working tree and within authorized write
+   boundaries. Worktrees share repository metadata, not isolated remote state.
+4. Isolate writable validation outputs, caches, ports, and dependencies, or
+   serialize their use. Never run concurrent installers on shared dependencies.
+5. Before authorized cleanup, inspect tracked, untracked, and ignored work and
+   verify no unique/unpushed work remains. Remove the clean owned worktree normally
+   with `git worktree remove <path>` before `git branch -d <branch>`; no force.
+6. Use `git worktree prune` only for confirmed obsolete records of directories
+   already removed, not as routine cleanup of another owner's worktrees.
 
 ## Resolving Conflicts
 
-A conflict occurs when two changes touch the same lines and Git cannot combine
-them automatically. Resolution requires understanding both intents, not just
-picking a side.
-
-### Procedure
-
-1. List conflicted files with `git status`.
-2. Open each file. Git marks conflicts as:
+1. Read `git status` to identify the current operation and conflicted paths.
+   Do not start a second operation. Open each conflict:
 
    ```
    <<<<<<< HEAD
-   your change
+   current side
    =======
-   incoming change
+   other side
    >>>>>>> other
    ```
 
-3. Decide what the correct result is. Often it combines both sides rather than
-   discarding one. Preserve the behavior each side intended.
-4. Remove every conflict marker and leave only the reconciled content.
-5. Stage the resolved file by explicit path: `git add path/to/file`.
-6. Run the repository's test command to confirm the resolution behaves correctly.
-7. Continue the operation:
+2. Inspect each intent and reconcile behavior, not just markers. `git show :2:path`
+   and `git show :3:path` expose available conflict stages. During rebase,
+   "ours"/"theirs" do not mean the same branch roles as an ordinary merge; inspect
+   commits rather than assuming a side is your original change.
+3. Remove markers, stage resolved owned paths explicitly, review the full staged
+   diff, and validate affected behavior plus repository-required gates.
+4. Continue only the matching operation:
    * Rebase: `git rebase --continue`.
    * Merge: `git merge --continue`.
    * Cherry-pick: `git cherry-pick --continue`.
 
 ### Recovering
 
-* Abort and return to the pre-operation state when the resolution is unclear:
-  `git rebase --abort`, `git merge --abort`, or `git cherry-pick --abort`.
-* Inspect both sides of a specific file during resolution:
-  `git show :2:path` for your side and `git show :3:path` for the incoming side.
-* After an accidental bad rewrite, recover the previous tip from `git reflog`,
-  which records where branches pointed recently.
+1. If resolution is unclear, preserve new work and use the matching `--abort`
+   only when authorized; do not blindly reset or discard edits made mid-operation.
+2. After a bad rewrite, inspect `git reflog` and preserve the previous tip with
+   an authorized recovery branch before deciding how to restore it.
 
 ### Reducing Conflicts
 
-* Integrate the base branch frequently so divergence stays small.
-* Keep commits small and focused, which localizes conflicts.
-* Rebase an unshared branch onto the latest base before opening a pull request.
+Keep commits focused. Integrate the base when needed, not automatically at every
+handoff. Rebase only local-only history; merge to preserve published/shared commits.

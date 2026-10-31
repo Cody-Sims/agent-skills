@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "name": "external-skill-review-routing",
+  "trials": 3,
+  "cases": [
+    { "id": "external-training-install-candidate", "split": "training", "prompt": "Vet a third-party gh skill install candidate for license, provenance, scripts, permissions, and secret access before I approve installation.", "expected": ["external-skill-review"], "excluded": ["repository-agent-bootstrap"] },
+    { "id": "external-training-complete-update", "split": "training", "prompt": "Review the complete old and new trees of an external agent skill update, including dotfiles and symlinks, and pin the acceptable revision.", "expected": ["external-skill-review"], "excluded": ["skill-creator"] },
+    { "id": "external-validation-untrusted-source", "split": "validation", "prompt": "An unfamiliar skill repository includes opaque binaries, hidden Unicode, and a downloader. Decide whether we may stage it without executing anything.", "expected": ["external-skill-review"], "excluded": ["code-review"] },
+    { "id": "external-training-first-party-neighbor", "split": "training", "prompt": "Author a first-party skill for our catalog with portable frontmatter, a concise workflow, and routing examples; there is no external installation candidate.", "expected": ["skill-creator"], "excluded": ["external-skill-review"] },
+    { "id": "external-validation-code-neighbor", "split": "validation", "prompt": "Review this application pull request for behavioral regressions, error handling, and test gaps rather than vetting a downloaded skill.", "expected": ["code-review"], "excluded": ["external-skill-review"] }
+  ]
+}

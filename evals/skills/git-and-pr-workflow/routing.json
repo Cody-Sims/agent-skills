@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "name": "git-and-pr-workflow-routing",
+  "trials": 3,
+  "cases": [
+    { "id": "training-commit", "split": "training", "prompt": "Stage only my owned files and create an atomic commit on the existing task branch without disturbing another worker's edits.", "expected": ["git-and-pr-workflow"], "excluded": ["parallel-worktree-delivery"] },
+    { "id": "training-conflicts", "split": "training", "prompt": "Resolve this rebase conflict and tidy the local-only commits before opening a pull request.", "expected": ["git-and-pr-workflow"], "excluded": ["code-review"] },
+    { "id": "validation-pr-cleanup", "split": "validation", "prompt": "Update this PR description with verification results, then safely clean up my merged branch and worktree.", "expected": ["git-and-pr-workflow"], "excluded": ["copilot-cloud-agent"] },
+    { "id": "training-review-only", "split": "training", "prompt": "Review this pull request diff for correctness and report actionable findings; do not commit, push, or change branches.", "expected": ["code-review"], "excluded": ["git-and-pr-workflow"] },
+    { "id": "validation-local-fleet", "split": "validation", "prompt": "Deliver three independent streams using local agents on separate worktree branches, with ownership partitions and per-merge gates.", "expected": ["parallel-worktree-delivery"], "excluded": ["git-and-pr-workflow"] }
+  ]
+}

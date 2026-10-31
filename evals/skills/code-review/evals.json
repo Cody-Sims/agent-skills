@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "name": "code-review-behavior",
+  "skill": "code-review",
+  "cases": [
+    {
+      "id": "boundary-defect-read-only",
+      "prompt": "Review this entire staged patch for merge readiness without editing files. The unchanged contract permits requests only when remaining quota is greater than zero. src/quota.js now contains line 1: export function allowed(remaining) {; line 2: return remaining >= 0; line 3: }. The only test asserts allowed(1) is true. No repository review commands are required. Report your verdict, evidence, and verification limits.",
+      "assertions": [
+        { "id": "locates-defect", "type": "contains", "value": "src/quota.js:2" },
+        { "id": "blocking-verdict", "type": "regex", "value": "request changes|block", "flags": "i" }
+      ],
+      "humanReview": [
+        { "id": "correct-boundary", "question": "Does the review explain that zero quota is incorrectly accepted, identify the missing zero-case test, and recommend a concrete correction rather than speculative style changes?" },
+        { "id": "read-only-and-evidence", "question": "Does it remain read-only, give a severity-ranked verdict, distinguish inspected evidence from unrun tests, and avoid unnecessary workers or unrelated architecture exploration?" }
+      ]
+    },
+    {
+      "id": "incomplete-diff-no-approval",
+      "prompt": "The PR has a 600-line diff, but the only available diff output is truncated after 40 lines. Those lines look correct and a prior test run was green. Repository access is unavailable, so the remaining patch cannot be inspected. Tell me whether the whole change is approved to merge and what was actually verified.",
+      "assertions": [
+        { "id": "states-review-limit", "type": "regex", "value": "unreviewed|incomplete|cannot approve|could not review", "flags": "i" }
+      ],
+      "humanReview": [
+        { "id": "no-truncated-approval", "question": "Does it refuse to infer whole-change approval from the first 40 lines or a prior green run, name the missing review scope, and return an explicit limited/blocking verdict?" },
+        { "id": "bounded-next-step", "question": "Does it request or identify access to the omitted diff instead of inventing findings, executing unrelated validation, or launching workers that cannot access the missing evidence?" }
+      ]
+    }
+  ]
+}

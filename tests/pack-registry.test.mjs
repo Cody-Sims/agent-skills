@@ -307,14 +307,14 @@ test('committed manifest defines the complete valid pack catalog', () => {
     packs: [
       {
         name: 'feature-delivery',
-        version: '1.1.0',
+        version: '1.2.0',
         description: 'Carries an agreed feature from requirements through implementation review, documentation, and completion verification.',
         skills: [
-          { name: 'requirements-and-spec-writing', version: '1.0.0' },
+          { name: 'requirements-and-spec-writing', version: '1.1.0' },
           { name: 'planning-and-task-breakdown', version: '1.1.0' },
-          { name: 'test-driven-development', version: '1.0.0' },
-          { name: 'code-review', version: '1.0.0' },
-          { name: 'documentation-maintenance', version: '1.0.0' },
+          { name: 'test-driven-development', version: '1.1.0' },
+          { name: 'code-review', version: '1.1.0' },
+          { name: 'documentation-maintenance', version: '1.1.0' },
           { name: 'verification-before-completion', version: '1.1.0' },
         ],
         handoffs: [
@@ -333,13 +333,13 @@ test('committed manifest defines the complete valid pack catalog', () => {
       },
       {
         name: 'shadow-architecture-suite',
-        version: '1.0.0',
+        version: '1.1.0',
         description: 'Carries a full Shadow architecture lifecycle from current-state observations through approved decision recording and read-only drift validation.',
         skills: [
-          { name: 'shadow-observe', version: '1.0.0' },
-          { name: 'shadow-dream', version: '1.0.0' },
-          { name: 'shadow-architecture', version: '2.0.0' },
-          { name: 'shadow-drift', version: '1.0.0' },
+          { name: 'shadow-observe', version: '1.1.0' },
+          { name: 'shadow-dream', version: '1.1.0' },
+          { name: 'shadow-architecture', version: '2.1.0' },
+          { name: 'shadow-drift', version: '1.1.0' },
         ],
         handoffs: [
           { from: 'shadow-observe', to: 'shadow-dream', when: 'Candidate observations are ready for future-state exploration.' },
@@ -355,13 +355,13 @@ test('committed manifest defines the complete valid pack catalog', () => {
       },
       {
         name: 'safe-refactor',
-        version: '1.1.0',
+        version: '1.2.0',
         description: 'Guides a behavior-preserving refactor from codebase mapping and tests through review and completion verification.',
         skills: [
           { name: 'codebase-exploration', version: '1.1.0' },
-          { name: 'test-driven-development', version: '1.0.0' },
-          { name: 'refactoring-and-dead-code-removal', version: '1.0.0' },
-          { name: 'code-review', version: '1.0.0' },
+          { name: 'test-driven-development', version: '1.1.0' },
+          { name: 'refactoring-and-dead-code-removal', version: '1.1.0' },
+          { name: 'code-review', version: '1.1.0' },
           { name: 'verification-before-completion', version: '1.1.0' },
         ],
         handoffs: [
@@ -379,14 +379,14 @@ test('committed manifest defines the complete valid pack catalog', () => {
       },
       {
         name: 'release-readiness',
-        version: '1.1.0',
+        version: '1.2.0',
         description: 'Coordinates correctness, security, documentation, and final evidence checks before release-related Git work.',
         skills: [
-          { name: 'code-review', version: '1.0.0' },
-          { name: 'security-review', version: '1.0.0' },
-          { name: 'documentation-maintenance', version: '1.0.0' },
+          { name: 'code-review', version: '1.1.0' },
+          { name: 'security-review', version: '1.1.0' },
+          { name: 'documentation-maintenance', version: '1.1.0' },
           { name: 'verification-before-completion', version: '1.1.0' },
-          { name: 'git-and-pr-workflow', version: '1.0.0' },
+          { name: 'git-and-pr-workflow', version: '1.1.0' },
         ],
         handoffs: [
           { from: 'code-review', to: 'security-review', when: 'Functional review has no unresolved required findings.' },

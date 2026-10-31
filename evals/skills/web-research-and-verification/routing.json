@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "name": "web-research-and-verification-routing",
+  "trials": 3,
+  "cases": [
+    { "id": "training-versioned-api", "split": "training", "prompt": "Research the API signature for our installed library version, verify official sources, and cite deprecation evidence rather than assume latest.", "expected": ["web-research-and-verification"], "excluded": ["codebase-exploration"] },
+    { "id": "training-advisory", "split": "training", "prompt": "Verify this CVE's affected versions using primary advisories and independent corroboration, and distinguish unknowns.", "expected": ["web-research-and-verification"], "excluded": ["systematic-debugging"] },
+    { "id": "validation-local-help", "split": "validation", "prompt": "Check which flag our installed CLI version actually supports; authoritative local help is available, so avoid redundant web fetches while explaining the evidence.", "expected": ["web-research-and-verification"], "excluded": ["codebase-exploration"] },
+    { "id": "training-repository-map", "split": "training", "prompt": "Map this unfamiliar repository's architecture, entry points, dependencies, and nearest tests before editing; no external product research.", "expected": ["codebase-exploration"], "excluded": ["web-research-and-verification"] },
+    { "id": "validation-reproduce-bug", "split": "validation", "prompt": "Reproduce this failing unit test and trace the incorrect value through our code to fix the root cause; no external version or API question is involved.", "expected": ["systematic-debugging"], "excluded": ["web-research-and-verification"] }
+  ]
+}

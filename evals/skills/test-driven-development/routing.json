@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "name": "test-driven-development-routing",
+  "trials": 3,
+  "cases": [
+    {
+      "id": "feature-test-first",
+      "split": "training",
+      "prompt": "Implement this agreed feature test-first: write a failing behavior test, observe the intended failure, and make the minimum implementation pass.",
+      "expected": ["test-driven-development"],
+      "excluded": ["verification-discipline"]
+    },
+    {
+      "id": "reproduced-bug-red-green",
+      "split": "training",
+      "prompt": "The cause of this bug is confirmed and the case is reproducible. Fix it by adding the regression test first, showing red, and then implementing the correction.",
+      "expected": ["test-driven-development"],
+      "excluded": ["refactoring-and-dead-code-removal"]
+    },
+    {
+      "id": "boundary-behavior-cycle",
+      "split": "validation",
+      "prompt": "Add the new public-interface behavior for zero and invalid inputs using red-green-refactor, checking the intended failure before production edits.",
+      "expected": ["test-driven-development"],
+      "excluded": ["code-review"]
+    },
+    {
+      "id": "repair-existing-test-credibility",
+      "split": "training",
+      "prompt": "Audit this already-green test for copied production logic and vacuous assertions, then prove its invariant can fail under a meaningful mutation.",
+      "expected": ["verification-discipline"],
+      "excluded": ["test-driven-development"]
+    },
+    {
+      "id": "pure-helper-restructure",
+      "split": "validation",
+      "prompt": "Only rename and move this helper without changing any behavior. Establish a green baseline and rerun affected tests after each mechanical cleanup.",
+      "expected": ["refactoring-and-dead-code-removal"],
+      "excluded": ["test-driven-development"]
+    }
+  ]
+}

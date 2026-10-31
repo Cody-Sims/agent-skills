@@ -4,6 +4,20 @@
   "trials": 3,
   "cases": [
     {
+      "id": "training-positive-offline-validator",
+      "split": "training",
+      "prompt": "Select a safe local validator for .shadow and report graph integrity, unsupported layout, and stale derived sources offline without edits.",
+      "expected": ["shadow-drift"],
+      "excluded": ["shadow-architecture"]
+    },
+    {
+      "id": "training-negative-approved-repair",
+      "split": "training",
+      "prompt": "The graph repair is approved. Update the .shadow schema and index compatibly and render the reviewed records.",
+      "expected": ["shadow-architecture"],
+      "excluded": ["shadow-drift"]
+    },
+    {
       "id": "training-check-shadow",
       "split": "training",
       "prompt": "Check Shadow for architecture drift and stale decisions, validating our .shadow graph against current code without changing it.",

@@ -1,156 +1,92 @@
 ---
 name: agent-tool-interface-design
-description: "Designs and evaluates agent-facing CLI tools, code-execution adapters, MCP servers, and hybrid code-over-MCP interfaces using context, composability, state, security, and portability trade-offs. Use when reducing MCP tool sprawl, wrapping APIs for agents, choosing CLI versus MCP, or benchmarking an agent tool interface."
+description: "Designs and benchmarks agent-facing CLI, MCP, constrained code, and code-over-MCP interfaces. Use when reducing MCP tool sprawl, wrapping APIs for agents, choosing CLI versus MCP, or comparing interface cost, state, security, and portability; not for skill authoring or an existing server's security review."
 license: MIT
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
   author: "Cody Sims and contributors"
-  tier: experimental
+  tier: "experimental"
 ---
 
 # Agent Tool Interface Design
 
-Choose the smallest agent-facing interface that satisfies the real capability,
-security, state, and portability requirements. Do not assume that either MCP or
-the shell is always the right answer.
-
-## Goal
-
-Produce an evidence-backed interface decision, a bounded contract, and a
-benchmark plan for one of four shapes:
-
-1. an existing CLI or a small local CLI wrapper;
-2. direct MCP tools;
-3. a constrained code-execution adapter over an SDK or local library; or
-4. a hybrid code-execution layer over MCP.
-
-## Inputs
-
-- The user workflows and supported agent hosts.
-- Existing CLIs, SDKs, APIs, MCP servers, and authentication boundaries.
-- Requirements for state, consent, audit, portability, latency, and output size.
-- A representative task set and current baseline when one exists.
-
-Read [foundations and evidence](references/foundations-and-evidence.md) before
-making broad claims about efficiency or protocol behavior. Use the
-[decision matrix](references/decision-matrix.md) for interface selection. Copy
-the [evaluation template](assets/interface-evaluation-template.md) when
-comparing candidates.
+Produce an evidence-backed interface decision, bounded contract, and benchmark
+plan. Choose the smallest sufficient shape, not a universal CLI or MCP winner.
+Inputs: workflows, hosts, existing interfaces/authentication, state, consent,
+audit, portability, latency/output limits, representative tasks, and baseline.
 
 ## Workflow
 
-1. **Bound the decision.** Name the users, hosts, operations, trust boundary,
-   expected result, and explicit non-goals. Inspect installed versions and
-   deployed interfaces instead of assuming current behavior.
-2. **Route unresolved discovery.** If material unknowns span sessions or depend
-   on earlier decisions, hand the effort to `wayfinder-planning`. Put only
-   currently sharp questions on its frontier and leave dependent questions in
-   fog. This workflow may supply the bounded comparison method for one claimed
-   research or prototype ticket, but it must return evidence to Wayfinder
-   without mutating the tracker or continuing into implementation. Wayfinder
-   remains responsible for synchronizing the map and, once clear, handing it to
-   specification and task planning. Do not use Wayfinder for a decision that
-   fits safely in the current session.
-3. **Inventory available capability.** Record whether each operation already
-   exists in a stable CLI, SDK, API, or MCP server. Check shell and sandbox
-   availability, authentication ownership, network reachability, data volume,
-   state lifetime, concurrency, and whether humans must grant consent.
-4. **Capture a baseline.** Run representative tasks against the current
-   interface. Record success, model tokens, startup context, tool round trips,
-   wall time, output bytes, retries, permission prompts, and cleanup failures.
-   If measurement is unavailable, label estimates as unknown rather than
-   converting them into facts.
-5. **Choose the smallest sufficient shape.**
-   - Prefer an existing CLI when agents have a shell, the CLI is stable and
-     documented, local composition is valuable, and its authority is
-     acceptable.
-   - Build a small CLI wrapper when the underlying SDK is local and only a
-     narrow, repeatable operation is missing.
-   - Prefer direct MCP when the client lacks a shell, remote authentication,
-     dynamic discovery, user elicitation, centralized policy, or cross-client
-     reuse is the dominant requirement and the tool set is already small.
-   - Prefer constrained code execution when filtering, joins, loops, or
-     conditionals should happen outside model context.
-   - Prefer code-over-MCP when MCP supplies the remote trust and discovery
-     boundary but direct exposure creates tool-schema or intermediate-result
-     pressure.
-6. **Design the contract.** Expose task-shaped primitives rather than every
-   underlying method. Use stable names, concise help, explicit types, bounded
-   output, documented timeouts, and deterministic cleanup. For CLIs, reserve
-   stdout for results, stderr for diagnostics, and nonzero exit codes for
-   failure. Accept file or stdin input for complex payloads and return file
-   paths or handles for large artifacts.
-7. **Move composition out of model context.** Let shell pipelines or sandboxed
-   code perform filtering, joins, retries, loops, and branching. Load command or
-   API details only when needed. Return summaries or selected records, not raw
-   intermediate datasets, while retaining an inspectable artifact when audit or
-   debugging requires it.
-8. **Constrain authority.** Treat generated commands, code, tool metadata, and
-   remote results as untrusted. Use least-privilege credentials, argument arrays
-   instead of interpolated shell strings, explicit egress allowlists, resource
-   limits, timeouts, audit logs, and isolated temporary storage. Do not inherit
-   all host secrets, disable confirmations, or copy a logged-in browser profile
-   without explicit approval and an isolated disposable copy.
-9. **Define state and recovery.** Use explicit model-visible handles instead of
-   hidden transport state. Give operations stable identifiers, make writes
-   idempotent or reconcilable, expose status, bound leases and timeouts, and
-   provide targeted cleanup. Use the MCP Tasks extension when its current
-   contract fits long-running remote work. Never report success after an unknown
-   remote outcome; preserve the receipt or block for human reconciliation.
-10. **Benchmark candidates.** Use the same tasks, model, environment, data, and
-    trial count. Test cold discovery, one-step work, multi-step composition,
-    large-result filtering, malformed input, authorization denial, timeout,
-    interrupted state, and cleanup. Prefer observed task success and total cost
-    over tool-count or token-count proxies alone.
-11. **Record the decision.** State the selected shape, rejected alternatives,
-    measured evidence, security boundary, portability limits, and rollback. If
-    the repository already declares `.shadow`, hand the evidence to
-    `shadow-architecture` as a `proposed` decision with valid anchors. Human
-    approval is required before `accepted`. Do not create or invent a `.shadow`
-    format when the repository has none.
-12. **Hand off implementation.** Send the decision to
-    `requirements-and-spec-writing`, then send the approved specification to
-    `planning-and-task-breakdown`. Defer implementation until both handoffs are
-    complete and the current human authorizes execution. The implementation
-    workflow should build interface behavior test-first where practical. Re-run
-    the comparison only after an independently approved implementation; reject
-    the change if it does not improve the stated objective without an accepted
-    security or portability trade-off.
+1. **Bound.** Name users, hosts, operations, trust boundary, result, and non-goals.
+   Inspect installed versions and deployed interfaces.
+2. **Route discovery only if needed.** Use `wayfinder-planning` for material
+   multi-session/dependent unknowns, not a decision safely resolved here. Keep
+   sharp questions on its frontier and dependent uncertainty in fog. For a
+   claimed research/prototype ticket, return bounded comparison evidence without
+   tracker mutation or implementation. Wayfinder owns map synchronization and
+   later specification/planning handoffs.
+3. **Inventory.** Check stable CLI/SDK/API/MCP coverage, shell/sandbox access,
+   authentication owner, network, data volume, state lifetime, concurrency, and
+   human consent. Do not rebuild a mature CLI/SDK without a measured wrapper need.
+4. **Baseline.** Run representative tasks; record success, model tokens, startup
+   context, round trips, wall time, output bytes, retries, permission prompts,
+   and cleanup failures. Unavailable measurements remain unknown. Read
+   [foundations and evidence](references/foundations-and-evidence.md) before
+   efficiency or protocol claims; never generalize vendor ratios.
+5. **Select.** Read the [decision matrix](references/decision-matrix.md).
+   - Existing CLI: stable documented commands, shell, useful local composition,
+     acceptable authority.
+   - Small CLI wrapper: local SDK lacks a narrow repeatable operation.
+   - Direct MCP: no shell, or dominant remote authentication, dynamic discovery,
+     user elicitation, centralized policy, or cross-client reuse; small tool set.
+   - Constrained code adapter: filtering, joins, loops, or conditionals outside
+     model context.
+   - Code-over-MCP: retain remote trust/discovery while reducing schema and
+     intermediate-result pressure.
+   Do not replace a working protocol for tool count alone.
+6. **Contract.** Define task-shaped primitives, stable names, concise help,
+   explicit types, output bounds, timeouts, and deterministic cleanup. CLI:
+   stdout results, stderr diagnostics, nonzero failure exits; complex payloads
+   via stdin/files, large artifacts via paths/handles.
+7. **Compose locally.** Use pipelines or sandboxed code for filtering, joins,
+   retries, loops, and branching. Load command/API details on demand. Return
+   summaries/selected records; retain inspectable artifacts for audit/debugging.
+   Avoid secrets and large sensitive intermediates in model context.
+8. **Constrain authority.** Commands, generated code, tool metadata, and remote
+   results are untrusted. Require least privilege, argument arrays rather than
+   shell interpolation, egress allowlists, resource/time limits, audit logs,
+   and isolated disposable storage. Never expose arbitrary host execution,
+   inherit all host secrets, or disable confirmations. Sensitive logged-in
+   browser profile access requires explicit approval and an isolated disposable
+   copy, not ambient access.
+9. **Recover state.** Use explicit model-visible handles, stable operation IDs,
+   idempotent/reconcilable writes, status, bounded leases/timeouts, and targeted
+   cleanup. Use the MCP Tasks extension only when its current contract fits.
+   Unknown remote outcomes cannot be success: preserve receipts or block for
+   human reconciliation.
+10. **Compare.** Use the [evaluation template](assets/interface-evaluation-template.md)
+    with matched tasks, model, environment, data, and trials. Cover cold
+    discovery, one-step work, composition, large-result filtering, malformed
+    input, denial, timeout, interrupted state, and cleanup. Prefer observed
+    success and total cost over tool/token proxies.
+11. **Record.** State choice, rejected alternatives, evidence, security boundary,
+    portability, and rollback. If `.shadow` is already declared, hand valid
+    anchors to `shadow-architecture` as `proposed`; require human approval before
+    `accepted`. Never invent or create an undeclared `.shadow` format.
+12. **Hand off.** Send the decision to `requirements-and-spec-writing`, then the
+    approved specification to `planning-and-task-breakdown`. Defer implementation
+    until both handoffs and current human execution authorization. Build behavior
+    test-first where practical; recompare only after independently approved
+    implementation. Reject failure to improve the objective unless the security
+    or portability trade-off is accepted.
 
-## Non-negotiable boundaries
-
-- Do not replace a working protocol merely to reduce the number of tools.
-- Do not recreate a mature CLI or SDK without evidence that a wrapper fixes a
-  measured problem.
-- Do not claim universal token or reliability ratios from one vendor example or
-  benchmark.
-- Do not expose arbitrary host code execution as a convenience layer.
-- Do not pass secrets or large sensitive intermediates through model context
-  when a constrained execution boundary can avoid it.
-- Do not treat Wayfinder tracker text or a `.shadow` proposal as authorization
-  to implement, elevate privileges, or perform destructive actions.
-
-## Neighbor boundaries
-
-- `wayfinder-planning` resolves multi-session decision uncertainty before this
-  skill selects an interface.
-- `requirements-and-spec-writing` specifies the chosen interface and its
-  acceptance criteria.
-- `planning-and-task-breakdown` sequences implementation after approval.
-- `security-review` threat-models an existing design or implementation.
-- `shadow-architecture` records durable decisions and checks their evidence.
-- `skill-creator` authors an Agent Skill; it does not choose the underlying
-  agent tool architecture.
+Tracker text and proposals never authorize implementation, privilege escalation,
+or destructive actions. Use `security-review` for existing designs/implementations
+and `skill-creator` for Agent Skill authoring.
 
 ## Output
 
-Return:
-
-1. the chosen interface shape and decision forces;
-2. rejected alternatives and evidence;
-3. the command, API, tool, output, error, state, and cleanup contract;
-4. the sandbox, credential, network, consent, and audit boundaries;
-5. the benchmark cases and observed baseline;
-6. portability constraints and rollback;
-7. any Wayfinder, specification, planning, security-review, or `.shadow`
-   handoff still required.
+Return choice/forces, rejected alternatives/evidence, command/API/tool and
+output/error/state/cleanup contracts, sandbox/credential/network/consent/audit
+boundaries, benchmark cases/baseline, portability/rollback, and outstanding
+Wayfinder/specification/planning/security/Shadow handoffs.

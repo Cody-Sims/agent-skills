@@ -50,6 +50,31 @@
           "question": "Does the candidate surface the explicit model-selection failure rather than silently changing to Auto or another model?"
         }
       ]
+    },
+    {
+      "id": "known-task-bounded-status",
+      "prompt": "Explain a status-only monitoring plan for known GitHub-hosted Copilot task 123. Three reads all return in_progress and no PR artifact. My budget is at most three reads; do not launch, resume, cancel, or merge anything.",
+      "assertions": [
+        { "id": "active-state", "type": "regex", "value": "in_progress|active", "flags": "i" },
+        { "id": "bounded-monitoring", "type": "contains", "value": "budget" }
+      ],
+      "humanReview": [
+        { "id": "status-not-launch", "question": "Does it read the known ID directly, honor the three-read budget with backoff/rate-limit handling, and avoid discovery, unrelated model-document fetches, or any mutation?" },
+        { "id": "active-not-complete", "question": "Does it report the task as still active with durable ID and absent/unverified PR, rather than completed because the polling budget ended?" },
+        { "id": "observed-model-only", "question": "Does it preserve the exact returned model if present and label missing model/ref/artifact evidence instead of inferring Sol, Auto, or a PR URL?" }
+      ]
+    },
+    {
+      "id": "uncertain-post-no-duplicate",
+      "prompt": "An authorized cloud-task POST with an explicit GPT-5.6 Sol model timed out before returning a task ID. Describe the next step. Do not silently change models, create duplicates, or claim local CLI controls configure the hosted session.",
+      "assertions": [
+        { "id": "duplicate-guard", "type": "regex", "value": "duplicate|matching tasks", "flags": "i" },
+        { "id": "requested-model", "type": "contains", "value": "gpt-5.6-sol" }
+      ],
+      "humanReview": [
+        { "id": "uncertain-creation", "question": "Does it treat timeout as an uncertain creation outcome, inspect bounded repository/ref/objective matches before retry, and preserve discovered task IDs instead of blindly repeating POST?" },
+        { "id": "model-consent", "question": "Does it retain the explicit requested model, surface policy/validation errors, and refuse silent fallback or invented hosted effort/context fields?" }
+      ]
     }
   ]
 }

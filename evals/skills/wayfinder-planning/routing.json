@@ -4,6 +4,20 @@
   "trials": 3,
   "cases": [
     {
+      "id": "training-positive-recover-budgeted-map",
+      "split": "training",
+      "prompt": "Recover this interrupted Wayfinder decision map from authoritative tracker state, reconcile its pending receipt, and resume sequential frontier decisions within the same hard budgets.",
+      "expected": ["wayfinder-planning"],
+      "excluded": ["planning-and-task-breakdown", "parallel-worktree-delivery"]
+    },
+    {
+      "id": "training-negative-durable-decision",
+      "split": "training",
+      "prompt": "Our discovery is complete and the architecture choice is human-approved. Record its exact approval revision and evidence in .shadow, preserving accepted history.",
+      "expected": ["shadow-architecture"],
+      "excluded": ["wayfinder-planning"]
+    },
+    {
       "id": "training-positive-chart",
       "split": "training",
       "prompt": "Use Wayfinder to create a decision map for this long-running ambiguous initiative. I can name the destination, but most of the route is still fog of war.",

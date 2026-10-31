@@ -52,8 +52,8 @@ file hash. Full-catalog commands remain the default. Packs use deterministic
 exact-version forms:
 
 ```bash
-npm run install:pack -- feature-delivery@1.0.0
-npm run install:pack -- shadow-architecture-suite@1.0.0
+npm run install:pack -- feature-delivery@1.2.0
+npm run install:pack -- shadow-architecture-suite@1.1.0
 npm run check:pack -- feature-delivery
 npm run uninstall:pack -- feature-delivery
 ```
@@ -64,7 +64,7 @@ retains shared skills required elsewhere. See
 [`docs/lifecycle-and-provenance.md`](docs/lifecycle-and-provenance.md) for safe
 migration and rollback behavior.
 
-`shadow-architecture-suite@1.0.0` provides the full linear Shadow lifecycle:
+`shadow-architecture-suite@1.1.0` provides the full linear Shadow lifecycle:
 observe current architecture, dream future-state options, record an explicitly
 human-approved decision, then check for drift after decisions and implementation
 are updated. Invoke `shadow-architecture` independently when the task only needs

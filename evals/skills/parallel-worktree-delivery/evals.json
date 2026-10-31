@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "name": "parallel-worktree-delivery-behavior",
+  "skill": "parallel-worktree-delivery",
+  "cases": [
+    {
+      "id": "per-merge-gates-and-resource-isolation",
+      "prompt": "Plan an authorized two-worker local fleet. The repository requires its full test gate after every merge. Workers share a node_modules symlink, but one needs to change the lockfile, and both test runners write the same cache and database. Explain setup, validation scheduling, and integration without executing commands.",
+      "assertions": [
+        { "id": "merge-gate", "type": "regex", "value": "per.merge|after (each|every) merge", "flags": "i" },
+        { "id": "resource-isolation", "type": "regex", "value": "isolat|serializ", "flags": "i" }
+      ],
+      "humanReview": [
+        { "id": "required-gates-preserved", "question": "Does it run the full repository gate on the resulting candidate after each merge and fix, stopping integration on failure instead of deferring checks to the final wave?" },
+        { "id": "no-validation-race", "question": "Does it isolate mutable dependencies for the lockfile-changing worker and isolate or serialize caches/database writers, without treating worktrees or symlinks as resource isolation?" },
+        { "id": "bounded-fleet", "question": "Does it keep exactly the authorized independent streams, explicit ownership and worker checks, without unauthorized installs, nested workers, or remote writes?" }
+      ]
+    },
+    {
+      "id": "live-primary-and-scoped-evidence",
+      "prompt": "Plan integration of known completed worker IDs on a separate coordinator branch while a human has live uncommitted work in the primary checkout. Repository policy permits scoped checks and has no mandatory full gate. Submitted tips are frozen; a passing scoped check already covers the unchanged final candidate. Do not push or clean up.",
+      "assertions": [
+        { "id": "live-work-preserved", "type": "regex", "value": "live|primary|owner", "flags": "i" },
+        { "id": "scoped-checks", "type": "contains", "value": "scoped" }
+      ],
+      "humanReview": [
+        { "id": "available-checkout", "question": "Does it use a clean available integration checkout without switching, stashing, committing, or overwriting the human's primary work?" },
+        { "id": "nonredundant-verification", "question": "Does it verify each post-merge candidate with interaction-covering scoped checks while avoiding a duplicate unchanged check solely for handoff, without waiving any repository-required gate?" },
+        { "id": "known-ids-and-actions", "question": "Does it consume known worker results/tips without repeated discovery, tight polling, duplicate workers, remote writes, or unauthorized cleanup?" }
+      ]
+    }
+  ]
+}

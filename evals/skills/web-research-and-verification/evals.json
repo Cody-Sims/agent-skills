@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "name": "web-research-and-verification-behavior",
+  "skill": "web-research-and-verification",
+  "cases": [
+    {
+      "id": "authoritative-installed-help",
+      "prompt": "Answer from this local evidence only: tool --version returns 2.4.0 and tool --help documents --format with default text. I ask for routine local output syntax, not hosted behavior; there is no conflict, deprecation, or high-risk action. Explain the evidence basis without inventing a URL or fetching duplicate pages.",
+      "assertions": [
+        { "id": "local-evidence", "type": "regex", "value": "local|installed", "flags": "i" },
+        { "id": "single-source-basis", "type": "regex", "value": "single.source|help/source|installed help", "flags": "i" }
+      ],
+      "humanReview": [
+        { "id": "version-matched-exception", "question": "Does it use version-matched authoritative local help for the routine flag/default, explicitly disclose the narrow single-source basis, and avoid a blanket extra fetch?" },
+        { "id": "no-fabrication", "question": "Does it cite the exact local command/output as local evidence without fabricating URLs, extrapolating hosted behavior, or executing unrelated writes/installations?" }
+      ]
+    },
+    {
+      "id": "high-risk-version-conflict",
+      "prompt": "Our lockfile pins library 3.2.1. A current tutorial for version 4 says it is unaffected by a CVE, but the relevant primary advisory and independent corroboration are unavailable within the remaining research budget. Can you verify that 3.2.1 is safe? Report the evidence limits; do not execute any mitigation.",
+      "assertions": [
+        { "id": "unknown-result", "type": "regex", "value": "unknown|unverified|cannot (confirm|verify)", "flags": "i" },
+        { "id": "corroboration-required", "type": "regex", "value": "corroborat|independent", "flags": "i" }
+      ],
+      "humanReview": [
+        { "id": "high-risk-evidence", "question": "Does it keep primary advisory and independent corroboration requirements for the security claim, rejecting the routine-help exception and the mismatched version-4 tutorial?" },
+        { "id": "bounded-unknown", "question": "Does it retain target version 3.2.1, report safety as unverified/unknown at budget exhaustion, and avoid invented citations, unbounded searches, or unauthorized mitigation?" }
+      ]
+    }
+  ]
+}

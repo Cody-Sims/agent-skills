@@ -1,83 +1,59 @@
 ---
 name: systematic-debugging
-description: Diagnoses bugs, failing tests, build failures, crashes, exceptions, stack traces, and unexpected or intermittent behavior by reproducing the failure, capturing exact error output, isolating the root cause, and fixing the cause rather than the symptom. Use when something is broken, a test or build fails, output is wrong, or a defect must be traced to its origin.
+description: "Diagnoses failures by reproducing exact errors, testing one hypothesis at a time, and fixing the root cause. Use when a bug, failing test/build, crash, exception, wrong output, or intermittent failure needs tracing; not for reviewing a patch or auditing already-green tests."
 license: MIT
 metadata:
-  version: "1.0.0"
-  author: Cody-Sims
-  tier: core
+  version: "1.1.0"
+  author: "Cody-Sims"
+  tier: "core"
 ---
 
 # Systematic Debugging
 
-## Goal
+## Contract
 
-Find the true root cause of a failure and correct it with a verified fix and a
-regression test. Replace guess-and-check editing with evidence.
-
-## Core rule
-
-Do not change code until you can reproduce the failure and explain what is
-wrong. Speculative edits hide symptoms, add noise, and destroy the evidence you
-need. Test one hypothesis at a time.
+Inputs: observed versus expected behavior, failure command/input, and relevant
+environment. Output: a confirmed cause and verified fix with a regression test,
+or a precise blocker. No speculative production edits before reproduction and
+an evidence-backed explanation; diagnostic probes are allowed.
 
 ## Workflow
 
-1. Capture the exact failure. Copy the full error message, stack trace, exit
-   code, and failing assertion verbatim. Do not paraphrase or summarize away
-   detail; the precise text names the file, line, and condition that failed.
-2. Reproduce deterministically. Find the smallest command that triggers the
-   failure every time, for example the repository's test command scoped to the
-   failing case. Record it. If the failure is intermittent, treat it as a
-   nondeterminism problem and read [references/flaky-tests.md](references/flaky-tests.md).
-3. Establish the search space. Note what changed recently, what environment
-   differs from a known-good state, and which components sit between the input
-   and the failing output.
-4. Form one falsifiable hypothesis. State it concretely: the value is wrong
-   because a specific thing happens at a specific place. A hypothesis you cannot
-   prove false is not useful.
-5. Test the hypothesis with the smallest possible probe. Add instrumentation or
-   a breakpoint at a component boundary, or bisect the input, the history, or
-   the code path. Confirm or reject the hypothesis before forming the next one.
-6. Trace the bad state backward. Follow the incorrect value from where it
-   surfaces to where it originates. The first place the state becomes wrong is
-   the root cause, not the last place it is observed. See
-   [references/root-cause-tracing.md](references/root-cause-tracing.md).
-7. Fix the cause. Correct the origin of the bad state, not the symptom
-   downstream. Suppressing an error, clamping a wrong value, or special-casing
-   the observed input treats the symptom.
-8. Add a regression test that fails without the fix and passes with it. This
-   proves the diagnosis and prevents recurrence.
-9. Confirm the original reproduction now passes. Run the exact command from
-   step 2, then run the surrounding tests to check for collateral damage.
+1. Read applicable instructions and capture the full error, stack/cause chain,
+   exit code, and failing assertion verbatim. Preserve exact diagnostic evidence
+   without exposing secrets; identify any redactions.
+2. Find and run the smallest deterministic reproduction using existing commands.
+   Record command, input, and environment. For intermittency, read
+   [flaky tests](references/flaky-tests.md); bound attempts/time and capture
+   failing seed/order/state. A missing tool or dependency is a readiness problem,
+   not proof of an application defect: follow documented, authorized setup for
+   demonstrated missing prerequisites, retry the same command, or report blocked.
+3. Narrow the search to the error location, input/output path, recent changes,
+   and differences from a known-good state. Use symbols or path-scoped searches
+   with bounded output; expand only for evidence. Do not launch workers or map
+   unrelated architecture for one continuous failure trace.
+4. State one falsifiable hypothesis with the predicted observation. Test it with
+   the smallest boundary probe, breakpoint, or bisection; confirm or reject it
+   before another hypothesis. Trace bad state backward to its first divergence,
+   not just the final throwing frame. Read
+   [root-cause tracing](references/root-cause-tracing.md) when stack analysis,
+   instrumentation, history/input bisection, or differential diagnosis is needed.
+5. Correct the proven origin. Do not swallow errors, clamp bad state, add blind
+   retries, or special-case the observed input to hide the symptom. Remove
+   diagnostic instrumentation when finished. Add a regression test and show it
+   fails without the fix for the expected reason, then passes with the fix.
+6. Rerun the exact reproduction, then affected surrounding tests and required
+   repository gates. Combine compatible selectors rather than repeating full
+   suites after each probe. For flakes, report bounded runs/seeds and residual
+   intermittency; one green attempt does not prove nondeterminism gone.
 
-## Forbidden approaches
+## Stop and output
 
-- Shotgun edits: changing several things at once hoping one works. You will not
-  know which change mattered or why.
-- Try-things-until-it-works: each blind change is unverified and may mask the
-  defect while leaving it present.
-- Fixing the symptom: catching and swallowing the exception, clamping a bad
-  value, or retrying without understanding why the value was wrong.
-- Claiming a fix without rerunning the reproduction command.
+If repeated fixes expose unrelated failures, stop patching and return to step 3:
+recheck the mental model, coupling, and known-good differences. If reproduction,
+prerequisites, or diagnosis remain unavailable, report the blocker rather than
+claiming a fix.
 
-## When to stop and reconsider
-
-If repeated fixes keep exposing new failures in unrelated areas, stop patching.
-This signals a wrong mental model or an architectural coupling problem. Return
-to step 3, widen the search space, and compare against a known-good state.
-
-## Output
-
-Report the reproduction command, the captured error, the confirmed root cause,
-the fix, the regression test, and the passing verification output. Note any
-remaining uncertainty.
-
-## References
-
-- [references/root-cause-tracing.md](references/root-cause-tracing.md) — binary
-  search, bisecting, instrumentation, reading stack traces, and differential
-  diagnosis against a known-good state.
-- [references/flaky-tests.md](references/flaky-tests.md) — diagnosing
-  nondeterminism, condition-based waiting, seeding randomness, isolating shared
-  state, and timeout diagnostics.
+Return reproduction command/input, exact relevant error, confirmed cause and
+evidence, fix, regression red/green results, final commands/results, and remaining
+uncertainty. Do not infer success from inspection or omit an unresolved verdict.

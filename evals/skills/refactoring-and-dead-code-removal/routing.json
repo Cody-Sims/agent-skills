@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "name": "refactoring-and-dead-code-removal-routing",
+  "trials": 3,
+  "cases": [
+    {
+      "id": "extract-without-behavior-change",
+      "split": "training",
+      "prompt": "Simplify this module by extracting duplicated structure without changing outputs, defaults, or public behavior. Check tests between mechanical steps.",
+      "expected": ["refactoring-and-dead-code-removal"],
+      "excluded": ["test-driven-development"]
+    },
+    {
+      "id": "prove-dead-handler",
+      "split": "training",
+      "prompt": "Investigate this suspected unused handler, prove references and reachability are absent, and remove it safely if it is not a public API.",
+      "expected": ["refactoring-and-dead-code-removal"],
+      "excluded": ["systematic-debugging"]
+    },
+    {
+      "id": "rename-and-move-helper",
+      "split": "validation",
+      "prompt": "Rename and move this internal helper as a behavior-preserving cleanup, starting from a passing baseline and keeping each mechanical change verifiable.",
+      "expected": ["refactoring-and-dead-code-removal"],
+      "excluded": ["planning-and-task-breakdown"]
+    },
+    {
+      "id": "trace-wrong-default",
+      "split": "training",
+      "prompt": "A regression now returns the wrong default value. Reproduce the failing case, find where the value first becomes wrong, and fix the defect.",
+      "expected": ["systematic-debugging"],
+      "excluded": ["refactoring-and-dead-code-removal"]
+    },
+    {
+      "id": "add-test-first-validation",
+      "split": "validation",
+      "prompt": "Add new input-validation behavior with a failing public-interface test first, then implement the minimum change and refactor while green.",
+      "expected": ["test-driven-development"],
+      "excluded": ["refactoring-and-dead-code-removal"]
+    }
+  ]
+}

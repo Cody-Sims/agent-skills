@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "name": "systematic-debugging-routing",
+  "trials": 3,
+  "cases": [
+    {
+      "id": "trace-build-failure",
+      "split": "training",
+      "prompt": "The build fails with this stack trace. Capture the exact error, reproduce it with the smallest command, and isolate its root cause.",
+      "expected": ["systematic-debugging"],
+      "excluded": ["codebase-exploration"]
+    },
+    {
+      "id": "diagnose-wrong-output",
+      "split": "training",
+      "prompt": "This request now returns the wrong total and sometimes throws an exception. Trace the bad state back to its origin before changing code.",
+      "expected": ["systematic-debugging"],
+      "excluded": ["refactoring-and-dead-code-removal"]
+    },
+    {
+      "id": "investigate-intermittent-ci",
+      "split": "validation",
+      "prompt": "A test passes alone but intermittently fails in CI when the suite runs together. Diagnose order dependence and shared state instead of raising the timeout.",
+      "expected": ["systematic-debugging"],
+      "excluded": ["verification-before-completion"]
+    },
+    {
+      "id": "audit-green-assertions",
+      "split": "training",
+      "prompt": "All tests are green, but this invariant assertion looks vacuous. Audit test credibility with a production mutation and harden the gate.",
+      "expected": ["verification-discipline"],
+      "excluded": ["systematic-debugging"]
+    },
+    {
+      "id": "review-pr-without-failure",
+      "split": "validation",
+      "prompt": "Review this PR diff read-only for correctness, missing edge-case tests, and merge readiness. No failure has been reported.",
+      "expected": ["code-review"],
+      "excluded": ["systematic-debugging"]
+    }
+  ]
+}

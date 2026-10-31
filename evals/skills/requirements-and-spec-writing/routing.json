@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "name": "requirements-and-spec-writing-routing",
+  "trials": 3,
+  "cases": [
+    {
+      "id": "clarify-vague-export",
+      "split": "training",
+      "prompt": "Turn this vague request for shareable exports into an agreed specification with requirements, privacy constraints, non-goals, and checkable outcomes.",
+      "expected": ["requirements-and-spec-writing"],
+      "excluded": ["planning-and-task-breakdown"]
+    },
+    {
+      "id": "write-interface-requirements",
+      "split": "training",
+      "prompt": "Before coding, write the feature requirements and API data contract, including error cases, alternatives, acceptance criteria, rollout, and rollback.",
+      "expected": ["requirements-and-spec-writing"],
+      "excluded": ["documentation-maintenance"]
+    },
+    {
+      "id": "resolve-policy-design",
+      "split": "validation",
+      "prompt": "The product design spans permissions and data retention, but scope and success criteria are unclear. Produce a reviewable spec that separates facts, assumptions, and owner decisions.",
+      "expected": ["requirements-and-spec-writing"],
+      "excluded": ["shadow-dream"]
+    },
+    {
+      "id": "decompose-approved-spec",
+      "split": "training",
+      "prompt": "This specification is already approved. Break it into ordered implementation tasks with dependencies, acceptance criteria, and verification commands.",
+      "expected": ["planning-and-task-breakdown"],
+      "excluded": ["requirements-and-spec-writing"]
+    },
+    {
+      "id": "known-readme-correction",
+      "split": "validation",
+      "prompt": "Fix the stale README command from --json to the implemented --format json option and update its changelog migration note. The behavior is already settled.",
+      "expected": ["documentation-maintenance"],
+      "excluded": ["requirements-and-spec-writing"]
+    }
+  ]
+}

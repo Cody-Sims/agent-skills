@@ -1,31 +1,31 @@
 {
   "schemaVersion": 1,
   "name": "shadow-architecture-suite-composition",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "source": {
-    "registrySha256": "96cc2b05f427ed1f1180ec8749a14ec7a5e17951bcef15b5b53a40f0e496250c",
-    "memberTreeSha256": "4b494ac91f6940ee83e49ff151a48875d5ee48e8d02203187038c3d8b9734895",
+    "registrySha256": "f66fabe39b82fc21efd2ceb6371f605d9f8a3fdd1d3e1954bc341c9a0125ce79",
+    "memberTreeSha256": "57847dd308b62eea66a4ea5f748d3b0e1efb05bfd2efbcad69e91149bf1ba93c",
     "suitePath": "evals/packs/shadow-architecture-suite.json"
   },
   "pack": {
     "name": "shadow-architecture-suite",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "members": [
       {
         "name": "shadow-architecture",
-        "version": "2.0.0"
+        "version": "2.1.0"
       },
       {
         "name": "shadow-dream",
-        "version": "1.0.0"
+        "version": "1.1.0"
       },
       {
         "name": "shadow-drift",
-        "version": "1.0.0"
+        "version": "1.1.0"
       },
       {
         "name": "shadow-observe",
-        "version": "1.0.0"
+        "version": "1.1.0"
       }
     ],
     "handoffs": [

@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "name": "refactoring-and-dead-code-removal-behavior",
+  "skill": "refactoring-and-dead-code-removal",
+  "cases": [
+    {
+      "id": "deletion-keeps-full-gates",
+      "prompt": "You just ran the repository test command and build successfully on the unchanged checkout. Cleanup is limited to one obsolete private helper and its dedicated test. History explains its old purpose; repository-wide reference searches, call-graph checks, configuration/string/dynamic-access checks, and package exports independently confirm it is unreachable and not consumed externally. Live neighboring behavior has characterization tests. After deletion, the focused tests pass. Can you skip the full suite and build to reduce latency, and what final evidence should be reported?",
+      "assertions": [
+        { "id": "requires-full-suite", "type": "regex", "value": "full (?:test )?suite", "flags": "i" },
+        { "id": "requires-build", "type": "contains", "value": "build" }
+      ],
+      "humanReview": [
+        { "id": "mandatory-deletion-gates", "question": "Does it retain the full-suite/build requirement after deletion, distinguish confirming green tests from reachability proof, and avoid claiming these final commands ran when only focused results were supplied?" },
+        { "id": "mechanical-scope", "question": "Does it keep behavior unchanged, remove only the proven-dead helper and its dedicated test, retain live characterization tests, and avoid duplicate final full runs when one satisfies the required gates?" }
+      ]
+    },
+    {
+      "id": "red-baseline-and-dynamic-use",
+      "prompt": "Clean up and delete handler LegacyReport: a static unused-symbol warning flags it, but plugins load handlers by a configuration string and external usage is unknown. The repository test baseline currently fails in another module, and the build cannot find its documented compiler. A teammate says to delete it now, fix unrelated tests later, and bundle a default-value behavior change into the same cleanup. Explain whether to proceed.",
+      "assertions": [
+        { "id": "stops-unverified-cleanup", "type": "regex", "value": "stop|blocked|do not proceed|cannot proceed", "flags": "i" }
+      ],
+      "humanReview": [
+        { "id": "baseline-and-reachability", "question": "Does it stop before refactoring against the red/unknown baseline, seek only authorized prerequisite recovery, and refuse deletion based solely on the warning while dynamic and external consumers are unresolved?" },
+        { "id": "behavior-separation", "question": "Does it separate the default-value change into independently tested work, avoid unrelated baseline repairs or automatic commits, and require evidence or a deprecation policy before deletion?" }
+      ]
+    }
+  ]
+}
