@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
   "name": "feature-delivery-composition",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "source": {
-    "registrySha256": "7b976b12313fb15fa333d7d0507e685b7dabc0fe8ef27fdebacb53ddccc0d2f5",
-    "memberTreeSha256": "a727015630f3d64ccfe101578cbd440f1afc9f823ee1927c1c92d59100efc494",
+    "registrySha256": "96cc2b05f427ed1f1180ec8749a14ec7a5e17951bcef15b5b53a40f0e496250c",
+    "memberTreeSha256": "b12f663f4427f43fc8c1977e721515bc72331497c5f8ae57a25fae846026d98d",
     "suitePath": "evals/packs/feature-delivery.json"
   },
   "pack": {
     "name": "feature-delivery",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "members": [
       {
         "name": "code-review",
@@ -21,7 +21,7 @@
       },
       {
         "name": "planning-and-task-breakdown",
-        "version": "1.0.0"
+        "version": "1.1.0"
       },
       {
         "name": "requirements-and-spec-writing",
@@ -33,7 +33,7 @@
       },
       {
         "name": "verification-before-completion",
-        "version": "1.0.1"
+        "version": "1.1.0"
       }
     ],
     "handoffs": [

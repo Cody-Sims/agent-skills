@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "name": "codebase-exploration-efficiency",
+  "skill": "codebase-exploration",
+  "cases": [
+    {
+      "id": "reuse-local-orientation",
+      "prompt": "Locate the smallest correct edit for checkout retry behavior. This session already has current scoped instructions, the checkout entry point, callers, nearest tests, and declared test command; no relevant files changed. Explain the next action and exploration stop condition without editing.",
+      "assertions": [
+        { "id": "preserves-read-only", "type": "regex", "value": "(read.only|without edit|no edit)", "flags": "i" }
+      ],
+      "humanReview": [
+        { "id": "bounded-orientation", "question": "Does the response use the supplied evidence, inspect only a concrete remaining gap, and stop without a new repository inventory or worker?" }
+      ]
+    },
+    {
+      "id": "consume-worker-evidence",
+      "prompt": "A worker answered the independent payment-boundary question with current file:line evidence and test commands. There are no stale or contradictory findings. Explain how to finish the repository map; the parent still owns one unrelated shipping-boundary question.",
+      "assertions": [
+        { "id": "evidence-based-map", "type": "regex", "value": "(evidence|file:line|path:line)", "flags": "i" }
+      ],
+      "humanReview": [
+        { "id": "exclusive-research", "question": "Does the parent consume the worker report without tracing payments again, limit its own work to shipping, and clearly separate inference from verified findings?" }
+      ]
+    }
+  ]
+}

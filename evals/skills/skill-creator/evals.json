@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "name": "skill-creator-efficiency",
+  "skill": "skill-creator",
+  "cases": [
+    {
+      "id": "targeted-routing-repair",
+      "prompt": "Repair an existing valid skill whose description incorrectly activates on ordinary application edits. Its workflow and resources are otherwise correct. Describe the smallest change and validation plan.",
+      "assertions": [
+        { "id": "checks-near-misses", "type": "regex", "value": "(near.miss|negative|false.positive)", "flags": "i" }
+      ],
+      "humanReview": [
+        { "id": "no-recreation", "question": "Does the response preserve the existing skill and resources, tighten the description with positive/near-miss fixtures, and avoid scaffolding a new skill or rereading unrelated references?" }
+      ]
+    },
+    {
+      "id": "no-unmeasured-savings",
+      "prompt": "We shortened a Copilot skill used with GPT by 40 percent in UTF-8 bytes. Structural validators passed, but no matched model runs were performed. State the observed result and how to verify runtime savings.",
+      "assertions": [
+        { "id": "requires-measurement", "type": "regex", "value": "(matched|benchmark|measure|comparison)", "flags": "i" },
+        { "id": "retains-quality", "type": "regex", "value": "(correctness|quality|rubric|success)", "flags": "i" }
+      ],
+      "humanReview": [
+        { "id": "honest-efficiency-claim", "question": "Does the response distinguish exact byte reduction from unproven speed/billed-token gains and propose matched Copilot/GPT trials with unchanged correctness and safety criteria?" }
+      ]
+    }
+  ]
+}

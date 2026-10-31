@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "name": "codebase-exploration-routing",
+  "trials": 3,
+  "cases": [
+    { "id": "training-onboarding", "split": "training", "prompt": "Orient me in this unfamiliar repository: entry points, scoped instructions, boundaries, and declared test commands.", "expected": ["codebase-exploration"], "excluded": ["shadow-observe"] },
+    { "id": "training-unknown-edit-site", "split": "training", "prompt": "Trace where checkout retries originate and find the smallest correct change site and nearest tests without editing.", "expected": ["codebase-exploration"], "excluded": ["shadow-observe"] },
+    { "id": "validation-repository-map", "split": "validation", "prompt": "Explain how this repository is structured and how its major modules communicate, using evidence paths.", "expected": ["codebase-exploration"], "excluded": ["shadow-observe"] },
+    { "id": "training-known-file-docs", "split": "training", "prompt": "Update the specified README command example and changelog from the supplied interface change. You already have the relevant text and scoped instructions.", "expected": ["documentation-maintenance"], "excluded": ["codebase-exploration", "planning-and-task-breakdown"] },
+    { "id": "validation-shadow-observation", "split": "validation", "prompt": "Run a bounded Shadow architecture scan and generate evidence-linked candidate observations for .shadow.", "expected": ["shadow-observe"], "excluded": ["codebase-exploration"] }
+  ]
+}

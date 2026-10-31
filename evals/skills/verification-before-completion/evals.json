@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "name": "verification-before-completion-efficiency",
+  "skill": "verification-before-completion",
+  "cases": [
+    {
+      "id": "reuse-post-change-evidence",
+      "prompt": "After the final relevant edit in this session, the original reproducer, scoped tests, and all required gates passed with inspected output and exit code 0. Their tested state, dependencies, configuration, environment, and artifacts are unchanged. The earlier-turn output is retained. Explain whether a completion handoff needs to rerun those commands.",
+      "assertions": [
+        { "id": "checks-evidence-validity", "type": "regex", "value": "(unchanged|current state|same state)", "flags": "i" }
+      ],
+      "humanReview": [
+        { "id": "no-ceremonial-rerun", "question": "Does the response reuse inspected post-change evidence without a ceremonial rerun while matching the exact scope of the completion claim?" }
+      ]
+    },
+    {
+      "id": "invalidate-old-evidence",
+      "prompt": "The tests passed earlier, then we edited the production code and changed the test environment. The worker only says it is done, with no command output. Decide whether the bug fix can be called verified and identify the next checks.",
+      "assertions": [
+        { "id": "requires-fresh-checks", "type": "regex", "value": "(rerun|re.run|run again|fresh evidence|new evidence)", "flags": "i" }
+      ],
+      "humanReview": [
+        { "id": "no-stale-pass", "question": "Does the response refuse to claim verified success, rerun the original failing case and required checks, and inspect actual output rather than trust the worker?" }
+      ]
+    },
+    {
+      "id": "required-full-suite",
+      "prompt": "Focused tests passed, but repository instructions require the full suite and type checks before completion. They have not run. Tell me whether the entire change is ready.",
+      "assertions": [
+        { "id": "retains-type-gate", "type": "regex", "value": "type", "flags": "i" }
+      ],
+      "humanReview": [
+        { "id": "preserves-required-gates", "question": "Does the response withhold readiness and require both remaining gates, without equating focused tests with the full suite or skipping checks to save tokens?" }
+      ]
+    }
+  ]
+}

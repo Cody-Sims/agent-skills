@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "name": "planning-and-task-breakdown-efficiency",
+  "skill": "planning-and-task-breakdown",
+  "cases": [
+    {
+      "id": "shared-validation-output",
+      "prompt": "Plan the approved parser and UI updates. Their source files are disjoint, but both validation commands regenerate the same build directory and use the same temporary manifest. Assign ownership and checks for parallel delivery.",
+      "assertions": [
+        { "id": "protects-shared-gate", "type": "regex", "value": "(serial|isolat|single owner|one owner)", "flags": "i" }
+      ],
+      "humanReview": [
+        { "id": "no-gate-race", "question": "Are source-independent work and mutable validation resources distinguished, with isolated or serialized shared checks and one integration owner?" }
+      ]
+    },
+    {
+      "id": "small-edit-no-fleet",
+      "prompt": "The approved change fixes one documentation example in a known file and checks its rendered output. It takes three direct tool calls. Give the smallest useful plan; no workers were requested.",
+      "assertions": [
+        { "id": "does-not-launch-fleet", "type": "notContains", "value": "/fleet" }
+      ],
+      "humanReview": [
+        { "id": "proportional-plan", "question": "Does the response keep the work local without a task tree, worker launches, new planning file, or redundant requirement confirmation?" }
+      ]
+    },
+    {
+      "id": "pause-preserves-state",
+      "prompt": "Two implementation workers have partial edits. The user says to pause because the device has no space. Describe the handoff and conditions for resuming; do not launch anything.",
+      "assertions": [
+        { "id": "records-partial-state", "type": "regex", "value": "(partial|paused|blocked|checkpoint)", "flags": "i" }
+      ],
+      "humanReview": [
+        { "id": "safe-resume", "question": "Does the response preserve ownership, edits, next probes, and blockers without marking unfinished work done, running gates during the pause, or silently relaunching workers?" }
+      ]
+    }
+  ]
+}

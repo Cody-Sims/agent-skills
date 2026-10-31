@@ -13,6 +13,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- Shortened `codebase-exploration`, `planning-and-task-breakdown`,
+  `verification-before-completion`, and `skill-creator` to explicit, scoped
+  workflows suitable for GPT models in Copilot. Added exploration stop rules,
+  exclusive validation-resource ownership, nonempty worker handoffs, and reuse
+  of inspected post-change evidence without weakening required gates.
+- Updated `feature-delivery`, `safe-refactor`, and `release-readiness` to 1.1.0
+  for their exact-version skill dependencies. Added efficiency behavior and
+  routing scenarios; structural checks do not establish runtime or usage gains.
 - Wayfinder now continues safe frontier work automatically with one claim at a
   time, protected budgets and reserves, substantive stop conditions, and
   automatic clear-map handoff while retaining its plan-only and safety

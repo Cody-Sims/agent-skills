@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "name": "planning-and-task-breakdown-routing",
+  "trials": 3,
+  "cases": [
+    { "id": "training-approved-spec", "split": "training", "prompt": "Break this approved feature specification into verifiable tasks with true dependencies and ownership.", "expected": ["planning-and-task-breakdown"], "excluded": ["requirements-and-spec-writing"] },
+    { "id": "training-parallel-partitions", "split": "training", "prompt": "Plan independent implementation partitions for the agreed migration and assign one owner to shared release gates.", "expected": ["planning-and-task-breakdown"], "excluded": ["parallel-worktree-delivery"] },
+    { "id": "validation-delivery-sequence", "split": "validation", "prompt": "Sequence this accepted design into delivery tasks with preservation criteria and exact verification commands.", "expected": ["planning-and-task-breakdown"], "excluded": ["requirements-and-spec-writing"] },
+    { "id": "training-framework-question", "split": "training", "prompt": "Research current Astro rendering capabilities using authoritative online sources and give a contextual recommendation, not a migration plan.", "expected": ["web-research-and-verification"], "excluded": ["planning-and-task-breakdown"] },
+    { "id": "validation-unclear-spec", "split": "validation", "prompt": "Clarify this vague product idea and write agreed requirements and non-goals before planning implementation.", "expected": ["requirements-and-spec-writing"], "excluded": ["planning-and-task-breakdown"] }
+  ]
+}

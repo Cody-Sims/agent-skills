@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "name": "skill-creator-routing",
+  "trials": 3,
+  "cases": [
+    { "id": "training-create-skill", "split": "training", "prompt": "Author a portable SKILL.md with clear triggers, a bounded workflow, and valid frontmatter.", "expected": ["skill-creator"], "excluded": ["agent-tool-interface-design"] },
+    { "id": "training-routing-repair", "split": "training", "prompt": "Fix this skill description so it stops activating on neighboring tasks, and add routing fixtures.", "expected": ["skill-creator"], "excluded": ["repository-agent-bootstrap"] },
+    { "id": "validation-efficiency", "split": "validation", "prompt": "Improve the concision and context efficiency of our existing Agent Skills for Copilot using GPT without weakening safety or verification.", "expected": ["skill-creator"], "excluded": ["agent-tool-interface-design"] },
+    { "id": "training-application-feature", "split": "training", "prompt": "Implement a checkout retry feature and regression test in the application, not a skill.", "expected": ["test-driven-development"], "excluded": ["skill-creator"] },
+    { "id": "validation-tool-design", "split": "validation", "prompt": "Choose a CLI versus MCP interface for agent access to our remote API and define its tool contract.", "expected": ["agent-tool-interface-design"], "excluded": ["skill-creator"] }
+  ]
+}

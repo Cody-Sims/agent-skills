@@ -195,8 +195,8 @@
     },
     {
       "name": "codebase-exploration",
-      "description": "Builds a focused, evidence-based map of an unfamiliar repository before modifying it, locating entry points, build, test, and lint commands, architecture boundaries, conventions, the dependency graph, and the nearest agent instructions, then reading tests to learn intended behavior and finding the smallest correct change site. Use when onboarding to a new or unfamiliar codebase, orienting before a change, or answering how a project is structured and where to edit, while staying read-only.",
-      "version": "1.0.1",
+      "description": "Maps unfamiliar code and locates change sites, scoped instructions, relevant tests, and validation commands. Use when onboarding, tracing an unknown change site, or explaining repository structure; not for a known-file edit with sufficient context. Stays read-only.",
+      "version": "1.1.0",
       "license": "MIT",
       "tier": "core",
       "maturity": {
@@ -271,7 +271,7 @@
       },
       "path": "skills/codebase-exploration",
       "skillFile": "skills/codebase-exploration/SKILL.md",
-      "sha256": "fc6b313f089000ec7833bccd6fd31633b1aec4bedd9671247a81cb18eda2c721",
+      "sha256": "95f51af5a40e7b66111db1db8df0300bc5cf121adfceaccb6961c9c6c2ed70d2",
       "resources": [
         "references/exploration-playbook.md"
       ]
@@ -734,8 +734,8 @@
     },
     {
       "name": "planning-and-task-breakdown",
-      "description": "Decomposes an approved specification into small, ordered, dependency-aware tasks, each with explicit acceptance criteria and a verification command, and identifies which tasks are independent and safely parallelizable without overlapping writes. Use when planning multi-step work, breaking a spec or feature into tasks, sequencing dependencies, or coordinating parallel agents, after requirements are agreed and before implementation begins.",
-      "version": "1.0.0",
+      "description": "Plans approved multi-step work as verifiable outcomes with dependencies, file ownership, and safe parallel boundaries. Use when breaking down an agreed spec, sequencing delivery, or coordinating parallel tasks; not for unresolved requirements or a small direct edit.",
+      "version": "1.1.0",
       "license": "MIT",
       "tier": "core",
       "maturity": {
@@ -810,7 +810,7 @@
       },
       "path": "skills/planning-and-task-breakdown",
       "skillFile": "skills/planning-and-task-breakdown/SKILL.md",
-      "sha256": "a0a8110db64bb00a8184ed5ee5d1872234e4f82545e71eaf8d407fb8b7e1ad23",
+      "sha256": "8203254c1dda346793f5e7e073d1dd416eefeb333f8b248ca7b01e83c3dc653f",
       "resources": [
         "assets/plan-template.md"
       ]
@@ -1533,8 +1533,8 @@
     },
     {
       "name": "skill-creator",
-      "description": "Creates, audits, and improves Agent Skills in this catalog. Captures intent, triggers, and outputs, checks the catalog for overlap, drafts positive and negative trigger prompts, writes routing descriptions, applies progressive disclosure, decides prose versus script, and validates frontmatter. Use when authoring a new SKILL.md, editing or reviewing an existing skill, fixing a skill that fails validation or fails to trigger, or when someone mentions skill authoring, skill frontmatter, or the skill catalog.",
-      "version": "1.0.0",
+      "description": "Authors, audits, and repairs Agent Skills with clear triggers, concise workflows, progressive disclosure, and valid frontmatter. Use when creating or editing SKILL.md, improving skill efficiency or routing, or fixing skill validation; not for application features or tool-interface design.",
+      "version": "1.1.0",
       "license": "MIT",
       "tier": "core",
       "maturity": {
@@ -1610,7 +1610,7 @@
       },
       "path": "skills/skill-creator",
       "skillFile": "skills/skill-creator/SKILL.md",
-      "sha256": "f9b2f2901bea7882fd49e63d45cd21ee48bf6689008ef6eaca8b68499fbec9f6",
+      "sha256": "5758032009e796a5d429b3e9a39890a2add193eb18e90d3157625dadd7442620",
       "resources": [
         "assets/SKILL.template.md",
         "references/description-patterns.md",
@@ -1788,8 +1788,8 @@
     },
     {
       "name": "verification-before-completion",
-      "description": "Requires fresh evidence before any claim that work is done, fixed, passing, working, complete, or ready. Run the relevant command now, read the actual output and exit status, inspect the produced artifact or diff, reproduce the original symptom and confirm it is gone, and distinguish verified results from assumed ones. Use before reporting completion, closing a task, or telling the user something works, and whenever tests, builds, or lint results are described as passing.",
-      "version": "1.0.1",
+      "description": "Verifies completion claims against inspected artifacts and relevant post-change command results. Use before reporting work done, fixed, passing, working, or ready, including subagent results; evidence must match the current state and claimed scope.",
+      "version": "1.1.0",
       "license": "MIT",
       "tier": "core",
       "maturity": {
@@ -1865,7 +1865,7 @@
       },
       "path": "skills/verification-before-completion",
       "skillFile": "skills/verification-before-completion/SKILL.md",
-      "sha256": "4d807c1acb04432d1baee5168f55c3be073dcbea86df620942d866415aa810cb",
+      "sha256": "941cd18bcf225fa376ba03e1e58d246e7e080c08d784c8bcb2e61c7075bf36d7",
       "resources": []
     },
     {
@@ -2183,7 +2183,7 @@
   "packs": [
     {
       "name": "feature-delivery",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "description": "Carries an agreed feature from requirements through implementation review, documentation, and completion verification.",
       "skills": [
         {
@@ -2196,7 +2196,7 @@
         },
         {
           "name": "planning-and-task-breakdown",
-          "version": "1.0.0"
+          "version": "1.1.0"
         },
         {
           "name": "requirements-and-spec-writing",
@@ -2208,7 +2208,7 @@
         },
         {
           "name": "verification-before-completion",
-          "version": "1.0.1"
+          "version": "1.1.0"
         }
       ],
       "handoffs": [
@@ -2251,7 +2251,7 @@
     },
     {
       "name": "release-readiness",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "description": "Coordinates correctness, security, documentation, and final evidence checks before release-related Git work.",
       "skills": [
         {
@@ -2272,7 +2272,7 @@
         },
         {
           "name": "verification-before-completion",
-          "version": "1.0.1"
+          "version": "1.1.0"
         }
       ],
       "handoffs": [
@@ -2310,7 +2310,7 @@
     },
     {
       "name": "safe-refactor",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "description": "Guides a behavior-preserving refactor from codebase mapping and tests through review and completion verification.",
       "skills": [
         {
@@ -2319,7 +2319,7 @@
         },
         {
           "name": "codebase-exploration",
-          "version": "1.0.1"
+          "version": "1.1.0"
         },
         {
           "name": "refactoring-and-dead-code-removal",
@@ -2331,7 +2331,7 @@
         },
         {
           "name": "verification-before-completion",
-          "version": "1.0.1"
+          "version": "1.1.0"
         }
       ],
       "handoffs": [

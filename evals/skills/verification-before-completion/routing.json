@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "name": "verification-before-completion-routing",
+  "trials": 3,
+  "cases": [
+    { "id": "training-completion-claim", "split": "training", "prompt": "Verify the final changed state before telling me this bug is fixed.", "expected": ["verification-before-completion"], "excluded": ["verification-discipline"] },
+    { "id": "training-worker-result", "split": "training", "prompt": "Check the worker's artifacts and post-change command output before marking its task done.", "expected": ["verification-before-completion"], "excluded": ["verification-discipline"] },
+    { "id": "validation-evidence-reuse", "split": "validation", "prompt": "Decide whether these unchanged, inspected post-change checks support a completion claim without rerunning the suite.", "expected": ["verification-before-completion"], "excluded": ["verification-discipline"] },
+    { "id": "training-test-credibility", "split": "training", "prompt": "Audit suspiciously green tests for vacuous assertions and prove they enforce their invariants.", "expected": ["verification-discipline"], "excluded": ["verification-before-completion"] },
+    { "id": "validation-design-options", "split": "validation", "prompt": "Compare future-state architecture options from Shadow observations and accepted constraints; do not implement or claim any option works.", "expected": ["shadow-dream"], "excluded": ["verification-before-completion"] }
+  ]
+}

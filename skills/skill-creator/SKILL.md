@@ -1,117 +1,74 @@
 ---
 name: skill-creator
-description: "Creates, audits, and improves Agent Skills in this catalog. Captures intent, triggers, and outputs, checks the catalog for overlap, drafts positive and negative trigger prompts, writes routing descriptions, applies progressive disclosure, decides prose versus script, and validates frontmatter. Use when authoring a new SKILL.md, editing or reviewing an existing skill, fixing a skill that fails validation or fails to trigger, or when someone mentions skill authoring, skill frontmatter, or the skill catalog."
+description: "Authors, audits, and repairs Agent Skills with clear triggers, concise workflows, progressive disclosure, and valid frontmatter. Use when creating or editing SKILL.md, improving skill efficiency or routing, or fixing skill validation; not for application features or tool-interface design."
 license: MIT
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
   author: "Cody-Sims"
   tier: "core"
 ---
 
 # Skill Creator
 
-Author, audit, and repair skills in this repository so they trigger reliably,
-stay portable across Claude Code, GitHub Copilot, and OpenAI Codex, and pass the
-first-party validator.
-
-## Goal
-
-Produce a skill directory whose `SKILL.md` has correct frontmatter, a description
-that routes reliably, a body that follows progressive disclosure, and provenance
-recorded in metadata.
+Produce or repair `skills/<name>/SKILL.md` with reliable routing, a bounded
+workflow, and validated portable frontmatter. Improve existing skills before
+adding overlapping ones.
 
 ## Inputs
 
-- Required: the capability the skill should add, and at least one realistic user
-  request that should activate it.
-- Optional: an existing skill directory to audit or improve.
-- Output: a validated skill directory under `skills/<name>/`.
-
-If the intended capability or its triggers are unclear, ask one focused question
-before writing. Do not invent scope the requester did not describe.
+Require the capability and a realistic activating request, or an existing skill
+and its observed problem. Ask only for missing consequential scope.
 
 ## Workflow
 
-1. Capture intent, triggers, and outputs. Write one sentence naming what the
-   skill does and one sentence naming what it produces. List concrete user
-   phrases, file types, and artifact names likely to appear in requests.
-2. Search the catalog for overlap. List existing skill names and read the
-   descriptions of any that sound adjacent. If an existing skill already covers
-   the request, extend it instead of adding a near-duplicate. Overlapping
-   descriptions cause routing collisions.
-3. Draft positive and negative trigger prompts. Write at least three requests
-   that must activate the skill and at least two neighboring requests that must
-   not. Use these to test the description and to define boundaries against
-   adjacent skills.
-4. Choose the name. Use lowercase letters, digits, and single hyphens, matching
-   `^[a-z0-9]+(?:-[a-z0-9]+)*$`, 64 characters or fewer. The directory name must
-   equal the frontmatter `name`. Avoid the reserved words that hosted validation
-   rejects. See [frontmatter reference](references/frontmatter.md).
-5. Write the description for routing. Third person, one to 1024 characters, no
-   angle-bracket characters. Front-load concrete trigger vocabulary and state
-   when to use the skill with an explicit clause. The description is the only
-   signal the model sees before activation, so keep every trigger there, not in
-   the body. See [description patterns](references/description-patterns.md).
-6. Apply progressive disclosure. Keep the body under 500 lines and roughly 5000
-   tokens. Give the core workflow as numbered imperative steps. Move long field
-   tables, variant-specific detail, and reference lookups into `references/*.md`
-   linked one level deep. Put copy-pasteable templates and fixtures in `assets/`.
-   Copy `assets/SKILL.template.md` as the starting point.
-7. Decide prose versus script. Prefer prose for judgment-heavy work with several
-   valid approaches. Add a script under `scripts/` only when an operation is
-   deterministic, repetitive, fragile by hand, or machine-verifiable, and state
-   plainly whether the model should read it or run it. Do not add a script just
-   because one is possible.
-8. Set frontmatter. Include `name`, `description`, `license: MIT`, and a
-   `metadata` block with quoted `version`, `author`, and `tier`. Add
-   `disable-model-invocation`, `user-invocable`, or `argument-hint` only when the
-   workflow needs explicit invocation. Never use `allowed-tools`, `when_to_use`,
-   `tools`, `model`, or `paths`.
-9. Record provenance. Set `metadata.version` using semantic versioning, name the
-   author, and note the tier. When a skill adapts prior art, credit the concept
-   in prose without copying wording, and confirm the license permits reuse.
-10. Validate. Run the repository validation command, then run
-    `gh skill publish --dry-run` and read the output. Confirm every relative link
-    resolves and every referenced file exists. Fix each reported issue and
-    revalidate rather than ignoring warnings.
+1. Identify the mode: create, routing repair, validation repair, or efficiency
+   improvement. For an existing skill, read it and relevant neighbors; preserve
+   its name and unrelated resources. Do not restart the full creation checklist.
+2. Define capability, activating requests, inputs, stop condition, and output.
+   Check catalog descriptions for overlap; extend an existing capability or make
+   neighboring boundaries explicit. Read full neighbors only when needed.
+3. For a new or changed description, add at least three positive prompts and two
+   near-misses. Tighten false-positive triggers; add missing user vocabulary for
+   false negatives without broadening the capability.
+4. Front-load concrete trigger words in a concise third-person description with
+   an explicit "Use when" clause. Put routing signals here, not only in the body.
+   Keep explicit procedural steps for GPT-based agents; remove repeated rationale
+   and ceremony, not safety rules, acceptance criteria, or escalation conditions.
+5. Keep the core workflow under 500 lines and roughly 5,000 tokens. Include only
+   needed actions and clear stop/output contracts. Link conditional detail in
+   `references/` directly from the skill; read it only for its stated condition.
+   Use `assets/` for templates. Prefer prose for judgment; add a script only for
+   deterministic, repetitive, fragile, or machine-verifiable work, stating
+   whether to run or read it.
+6. Validate frontmatter against the repository contract: name equals directory,
+   lowercase letters/digits/single hyphens, at most 64 characters, no reserved
+   names; description meets repository length limits and has no angle brackets.
+   Include `license: MIT` and quoted metadata version, author, and tier.
+   Use invocation controls only when justified; never add `allowed-tools`,
+   `when_to_use`, `tools`, `model`, or `paths`. Preserve supported runtimes.
+7. Bump semantic versions for changes and update directly dependent registry,
+   pack, and documentation metadata. Credit adapted concepts without copying
+   wording; verify reuse rights. Do not commit private session evidence.
+8. Run repository-required validation/tests and `gh skill publish --dry-run`.
+   Inspect outputs and exit status; resolve every relative link and referenced
+   file. Fix reported issues and rerun affected checks, not unchanged gates
+   simply because another handoff occurred.
+9. For efficiency claims, compare the previous and candidate skill on matched
+   tasks with the same Copilot runtime/model and correctness rubric. Record
+   calls, output/context size, elapsed time, and available usage separately.
+   Static size reductions or fixture smoke tests do not prove model uplift or
+   billed-token savings. Honor contribution-review gates before publishing.
 
-## Decision points
+## Resources
 
-- Auditing an existing skill: run the same workflow as a checklist. Verify the
-  name matches the directory, the description front-loads triggers, the body fits
-  the line and token budgets, links resolve, and no forbidden field is present.
-- Skill triggers on the wrong requests: tighten the description, sharpen the
-  boundary against the neighboring skill, and remove trigger vocabulary shared
-  with it.
-- Skill fails to trigger: broaden the description with neighboring intents and
-  add the missing user vocabulary, without adding unrelated scope.
-- Body exceeds the budget: move factual lookup material and rarely used variants
-  into `references/`, keeping the essential first steps in `SKILL.md`.
+- [Frontmatter reference](references/frontmatter.md): consult for field rules.
+- [Description patterns](references/description-patterns.md): consult for
+  routing examples or collisions.
+- [Skill template](assets/SKILL.template.md): use for a new skill, not a repair.
 
-## Validation
+## Output
 
-Before finishing, confirm:
-
-- The directory name equals the frontmatter `name`.
-- Frontmatter contains only allowed keys, with `license: MIT` and quoted
-  `metadata` values.
-- The description is third person, within length limits, and free of angle
-  brackets.
-- The body is under 500 lines and links each reference one level deep.
-- Every referenced file exists and every relative link resolves.
-- The repository validation command and `gh skill publish --dry-run` both pass.
-
-Fix the cause of any failure and rerun validation.
-
-## Bundled resources
-
-- Read [frontmatter reference](references/frontmatter.md) for the full field
-  table, constraints, and forbidden fields.
-- Read [description patterns](references/description-patterns.md) for good and bad
-  descriptions with reasoning.
-- Copy [the skill template](assets/SKILL.template.md) to start a new skill.
-
-## Output format
-
-Report the skill directory path, the final description line, the `SKILL.md` line
-count, the validator result, and any unresolved issue or assumption.
+Report changed paths, final descriptions, line counts, validation results, and
+unresolved assumptions. Include measured improvements and their limits; never
+leave the handoff empty. Generate runtime copies through the supported installer,
+not hand-maintained edits.
