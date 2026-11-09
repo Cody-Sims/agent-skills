@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "skill": "refactoring-and-dead-code-removal",
+  "expertiseSources": [
+    {
+      "type": "runbook",
+      "reference": "skills/refactoring-and-dead-code-removal/references/dead-code-evidence.md",
+      "summary": "Defines deletion evidence including dynamic registration, configuration, reflection, aliases, public exports, and external consumers."
+    }
+  ],
+  "comparison": null,
+  "exception": {
+    "type": "safety",
+    "rationale": "The streamlined procedure retains a passing baseline, characterization where needed, preservation of live behavior and tests, and full-suite/build gates after deletion. Unknown dynamic or external use is not proof of dead code, and failure recovery cannot discard others' changes. Destructive-deletion risk is the relevant measure; no model uplift or human approval is fabricated."
+  }
+}

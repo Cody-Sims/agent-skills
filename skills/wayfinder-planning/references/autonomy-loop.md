@@ -85,7 +85,8 @@ operation, and end with exactly
 with the same prefix and ends with exactly
 `release, verify-release, recompute-frontier`; its middle operations are unique
 and limited to inspection and allowed work. A worker event must have a matching
-ordered `worker:<operation>` dispatch. Omitted, extra, cross-phase, or
+ordered `worker:<operation>` dispatch after claim inspection and before the
+matching `consolidate-workers` dispatch. Omitted, extra, cross-phase, or
 reordered dispatches fail closed.
 
 ## Provider and byte accounting
@@ -199,12 +200,16 @@ signature OR verification_digest
 `actor_id`; and `verifier` may alias `verifier_id`, but aliases must agree.
 The request hash is a lowercase SHA-256 of the exact original request. The
 human actor must be trusted and distinct from the controller. Timestamps are
-strict RFC 3339 and `expires_at` must be after `issued_at` and after the
-handoff's final cycle time. A verifier signature or verification digest is
-mandatory.
+strict RFC 3339. The approval must be issued by, and expire strictly after, the
+handoff time. A verifier signature or verification digest is mandatory.
 
 The handoff record contains `target` and `authorized_by`, plus
-`approval_id`, `approval_digest`, and optional `verifier_id`. The digest binds
+`approval_id`, `approval_digest`, optional `verifier_id`, and optional `at`.
+`at` is a strict RFC 3339 timestamp supplied by the host for the handoff event;
+it must not predate the final cycle. When omitted, planning approval is checked
+at the final cycle's finish time for compatibility. An already-clear map with
+zero cycles must supply `at`; the checker never substitutes approval issuance
+or the process wall clock for a missing handoff time. The digest binds
 the approval ID, request hash, actor, allowed handoff, issuance and expiry,
 verifier, verification digest, and signature form. The harness verifies every
 binding; the host authenticates the external verifier. Inject the approval

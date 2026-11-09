@@ -1970,7 +1970,7 @@
     {
       "name": "wayfinder-planning",
       "description": "Navigates Wayfinder decision maps, fog of war, and frontier tickets with bounded, claim-first autonomous loops. Use when charting, resuming, or replanning multi-session uncertainty; not for static specifications, approved-spec task breakdown, agent execution, Git/PR delivery, or durable architecture recording.",
-      "version": "2.1.0",
+      "version": "2.1.1",
       "license": "MIT",
       "tier": "experimental",
       "maturity": {
@@ -2084,7 +2084,7 @@
       },
       "path": "skills/wayfinder-planning",
       "skillFile": "skills/wayfinder-planning/SKILL.md",
-      "sha256": "5f7e59f1cdee0cf32b7d55ef193030e1f9afd53e9faf1730ab769fc276291768",
+      "sha256": "31aee5255fd8d627ffe5162a96d22cdd40f6d0c70785745b68f2fe4525e74858",
       "resources": [
         "assets/map-template.md",
         "assets/ticket-template.md",

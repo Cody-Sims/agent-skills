@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "skill": "planning-and-task-breakdown",
+  "expertiseSources": [
+    {
+      "type": "runbook",
+      "reference": "skills/planning-and-task-breakdown/assets/plan-template.md",
+      "summary": "Records verifiable outcomes, actual dependencies, file ownership, and validation boundaries for agreed work."
+    }
+  ],
+  "comparison": null,
+  "exception": {
+    "type": "safety",
+    "rationale": "The revision makes shared validation-resource ownership explicit and requires isolation or serialization for generated outputs, caches, ports, databases, and build state. It preserves approved scope and separates worker checks from integrated correctness. These concurrency and ownership controls warrant a requested safety exception; neither a benchmark gain nor a completed human review is claimed."
+  }
+}

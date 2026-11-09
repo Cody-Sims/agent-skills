@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "skill": "requirements-and-spec-writing",
+  "expertiseSources": [
+    {
+      "type": "runbook",
+      "reference": "skills/requirements-and-spec-writing/assets/spec-template.md",
+      "summary": "Defines constraints, non-goals, acceptance criteria, privacy and security requirements, open decisions, and rollout boundaries."
+    }
+  ],
+  "comparison": null,
+  "exception": {
+    "type": "safety",
+    "rationale": "The specification workflow prevents an unapproved draft or unavailable requester from becoming authorization for implementation. It keeps consequential policy, retention, security, and rollout choices requester-owned and pairs requirements with observable acceptance criteria. The revision retains these consent boundaries while narrowing exploration; this requests a safety exception, not invented requester agreement or measured quality uplift."
+  }
+}

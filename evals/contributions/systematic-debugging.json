@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "skill": "systematic-debugging",
+  "expertiseSources": [
+    {
+      "type": "runbook",
+      "reference": "skills/systematic-debugging/references/root-cause-tracing.md",
+      "summary": "Defines evidence-backed tracing, differential diagnosis, bounded probes, and correction at the first state divergence."
+    }
+  ],
+  "comparison": null,
+  "exception": {
+    "type": "safety",
+    "rationale": "The revision distinguishes missing prerequisites from product defects, requires reproduction and a falsifiable cause before production edits, and rejects swallowed errors or blind retries. Regression red/green evidence and bounded intermittent checks remain mandatory. These controls prevent speculative fixes and false success claims; the record requests a safety exception without fabricated efficiency evidence or human approval."
+  }
+}

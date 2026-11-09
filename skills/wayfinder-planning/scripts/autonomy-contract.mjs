@@ -1167,6 +1167,7 @@ function normalizeHandoff(value) {
       'approval_id',
       'approval_digest',
       'verifier_id',
+      'at',
     ]),
     ['target', 'authorized_by'],
   );
@@ -1187,6 +1188,7 @@ function normalizeHandoff(value) {
     verifier_id: value.verifier_id === undefined
       ? null
       : meaningfulString(value.verifier_id, 'handoff.verifier_id', 256),
+    ...(value.at === undefined ? {} : { at: timestamp(value.at, 'handoff.at') }),
   };
 }
 
@@ -1460,6 +1462,7 @@ function checkWorkerOperations(cycle, normalized, violations) {
   const workDispatches = cycle.dispatched_operations.work;
   const claimDispatchIndex = workDispatches.indexOf('claim');
   const inspectDispatchIndex = workDispatches.indexOf('inspect');
+  const consolidationDispatchIndex = workDispatches.indexOf('consolidate-workers');
   const workerDispatchCursor = new Map();
   for (const [workerIndex, operation] of cycle.worker_operations.entries()) {
     if (operation.controller_id !== normalized.invocation.owner_id
@@ -1507,7 +1510,8 @@ function checkWorkerOperations(cycle, normalized, violations) {
     if (claimDispatchIndex < 0
         || inspectDispatchIndex < 0
         || dispatchIndex <= claimDispatchIndex
-        || dispatchIndex <= inspectDispatchIndex) {
+        || dispatchIndex <= inspectDispatchIndex
+        || (consolidationDispatchIndex >= 0 && dispatchIndex >= consolidationDispatchIndex)) {
       addViolation(violations, 'worker-event-order');
     }
   }
@@ -1997,15 +2001,25 @@ function checkStopAndHandoff(normalized, totalUsage, committedTickets, violation
         if (handoff.verifier_id !== null && handoff.verifier_id !== approval.verifier_id) {
           addViolation(violations, 'planning-approval-verifier');
         }
-        const finalTime = finalCycle
+        const finalCycleTime = finalCycle
           ? parseTimestamp(
             finalCycle.timing.finished_at,
             'cycles.final.timing.finished_at',
           )
-          : Number.NEGATIVE_INFINITY;
-        if (parseTimestamp(approval.issued_at, 'trusted_approval.issued_at') > finalTime
-            || parseTimestamp(approval.expires_at, 'trusted_approval.expires_at') <= finalTime) {
-          addViolation(violations, 'planning-approval-expired');
+          : null;
+        const handoffTime = handoff.at === undefined
+          ? finalCycleTime
+          : parseTimestamp(handoff.at, 'handoff.at');
+        if (handoffTime === null) {
+          addViolation(violations, 'planning-approval-time-required');
+        } else {
+          if (finalCycleTime !== null && handoffTime < finalCycleTime) {
+            addViolation(violations, 'planning-approval-time-before-cycle');
+          }
+          if (parseTimestamp(approval.issued_at, 'trusted_approval.issued_at') > handoffTime
+              || parseTimestamp(approval.expires_at, 'trusted_approval.expires_at') <= handoffTime) {
+            addViolation(violations, 'planning-approval-expired');
+          }
         }
       }
     } else {

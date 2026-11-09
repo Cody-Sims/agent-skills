@@ -972,6 +972,57 @@ function approvedPlanningTrace() {
   });
 }
 
+test('already-clear planning handoffs require an explicit timestamp, not an expired approval', () => {
+  const trace = approvedPlanningTrace();
+  trace.cycles = [];
+  trace.frontier_snapshots = [snapshot(0, 10, [])];
+
+  const result = evaluateAutonomyTrace(trace);
+  assert.equal(result.valid, false);
+  assert.ok(result.violation_codes.includes('planning-approval-time-required'));
+  assert.ok(!result.violation_codes.includes('planning-approval-expired'));
+});
+
+test('already-clear planning handoffs validate the approval at the handoff timestamp', () => {
+  const trace = approvedPlanningTrace();
+  trace.cycles = [];
+  trace.frontier_snapshots = [snapshot(0, 10, [])];
+  trace.handoff.at = BASE_TIME;
+
+  const result = evaluateAutonomyTrace(trace);
+  assert.equal(result.valid, true, result.violation_codes.join(', '));
+  assert.equal(result.cycles, 0);
+  assert.equal(result.handoff.target, 'planning-and-task-breakdown');
+
+  for (const at of [
+    '2026-08-29T11:59:59.999Z',
+    '2026-08-29T12:30:00.000Z',
+    '2026-08-29T12:30:00.001Z',
+  ]) {
+    const invalid = structuredClone(trace);
+    invalid.handoff.at = at;
+    const rejected = evaluateAutonomyTrace(invalid);
+    assert.equal(rejected.valid, false, at);
+    assert.ok(rejected.violation_codes.includes('planning-approval-expired'), at);
+  }
+});
+
+test('explicit planning handoff times cannot predate the final cycle or reuse an expired approval', () => {
+  const trace = approvedPlanningTrace();
+  trace.handoff.at = '2026-08-29T12:00:35.000Z';
+  assert.equal(evaluateAutonomyTrace(trace).valid, true);
+
+  trace.handoff.at = '2026-08-29T12:00:34.999Z';
+  let result = evaluateAutonomyTrace(trace);
+  assert.equal(result.valid, false);
+  assert.ok(result.violation_codes.includes('planning-approval-time-before-cycle'));
+
+  trace.handoff.at = trace.trusted_approval.expires_at;
+  result = evaluateAutonomyTrace(trace);
+  assert.equal(result.valid, false);
+  assert.ok(result.violation_codes.includes('planning-approval-expired'));
+});
+
 test('binds every controller and worker dispatch exactly to ordered consuming operations', () => {
   let trace = eventfulTrace();
   trace.cycles[0].dispatched_operations.work = [
@@ -1008,6 +1059,19 @@ test('binds every controller and worker dispatch exactly to ordered consuming op
   result = evaluateAutonomyTrace(trace);
   assert.equal(result.valid, false);
   assert.ok(result.violation_codes.includes('dispatch-sequence-mismatch'));
+});
+
+test('worker dispatches must finish before their consolidation dispatch', () => {
+  const trace = eventfulTrace();
+  const dispatches = trace.cycles[0].dispatched_operations.work;
+  trace.cycles[0].dispatched_operations.work = [
+    ...dispatches.filter((operation) => !operation.startsWith('worker:')),
+    ...dispatches.filter((operation) => operation.startsWith('worker:')),
+  ];
+
+  const result = evaluateAutonomyTrace(trace);
+  assert.equal(result.valid, false);
+  assert.ok(result.violation_codes.includes('worker-event-order'));
 });
 
 test('rejects worker events before claim inspection and after synchronization or release', () => {

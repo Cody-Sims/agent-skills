@@ -130,6 +130,17 @@ key with a different operation or payload is a conflict. Domain keys remain requ
 For `external_action`, `mutation_key` is the stable action
 `idempotency_key`.
 
+No-op progress and receipt journal entries retain the original record/action
+time as `committed_at`. If that record predates the current lease, the checker
+also records `authorized_at` from the current invocation's adapter time.
+Reconstruction requires this authorization time to be at or after the original
+record time and within the current claim's acquisition/expiry interval. Without
+it, legacy entries must prove that the claim was active at `committed_at`.
+Other mutations cannot use `authorized_at` to bypass their timestamp checks.
+Exact durable fence confirmations remain valid after later full reads; replaying
+an older confirmed reclaim or release must not resurrect that read fence or
+replace a newer pending fence.
+
 | Operation | Required behavior |
 |---|---|
 | `create_map` | Create one parent record from the map template and return its identity and revision. Reject an ambiguous destination or duplicate operation. |

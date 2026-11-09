@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "skill": "code-review",
+  "expertiseSources": [
+    {
+      "type": "runbook",
+      "reference": "skills/code-review/references/review-checklist.md",
+      "summary": "Provides the existing correctness, failure, trust-boundary, performance, and compatibility review criteria used by the streamlined workflow."
+    }
+  ],
+  "comparison": null,
+  "exception": {
+    "type": "safety",
+    "rationale": "This review-only workflow guards against unreviewed diff sections, speculative approvals, unauthorized edits, and unsupported completion claims. The streamlining retains evidence-ranked blocking findings and explicitly separates inspected code from executed checks. Safety cases and independent review are the appropriate gate; no measured model uplift or completed human exception approval is claimed."
+  }
+}

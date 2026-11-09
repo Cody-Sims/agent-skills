@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "skill": "security-review",
+  "expertiseSources": [
+    {
+      "type": "runbook",
+      "reference": "skills/security-review/references/threat-checklist.md",
+      "summary": "Defines applicable STRIDE, authorization, injection, data-flow, secret-exposure, and resource-exhaustion checks."
+    }
+  ],
+  "comparison": null,
+  "exception": {
+    "type": "safety",
+    "rationale": "This threat-review workflow traces untrusted entry points to privileged sinks, preserves credential and live-system boundaries, and distinguishes confirmed exploits from speculation and unassessed scope. The streamlining retains those protections without authorizing remediation or probing. Security risk reduction warrants the requested safety exception; no assurance of unreviewed code, comparative uplift, or human approval is claimed."
+  }
+}

@@ -6,6 +6,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed approved planning handoffs for already-clear Wayfinder maps with zero
+  cycles. Wayfinder 2.1.1 accepts an explicit host-supplied `handoff.at`, retains
+  final-cycle time compatibility, and rejects missing, pre-cycle, future-issued,
+  or expired approval times. Added focused regression coverage.
+- Kept confirmed reclaim fences cleared after later reads and replay, made
+  historical progress/receipt no-op journals recoverable under replacement
+  leases with separately validated authorization time, and rejected worker
+  dispatches occurring after their consolidation dispatch.
+
 ### Added
 
 - Added a research-backed feature opportunity roadmap covering skills, workflow
@@ -13,6 +24,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- Completed contribution records for the earlier ten streamlined skills with
+  specific safety/compliance exception requests and existing expertise sources.
+  These are not fabricated comparisons, human approvals, or evidence of runtime
+  or usage uplift.
 - Added a conditional, research-linked session-audit procedure to `skill-creator`
   1.2.0 with backend-specific history queries, explicit trace coverage, private
   evidence boundaries, synthetic-control separation, and matched-run requirements.

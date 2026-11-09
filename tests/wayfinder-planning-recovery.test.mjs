@@ -6532,6 +6532,175 @@ test('preexisting progress journals a stable no-op across changed invocation tim
   }
 });
 
+test('confirmed reclaim replay stays unfenced after a later full inspection', () => {
+  const scenario = replayScenario('reclaim_expired_claim');
+  const reclaim = scenario.operation;
+  const progress = {
+    operation: 'record_progress',
+    mutation_key: 'mutation:confirmed-reclaim-progress',
+    ticket_id: reclaim.ticket_id,
+    expected_revision: 2,
+    claim_token: reclaim.new_claim_token,
+    owner_id: reclaim.owner_id,
+    session_id: reclaim.session_id,
+    progress_key: 'progress:confirmed-reclaim',
+    payload: { summary: 'Progress after confirming the reclaimed lease.' },
+  };
+  const result = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: { tickets: [scenario.ticket] },
+    operations: [
+      reclaim,
+      { operation: 'get_ticket', ticket_id: reclaim.ticket_id, expected_revision: 2, full: true },
+      progress,
+      { operation: 'get_ticket', ticket_id: reclaim.ticket_id, expected_revision: 3, full: true },
+      reclaim,
+      {
+        ...progress,
+        mutation_key: 'mutation:confirmed-reclaim-progress-later',
+        expected_revision: 3,
+        progress_key: 'progress:confirmed-reclaim-later',
+        payload: { summary: 'Progress after replaying the already-confirmed reclaim.' },
+      },
+    ],
+  }));
+  assert.deepEqual(result.violationCodes, []);
+  assert.equal(result.transitions[4].replayed, true);
+  assert.equal(result.finalState.tickets[0].revision, 4);
+
+  const restarted = evaluateRecoveryTraceStrict(strictTrace({
+    initialState: result.finalState,
+    mutationJournal: result.mutationJournal,
+    operations: [reclaim],
+  }));
+  assert.deepEqual(restarted.violationCodes, []);
+  assert.equal(restarted.transitions[0].replayed, true);
+  assert.deepEqual(restarted.finalState, result.finalState);
+});
+
+test('historical no-op progress and receipts remain recoverable under a replacement lease', async (t) => {
+  const activeClaim = {
+    ...liveClaim('historical-no-op'),
+    acquired_at: '2026-08-23T19:45:00.000Z',
+  };
+  const recordedAt = '2026-08-23T19:30:00.000Z';
+  const receipt = {
+    external_system: 'vendor-api',
+    idempotency_key: 'action-historical-no-op',
+    result: 'succeeded',
+    lookup_reference: 'vendor:historical-no-op',
+  };
+  const cases = [
+    {
+      name: 'progress',
+      initialState: {
+        tickets: [ticket({
+          id: 'ticket-historical-no-op',
+          revision: 2,
+          claim: activeClaim,
+          progress_records: [{
+            progress_key: 'progress:historical-no-op',
+            payload: { summary: 'Progress recorded before the replacement lease.' },
+            recorded_at: recordedAt,
+            revision: 2,
+          }],
+        })],
+      },
+      operation: {
+        operation: 'record_progress',
+        progress_key: 'progress:historical-no-op',
+        payload: { summary: 'Progress recorded before the replacement lease.' },
+      },
+    },
+    {
+      name: 'receipt',
+      initialState: {
+        tickets: [ticket({
+          id: 'ticket-historical-no-op',
+          revision: 2,
+          type: 'task',
+          claim: activeClaim,
+          task_action: {
+            ...intendedTaskAction('historical-no-op'),
+            state: 'succeeded',
+            external_receipt: receipt,
+          },
+        })],
+        external_actions: [{
+          ticket_id: 'ticket-historical-no-op',
+          idempotency_key: receipt.idempotency_key,
+          external_system: receipt.external_system,
+          lookup_reference: receipt.lookup_reference,
+          outcome: receipt.result,
+          performed_at: recordedAt,
+        }],
+      },
+      operation: {
+        operation: 'record_task_receipt',
+        idempotency_key: receipt.idempotency_key,
+        outcome: receipt.result,
+        receipt,
+      },
+    },
+  ];
+
+  for (const scenario of cases) {
+    await t.test(scenario.name, () => {
+      const operation = {
+        ...scenario.operation,
+        mutation_key: `mutation:historical-no-op:${scenario.name}`,
+        ticket_id: 'ticket-historical-no-op',
+        expected_revision: 2,
+        claim_token: activeClaim.claim_token,
+        owner_id: activeClaim.owner_id,
+        session_id: activeClaim.session_id,
+      };
+      const first = evaluateRecoveryTraceStrict(strictTrace({
+        initialState: scenario.initialState,
+        operations: [operation],
+      }));
+      assert.deepEqual(first.violationCodes, []);
+      assert.equal(first.mutationJournal[0].committed_at, recordedAt);
+
+      const replay = evaluateRecoveryTraceStrict(strictTrace({
+        now: '2026-08-23T20:30:00.000Z',
+        initialState: first.finalState,
+        mutationJournal: first.mutationJournal,
+        operations: [operation],
+      }));
+      assert.deepEqual(replay.violationCodes, []);
+      assert.equal(replay.transitions[0].replayed, true);
+      assert.deepEqual(replay.finalState, first.finalState);
+      assert.deepEqual(replay.mutationJournal, first.mutationJournal);
+
+      for (const authorizedAt of [
+        undefined,
+        '2026-08-23T19:44:59.999Z',
+        activeClaim.expires_at,
+      ]) {
+        const forgedJournal = structuredClone(first.mutationJournal);
+        if (authorizedAt === undefined) delete forgedJournal[0].authorized_at;
+        else forgedJournal[0].authorized_at = authorizedAt;
+        const rejected = evaluateRecoveryTraceStrict(strictTrace({
+          initialState: first.finalState,
+          mutationJournal: forgedJournal,
+          operations: [operation],
+        }));
+        assertCompactNoMutation(rejected, 0, 'mutation-journal-conflict');
+      }
+
+      if (scenario.name === 'receipt') {
+        const futureRecord = structuredClone(scenario.initialState);
+        futureRecord.external_actions[0].performed_at = '2026-08-23T21:30:00.000Z';
+        const rejected = evaluateRecoveryTraceStrict(strictTrace({
+          initialState: futureRecord,
+          operations: [operation],
+        }));
+        assertCompactNoMutation(rejected, 0, 'mutation-journal-conflict');
+      }
+    });
+  }
+});
+
 test('ambiguous journal-only fence candidates fail closed', () => {
   const scenario = replayScenario('reclaim_expired_claim');
   const first = evaluateRecoveryTraceStrict(strictTrace({

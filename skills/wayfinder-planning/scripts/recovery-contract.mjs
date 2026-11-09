@@ -1167,6 +1167,9 @@ function normalizeMutationJournal(value) {
       before_state_sha256: beforeStateSha256,
       after_state_sha256: afterStateSha256,
       committed_at: timestamp(entry.committed_at, `${path}.committed_at`),
+      ...(entry.authorized_at === undefined
+        ? {}
+        : { authorized_at: timestamp(entry.authorized_at, `${path}.authorized_at`) }),
       operation_input: operationInput,
       before_recovery_confirmations: normalizeConfirmationSnapshot(
         entry.before_recovery_confirmations,
@@ -1644,6 +1647,14 @@ function replayTimestampMatchesState(entry, operation, state, beforeState) {
   const ticket = state.tickets.find(({ id }) => id === operation.ticket_id);
   const beforeTicket = beforeState.tickets.find(({ id }) => id === operation.ticket_id);
   if (!ticket || !beforeTicket) return false;
+  const noOp = (operation.operation === 'record_progress' && entry.result.no_op === true)
+    || (operation.operation === 'record_task_receipt'
+      && entry.result.ticket_revision === operation.expected_revision);
+  const authorizedAt = entry.authorized_at ?? entry.committed_at;
+  if (entry.authorized_at !== undefined
+      && (!noOp || Date.parse(authorizedAt) < Date.parse(entry.committed_at))) {
+    return false;
+  }
   switch (operation.operation) {
     case 'record_progress': {
       const record = ticket.progress_records.find(({ progress_key: key }) =>
@@ -1651,7 +1662,7 @@ function replayTimestampMatchesState(entry, operation, state, beforeState) {
       if (entry.result.no_op === true) {
         return record?.recorded_at === entry.result.recorded_at
           && record.recorded_at === entry.committed_at
-          && claimWasActiveAt(beforeTicket, entry.committed_at);
+          && claimWasActiveAt(beforeTicket, authorizedAt);
       }
       return record?.recorded_at === entry.committed_at
           && claimWasActiveAt(beforeTicket, entry.committed_at);
@@ -1684,7 +1695,7 @@ function replayTimestampMatchesState(entry, operation, state, beforeState) {
           candidate.ticket_id === ticket.id
             && candidate.idempotency_key === operation.idempotency_key);
         return action?.performed_at === entry.committed_at
-          && claimWasActiveAt(beforeTicket, entry.committed_at);
+          && claimWasActiveAt(beforeTicket, authorizedAt);
       }
       return claimWasActiveAt(beforeTicket, entry.committed_at);
     case 'release_claim':
@@ -1929,7 +1940,12 @@ function appendJournal(
   mapId,
   committedAt,
   violations,
+  authorizedAt = null,
 ) {
+  if (authorizedAt !== null && Date.parse(authorizedAt) < Date.parse(committedAt)) {
+    addViolation(violations, 'mutation-journal-conflict');
+    return null;
+  }
   if (journal.length >= RECOVERY_LIMITS.journalEntries) {
     addViolation(violations, 'journal-capacity-exceeded');
     return null;
@@ -1949,6 +1965,7 @@ function appendJournal(
       before_state_sha256: sha256(beforeState),
       after_state_sha256: sha256(afterState),
       committed_at: committedAt,
+      ...(authorizedAt === null ? {} : { authorized_at: authorizedAt }),
       operation_input: clone(operation),
       before_recovery_confirmations: clone(beforeState.recovery_confirmations ?? []),
       after_recovery_confirmations: clone(afterState.recovery_confirmations ?? []),
@@ -2723,12 +2740,19 @@ function applyOperation(
       if (!replay.conflict) {
         const replayContext = clone(existingContext);
         const replayRevision = replay.result.ticket_revision;
+        const replayEntry = journal.find((entry) =>
+          entry.mutation_key === operation.mutation_key);
+        const fenceConfirmed = replayEntry !== undefined
+          && (state.recovery_confirmations ?? []).some((confirmation) =>
+            confirmationMatchesFenceJournal(confirmation, replayEntry, mapId));
         if (operation.operation === 'release_claim'
-            && replayContext.lastReleaseConfirmationRevision !== replayRevision) {
+            && replayContext.lastReleaseConfirmationRevision !== replayRevision
+            && !fenceConfirmed) {
           replayContext.releaseConfirmationRequiredAtRevision = replayRevision;
         }
         if (operation.operation === 'reclaim_expired_claim'
-            && replayContext.lastFullInspectionRevision !== replayRevision) {
+            && replayContext.lastFullInspectionRevision !== replayRevision
+            && !fenceConfirmed) {
           replayContext.inspectionRequiredAtRevision = replayRevision;
         }
         replayContexts = new Map(contexts);
@@ -2900,6 +2924,8 @@ function applyOperation(
     const noOp = mutationResult.ticket_revision === operation.expected_revision;
     const authoritativeAt = authoritativeNoOpTimestamp(operation, mutationResult, state);
     const committedAt = noOp ? authoritativeAt : now;
+    const authorizedAt = noOp && authoritativeAt !== null
+      && !claimWasActiveAt(candidate.ticket, authoritativeAt) ? now : null;
     const shouldJournal = !noOp || authoritativeAt !== null;
     if (shouldJournal) {
       nextJournal = appendJournal(
@@ -2911,6 +2937,7 @@ function applyOperation(
         mapId,
         committedAt,
         violations,
+        authorizedAt,
       );
       if (violations.length > 0 || nextJournal === null) {
         return {

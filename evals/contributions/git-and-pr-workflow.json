@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "skill": "git-and-pr-workflow",
+  "expertiseSources": [
+    {
+      "type": "runbook",
+      "reference": "skills/git-and-pr-workflow/references/worktrees-and-conflicts.md",
+      "summary": "Documents live-checkout preservation, conflict-intent reconciliation, explicit ownership, and safe worktree cleanup."
+    }
+  ],
+  "comparison": null,
+  "exception": {
+    "type": "safety",
+    "rationale": "The workflow guards mutable shared Git state: it requires full staged-diff inspection, explicit-path staging, preservation of other owners' work, and authorization for remote writes and history rewriting. The shortened workflow retains those invariants and forbids destructive cleanup on inferred merge status. Evaluation should prioritize lost-work and unauthorized-action prevention; no fabricated comparison or human approval is recorded."
+  }
+}

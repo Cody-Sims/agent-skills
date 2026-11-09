@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "skill": "test-driven-development",
+  "expertiseSources": [
+    {
+      "type": "runbook",
+      "reference": "skills/test-driven-development/references/test-design.md",
+      "summary": "Defines observable behavior assertions, test-level selection, isolation, deterministic boundaries, and meaningful regression evidence."
+    }
+  ],
+  "comparison": null,
+  "exception": {
+    "type": "safety",
+    "rationale": "The streamlined workflow explicitly requires an observed expected red step before production implementation, rejects vacuous or weakened assertions, and limits exceptions to authorized nonbehavioral work. It preserves surrounding and repository-required gates instead of equating a focused pass with complete correctness. This requests a regression-safety exception; no measured output-quality gain or completed human approval is claimed."
+  }
+}

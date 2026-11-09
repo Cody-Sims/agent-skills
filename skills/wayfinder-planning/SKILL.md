@@ -3,7 +3,7 @@ name: wayfinder-planning
 description: "Navigates Wayfinder decision maps, fog of war, and frontier tickets with bounded, claim-first autonomous loops. Use when charting, resuming, or replanning multi-session uncertainty; not for static specifications, approved-spec task breakdown, agent execution, Git/PR delivery, or durable architecture recording."
 license: MIT
 metadata:
-  version: "2.1.0"
+  version: "2.1.1"
   author: "Cody-Sims and contributors"
   tier: "experimental"
 ---

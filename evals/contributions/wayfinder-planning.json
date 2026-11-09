@@ -10,12 +10,12 @@
     {
       "type": "specification",
       "reference": "skills/wayfinder-planning/references/tracker-contract.md",
-      "summary": "Defines strict RFC 3339 timestamps, map-scoped operation targets, bounded normalized state, lifecycle and revision guards, a capped coherent hash journal with mandatory operation_input fingerprints, durable mutation_receipts for stable no-op and task replay, recoverable pending receipts, reclaim and release read fences with post-confirmation replay reconstruction, compact transition evidence, and human reconciliation audits for adapter recovery."
+      "summary": "Defines strict RFC 3339 timestamps, map-scoped operation targets, bounded normalized state, lifecycle and revision guards, a capped coherent hash journal with mandatory operation_input fingerprints, durable mutation_receipts for stable no-op and task replay, recoverable pending receipts, reclaim and release read fences with exact durable confirmations, separate authorization time for historical no-op records under replacement leases, compact transition evidence, and human reconciliation audits for adapter recovery."
     },
     {
       "type": "other",
       "reference": "skills/wayfinder-planning/scripts/autonomy-contract.mjs",
-      "summary": "Defines bounded autonomy conformance for exact cycle and stop grammar, dispatch and worker-event binding, temporal worker fences, trusted UTF-8 telemetry accounting, frontier derivation, request-bound approvals, and scalable checkpoints."
+      "summary": "Defines bounded autonomy conformance for exact cycle and stop grammar, dispatch and worker-event binding, temporal worker fences, trusted UTF-8 telemetry accounting, frontier derivation, request-bound approvals, and scalable checkpoints. Explicit host handoff timestamps allow already-clear maps while retaining issuance, expiry, and final-cycle ordering guards."
     }
   ],
   "comparison": null,
