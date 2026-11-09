@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
   "name": "safe-refactor-composition",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "source": {
-    "registrySha256": "f66fabe39b82fc21efd2ceb6371f605d9f8a3fdd1d3e1954bc341c9a0125ce79",
-    "memberTreeSha256": "48b2b8628bc20e1c280956ba895029e4672c3fd875675d0e4bd29e4459fe64dc",
+    "registrySha256": "4435ab6eda3dbf8a9e7ba52b2021dc6c59a7b5e09136d0a1500e63a85318ddfb",
+    "memberTreeSha256": "06e9477bfc6f766b7521cd33f4e9d8ada3c58d38ae73cf045dc3c3dd5a99e685",
     "suitePath": "evals/packs/safe-refactor.json"
   },
   "pack": {
     "name": "safe-refactor",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "members": [
       {
         "name": "code-review",
@@ -17,7 +17,7 @@
       },
       {
         "name": "codebase-exploration",
-        "version": "1.1.0"
+        "version": "1.1.1"
       },
       {
         "name": "refactoring-and-dead-code-removal",

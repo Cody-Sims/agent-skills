@@ -6,11 +6,16 @@
       "type": "review-history",
       "reference": "docs/provenance/pokemon-web-workflow-skills.md",
       "summary": "Records the immutable upstream commit, operational lessons, portability changes, overlap boundaries, and security review for the migrated worktree orchestration workflow."
+    },
+    {
+      "type": "specification",
+      "reference": "skills/skill-creator/references/session-audit.md",
+      "summary": "Distinguishes historical identities from runtime worker capabilities and defines privacy-preserving, bounded trace analysis."
     }
   ],
   "comparison": null,
   "exception": {
     "type": "safety",
-    "rationale": "The workflow reduces checkout collisions, overlapping agent writes, accidental changes to live worktrees, and unvalidated multi-branch integration. These risk controls are better evaluated through routing and operational review than average output-quality uplift at experimental entry."
+    "rationale": "The workflow reduces checkout collisions, overlapping agent writes, accidental changes to live worktrees, and unvalidated multi-branch integration. The revision preserves ownership when a historical worker handle is unavailable and refuses blind messages or replacement writers. These risk controls require behavioral and maintainer review rather than a claimed average efficiency uplift."
   }
 }

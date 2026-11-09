@@ -3,7 +3,7 @@ name: codebase-exploration
 description: "Maps unfamiliar code and locates change sites, scoped instructions, relevant tests, and validation commands. Use when onboarding, tracing an unknown change site, or explaining repository structure; not for a known-file edit with sufficient context. Stays read-only."
 license: MIT
 metadata:
-  version: "1.1.0"
+  version: "1.1.1"
   author: "Cody-Sims"
   tier: "core"
 ---
@@ -18,13 +18,17 @@ local orientation into a full repository audit.
 1. Define the question and stop condition. Reuse current context and prior
    evidence; revisit it only when changed, missing, or contradictory.
 2. Read the applicable repository and path-scoped instructions. Locate declared
-   commands in manifests or task runners; do not guess paths or command names.
+   commands in manifests or task runners. Discover optional instruction/reference
+   paths before reading; do not probe every filesystem ancestor or guess names.
 3. Follow the relevant entry point or symbol to its callers, dependencies, and
    nearest tests. Learn the local conventions and preservation requirements.
    Map unrelated boundaries only when the user requests a repository-wide map.
 4. Prefer code intelligence, then scoped file discovery and text search. Batch
    independent reads; request matching paths before contents, and ranges before
-   full large files. Widen only when a concrete evidence gap requires it.
+   full large files. Reuse confirmed absence within the same unchanged scope;
+   retry only after new evidence or a relevant filesystem change. Missing required
+   guidance is a blocker, not permission to ignore it. A denied read is not absence:
+   never retry it through another tool. Widen only for a concrete evidence gap.
 5. Keep a single continuous trace local. Delegate only substantial independent
    questions, not work answerable in two to five direct calls. Give each worker
    a question, scope, stop condition, and compact evidence contract. Consume its

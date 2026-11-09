@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "skill": "skill-creator",
+  "expertiseSources": [
+    {
+      "type": "specification",
+      "reference": "skills/skill-creator/references/session-audit.md",
+      "summary": "Provides original audit guidance grounded in the Agent Skills authoring specification and conflicting primary 2026 instruction-file studies, with explicit evidence and measurement limits."
+    }
+  ],
+  "comparison": null,
+  "exception": {
+    "type": "safety",
+    "rationale": "The session-audit procedure keeps private history out of web queries and committed artifacts, prevents synthetic failures and unavailable traces from being misrepresented as production evidence, and preserves source provenance, contribution review, and automation authorization. Generic behavior cases require independent review; matched model uplift and completed reviewer approval are not claimed."
+  }
+}

@@ -355,10 +355,10 @@ test('committed manifest defines the complete valid pack catalog', () => {
       },
       {
         name: 'safe-refactor',
-        version: '1.2.0',
+        version: '1.2.1',
         description: 'Guides a behavior-preserving refactor from codebase mapping and tests through review and completion verification.',
         skills: [
-          { name: 'codebase-exploration', version: '1.1.0' },
+          { name: 'codebase-exploration', version: '1.1.1' },
           { name: 'test-driven-development', version: '1.1.0' },
           { name: 'refactoring-and-dead-code-removal', version: '1.1.0' },
           { name: 'code-review', version: '1.1.0' },

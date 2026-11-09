@@ -109,7 +109,7 @@ command surface.
 | `shadow-dream` | Generates evidence-linked future-state architecture options, tradeoffs, migration paths, rollback plans, and a proposal that remains subject to explicit human approval. |
 | `shadow-drift` | Checks a `.shadow` graph read-only for integrity, stale decisions, unresolved relations, missing evidence, stale derived output, and implementation drift. |
 | `shadow-observe` | Runs bounded, read-only repository analysis to produce evidence-linked candidate architecture observations without creating decisions or proposing future state. |
-| `skill-creator` | Creates, audits, and improves Agent Skills in this catalog: intent capture, overlap checks, trigger prompts, routing descriptions, progressive disclosure, and frontmatter validation. |
+| `skill-creator` | Creates, audits, and improves Agent Skills: intent capture, routing, progressive disclosure, frontmatter validation, and bounded session-informed optimization with private evidence and measured-benefit limits. |
 | `systematic-debugging` | Reproduces failures, captures exact error output, isolates the root cause, and fixes the cause rather than the symptom. |
 | `test-driven-development` | Drives implementation with the red-green-refactor cycle: a failing behavior test first, minimum code to pass, then refactor while green. |
 | `verification-before-completion` | Requires fresh command evidence before any claim that work is done, fixed, passing, or ready. |

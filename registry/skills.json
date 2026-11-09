@@ -196,7 +196,7 @@
     {
       "name": "codebase-exploration",
       "description": "Maps unfamiliar code and locates change sites, scoped instructions, relevant tests, and validation commands. Use when onboarding, tracing an unknown change site, or explaining repository structure; not for a known-file edit with sufficient context. Stays read-only.",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "license": "MIT",
       "tier": "core",
       "maturity": {
@@ -271,7 +271,7 @@
       },
       "path": "skills/codebase-exploration",
       "skillFile": "skills/codebase-exploration/SKILL.md",
-      "sha256": "95f51af5a40e7b66111db1db8df0300bc5cf121adfceaccb6961c9c6c2ed70d2",
+      "sha256": "427cca86c77ad25c3bbc704a676d36bde7ea591109957bab9683fd525c06c571",
       "resources": [
         "references/exploration-playbook.md"
       ]
@@ -635,7 +635,7 @@
     {
       "name": "parallel-worktree-delivery",
       "description": "Executes multi-agent Git worktree fleets with exclusive ownership, dependency waves, serialized integration, and merge gates. Use when delivering independent streams on separate branches/worktrees; not for task planning alone, one small change, or GitHub-hosted cloud agents.",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "license": "MIT",
       "tier": "experimental",
       "maturity": {
@@ -726,7 +726,7 @@
       },
       "path": "skills/parallel-worktree-delivery",
       "skillFile": "skills/parallel-worktree-delivery/SKILL.md",
-      "sha256": "5cedddb0e9d890571bdf0827c98ef06b8957603924580062adfdb1f8e4935beb",
+      "sha256": "4a2407e4f002e89dccf03767be2d0cf62a844773bc8c977b9d74cdc933ab6c02",
       "resources": [
         "references/fleet-setup.md",
         "references/integration-playbook.md"
@@ -1534,7 +1534,7 @@
     {
       "name": "skill-creator",
       "description": "Authors, audits, and repairs Agent Skills with clear triggers, concise workflows, progressive disclosure, and valid frontmatter. Use when creating or editing SKILL.md, improving skill efficiency or routing, or fixing skill validation; not for application features or tool-interface design.",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "license": "MIT",
       "tier": "core",
       "maturity": {
@@ -1610,11 +1610,12 @@
       },
       "path": "skills/skill-creator",
       "skillFile": "skills/skill-creator/SKILL.md",
-      "sha256": "5758032009e796a5d429b3e9a39890a2add193eb18e90d3157625dadd7442620",
+      "sha256": "88a4101ab640b006fd33f102ceb19742b03eed3e2c674c38ba16d63603aa4027",
       "resources": [
         "assets/SKILL.template.md",
         "references/description-patterns.md",
-        "references/frontmatter.md"
+        "references/frontmatter.md",
+        "references/session-audit.md"
       ]
     },
     {
@@ -2310,7 +2311,7 @@
     },
     {
       "name": "safe-refactor",
-      "version": "1.2.0",
+      "version": "1.2.1",
       "description": "Guides a behavior-preserving refactor from codebase mapping and tests through review and completion verification.",
       "skills": [
         {
@@ -2319,7 +2320,7 @@
         },
         {
           "name": "codebase-exploration",
-          "version": "1.1.0"
+          "version": "1.1.1"
         },
         {
           "name": "refactoring-and-dead-code-removal",

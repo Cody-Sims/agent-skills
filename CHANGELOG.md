@@ -13,6 +13,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- Added a conditional, research-linked session-audit procedure to `skill-creator`
+  1.2.0 with backend-specific history queries, explicit trace coverage, private
+  evidence boundaries, synthetic-control separation, and matched-run requirements.
+- Clarified `codebase-exploration` 1.1.1 to discover optional paths before reading,
+  reuse confirmed absence, and distinguish denied reads from missing guidance.
+  Clarified `parallel-worktree-delivery` 1.1.1 to retain checkout ownership when
+  historical session identities are not addressable worker handles.
+- Updated `safe-refactor` to 1.2.1 for its exact exploration dependency. Added
+  four generic behavior scenarios and requested safety contribution exceptions;
+  no model uplift, usage savings, or completed independent review is claimed.
 - Streamlined the remaining 20 skills with scoped workflows, conditional
   reference reads, bounded outputs, and explicit stop/handoff contracts.
   Retained safety, ownership, evidence, and lifecycle invariants; added behavior

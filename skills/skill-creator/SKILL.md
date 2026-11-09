@@ -3,7 +3,7 @@ name: skill-creator
 description: "Authors, audits, and repairs Agent Skills with clear triggers, concise workflows, progressive disclosure, and valid frontmatter. Use when creating or editing SKILL.md, improving skill efficiency or routing, or fixing skill validation; not for application features or tool-interface design."
 license: MIT
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
   author: "Cody-Sims"
   tier: "core"
 ---
@@ -24,6 +24,9 @@ and its observed problem. Ask only for missing consequential scope.
 1. Identify the mode: create, routing repair, validation repair, or efficiency
    improvement. For an existing skill, read it and relevant neighbors; preserve
    its name and unrelated resources. Do not restart the full creation checklist.
+   For session-informed optimization, read
+   [session audit](references/session-audit.md) before querying history. Patch an
+   observed gap, not a rule already repaired in the current or installed release.
 2. Define capability, activating requests, inputs, stop condition, and output.
    Check catalog descriptions for overlap; extend an existing capability or make
    neighboring boundaries explicit. Read full neighbors only when needed.
@@ -65,6 +68,8 @@ and its observed problem. Ask only for missing consequential scope.
 - [Description patterns](references/description-patterns.md): consult for
   routing examples or collisions.
 - [Skill template](assets/SKILL.template.md): use for a new skill, not a repair.
+- [Session audit](references/session-audit.md): use for historical failures,
+  repetitive work, or research-backed workflow optimization.
 
 ## Output
 
