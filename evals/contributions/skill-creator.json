@@ -11,6 +11,6 @@
   "comparison": null,
   "exception": {
     "type": "safety",
-    "rationale": "The session-audit procedure keeps private history out of web queries and committed artifacts, prevents synthetic failures and unavailable traces from being misrepresented as production evidence, and preserves source provenance, contribution review, and automation authorization. Generic behavior cases require independent review; matched model uplift and completed reviewer approval are not claimed."
+    "rationale": "The revision adds a bounded read-only event projection using explicit authorized files, finite scan/output budgets, context-aware deduplication, and distinct transport, shell, and unknown outcomes. It keeps private prompts, commands, identifiers, and payloads out of default output, detects declared coverage gaps, and never infers intended test-red status from a failure alone. Delivery gates cover the actual unpublished range. Deterministic parser tests and generic behavior cases do not establish matched model uplift or completed human approval."
   }
 }

@@ -6,11 +6,16 @@
       "type": "specification",
       "reference": "docs/research/anthropic-spec.md",
       "summary": "Documents the strict portable frontmatter contract and rejection of runtime-specific fields."
+    },
+    {
+      "type": "specification",
+      "reference": "skills/repository-agent-bootstrap/references/skill-loading.md",
+      "summary": "Defines verified native versus authorized source-loading routes in each worker context without permission expansion or global installation."
     }
   ],
   "comparison": null,
   "exception": {
-    "type": "compliance",
-    "rationale": "Removes host-specific invocation metadata to satisfy the portable Agent Skills profile without changing the bounded bootstrap workflow."
+    "type": "safety",
+    "rationale": "The revision preflights required skills against actual host discovery and authorized repository source routes without inventing tool availability, expanding permissions, or installing global configuration. It preserves project/personal ownership boundaries and validates the affected discovery path. Generic behavior cases request review of these capability boundaries; no model uplift or completed human approval is claimed."
   }
 }

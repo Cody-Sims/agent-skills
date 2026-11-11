@@ -10,6 +10,7 @@ first becomes wrong.
 - Bisecting history
 - Instrumentation at boundaries
 - Differential diagnosis against a known-good state
+- Partial or uncertain mutations
 
 ## Reading a stack trace
 
@@ -70,3 +71,16 @@ When behavior differs between two environments, revisions, or inputs:
 3. List every difference, then eliminate them one by one until the behavior
    changes. The factor that flips the behavior is the cause.
 4. Keep the known-good state runnable so you can re-compare after each step.
+
+## Partial or uncertain mutations
+
+1. Preserve the error and reported applied/pending effects. A failed tool call
+   or statement batch does not prove unchanged state or rollback.
+2. Inspect affected diff/content or read-only state, including actual database
+   schema and rows. Classify intended operations as applied, unapplied, or
+   uncertain. Preserve unrelated/user changes; stop if state remains unknown.
+3. Diagnose the failed operation, then retry only confirmed unapplied authorized
+   work against current context. Never blindly replay the batch or roll back
+   user work. Prefer transactions only when supported and authorized, and
+   verify their actual outcome.
+4. Rerun the diagnostic probe or regression after recovery before concluding.

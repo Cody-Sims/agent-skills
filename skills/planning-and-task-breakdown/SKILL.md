@@ -3,7 +3,7 @@ name: planning-and-task-breakdown
 description: "Plans approved multi-step work as verifiable outcomes with dependencies, file ownership, and safe parallel boundaries. Use when breaking down an agreed spec, sequencing delivery, or coordinating parallel tasks; not for unresolved requirements or a small direct edit."
 license: MIT
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
   author: "Cody-Sims"
   tier: "core"
 ---
@@ -37,13 +37,18 @@ answerable in two to five direct calls does not need a task tree or workers.
 7. Give each worker its context, owned paths, no-edit boundaries, prerequisites,
    narrow checks, and stop condition. Keep shared files such as changelogs with
    one coordinator. Do not duplicate the worker's investigation in the parent.
-8. Require a nonempty handoff: done/partial/blocked, changes and artifact paths,
+8. Before creating or resuming a persistent task ledger, read the
+   [ledger protocol](references/operational-ledger.md). Inspect actual schema and
+   rows, reuse stable owned identities, and preserve existing progress. A plan
+   alone does not require a database. Never recreate runtime-owned tables or
+   ignore an incompatible existing task.
+9. Require a nonempty handoff: done/partial/blocked, changes and artifact paths,
    exact checks/results, and unresolved risks. Use completion notifications when
    available rather than polling; follow up with the known worker only for the
    same task. Preserve this checkpoint on pause and inspect state before resuming.
-9. Consolidate results, inspect the combined change, and run shared gates once
-   after integration unless repository rules require intermediate gates. Do not
-   treat successful worker checks as proof of integrated correctness.
+10. Consolidate results, inspect the combined change, and run shared gates once
+    after integration unless repository rules require intermediate gates. Do not
+    treat successful worker checks as proof of integrated correctness.
 
 ## Output
 

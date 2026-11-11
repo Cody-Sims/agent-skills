@@ -24,6 +24,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- Added partial-write state reconciliation to test-first implementation and
+  debugging, verified skill-loading and messaging capability contracts for
+  workers, schema-aware resumable task ledgers, and whole-range delivery
+  preflight before readiness or publication.
+- Added bounded, privacy-preserving raw session-event audit tooling with
+  explicit time windows, execution-context attribution, deduplication, coverage
+  limits, and separate transport and shell outcomes. Fixture checks do not
+  establish model uplift, expected test-red intent, or billed-usage savings.
+- Updated exact skill versions and the `feature-delivery`, `safe-refactor`,
+  and `release-readiness` packs to 1.3.0 for their revised dependencies.
 - Completed contribution records for the earlier ten streamlined skills with
   specific safety/compliance exception requests and existing expertise sources.
   These are not fabricated comparisons, human approvals, or evidence of runtime

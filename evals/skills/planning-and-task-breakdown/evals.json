@@ -32,6 +32,40 @@
       "humanReview": [
         { "id": "safe-resume", "question": "Does the response preserve ownership, edits, next probes, and blockers without marking unfinished work done, running gates during the pause, or silently relaunching workers?" }
       ]
+    },
+    {
+      "id": "resume-ledger-distinct-owners",
+      "prompt": "Resume the approved delivery plan in an existing runtime-owned task ledger. Schema discovery confirms task rows have id, title, status and dependency rows have task_id, prerequisite_id. The checkpoint reserves job-elm/search/* for the search owner and job-elm/index/* for the index owner. Observed: job-elm/search/prepare is done; job-elm/search/build is in_progress and depends on search/prepare; job-elm/index/build is pending. Both build rows are titled Build. The intended search plan adds job-elm/search/check pending after search/build. Give the exact reconciliation and expected final rows/edges without executing writes; do not reopen completed work or change another owner's task.",
+      "assertions": [
+        { "id": "retains-running-state", "type": "contains", "value": "in_progress" },
+        { "id": "distinguishes-other-owner", "type": "contains", "value": "job-elm/index/build" },
+        { "id": "accounts-for-missing-task", "type": "contains", "value": "job-elm/search/check" }
+      ],
+      "humanReview": [
+        { "id": "reconciles-resumed-state", "question": "Does it confirm schema/current contents and exclusive ownership, reuse search/prepare as done and search/build as in_progress with the existing edge, leave index/build pending untouched, and add only absent search/check and its correctly directed edge after checking endpoints? Reject blindly inserting all rows or resetting states." }
+      ]
+    },
+    {
+      "id": "duplicate-id-incompatible-task",
+      "prompt": "A runtime ledger insert for batch-ash/render/package failed with a duplicate primary key. The intended task is Package preview, owned by render. Reading the existing row shows Package release, done; the checkpoint assigns that exact ID to release with downstream dependents. The schema has no owner column. Reconcile this conflict before continuing the approved preview plan. Explain the safe next action without executing writes or inventing a migration.",
+      "assertions": [
+        { "id": "identifies-conflict", "type": "regex", "value": "(conflict|incompatible|mismatch)", "flags": "i" },
+        { "id": "preserves-completed-work", "type": "contains", "value": "done" }
+      ],
+      "humanReview": [
+        { "id": "blocks-incompatible-reuse", "question": "Does it reject treating a duplicate key as successful reconciliation, preserve the release task's done state and dependents, use checkpoint ownership rather than a guessed column, and require explicit conflict resolution or a verified distinct stable preview identity before writing?" }
+      ]
+    },
+    {
+      "id": "missing-column-partial-batch",
+      "prompt": "An existing host-owned ledger exposes SQL statements but does not document transactions or atomic batches. A five-statement batch reported 'no such column: owner' on statement five; the first four writes may have committed. The intended changes were three new tasks, one dependency edge, then an ownership update. Resume safely. Do not execute SQL. State what to inspect, how to handle the absent column and unknown commit state, and how to select only the remaining writes. Existing completed or in-progress tasks must remain intact.",
+      "assertions": [
+        { "id": "requires-state-inspection", "type": "regex", "value": "(inspect|reread|re-read|read back|query)", "flags": "i" },
+        { "id": "accounts-for-schema-mismatch", "type": "contains", "value": "owner" }
+      ],
+      "humanReview": [
+        { "id": "recovers-without-rollback-assumption", "question": "Does it rediscover actual schema and constraints and reread all affected tasks/edges rather than assuming rollback, reconcile compatible committed work while preserving statuses/dependencies, reserve a single writer, record optional ownership in the checkpoint instead of altering built-ins, and retry only missing supported writes with readback? Does it avoid replaying the batch or assuming BEGIN/ROLLBACK work across host calls?" }
+      ]
     }
   ]
 }

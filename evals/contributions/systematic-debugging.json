@@ -11,6 +11,6 @@
   "comparison": null,
   "exception": {
     "type": "safety",
-    "rationale": "The revision distinguishes missing prerequisites from product defects, requires reproduction and a falsifiable cause before production edits, and rejects swallowed errors or blind retries. Regression red/green evidence and bounded intermittent checks remain mandatory. These controls prevent speculative fixes and false success claims; the record requests a safety exception without fabricated efficiency evidence or human approval."
+    "rationale": "The workflow preserves evidence-backed diagnosis, prerequisite classification, and bounded regression checks. The revision reconciles actual state after partial or uncertain mutations before further diagnosis or retry, rather than assuming failure was atomic or reverting other owners' work. These integrity controls request a safety exception without fabricated efficiency evidence or human approval."
   }
 }

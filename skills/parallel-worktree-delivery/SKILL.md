@@ -3,7 +3,7 @@ name: parallel-worktree-delivery
 description: "Executes multi-agent Git worktree fleets with exclusive ownership, dependency waves, serialized integration, and merge gates. Use when delivering independent streams on separate branches/worktrees; not for task planning alone, one small change, or GitHub-hosted cloud agents."
 license: MIT
 metadata:
-  version: "1.1.1"
+  version: "1.2.0"
   author: "Cody-Sims"
   tier: "experimental"
 ---
@@ -22,14 +22,19 @@ Git/remote state.
    independent work only; honor requested runtime/model, invent no controls.
 3. Assign separate branches/worktrees and exclusive files; sequence dependencies
    in waves. Coordinator owns shared files; exact-section exceptions serialize writes.
-4. Read [fleet setup](references/fleet-setup.md) for setup/dispatch. Isolate or
-   serialize writable dependencies, caches, outputs, databases, and ports.
-   No concurrent shared installs; bound CPU-heavy jobs.
+4. Before delegation, complete the capability preflight in
+   [fleet setup](references/fleet-setup.md): resolve required skills to supported
+   native names or authorized source paths and record actual messaging limits.
+   Carry verified routes into worker prompts; block unsupported dependent work
+   instead of installing globally or expanding permissions. Isolate or serialize
+   writable dependencies, caches, outputs, databases, and ports. No concurrent
+   shared installs; bound CPU-heavy jobs.
 
 ## Dispatch and collect
 
 1. Supply objective/stop, branch/worktree/base, ownership, instructions/setup,
-   scoped checks, and allowed actions. Workers report cross-boundary needs, not edit.
+   scoped checks, allowed actions, and the capability contract. Workers confirm
+   loading routes before dependent work and report cross-boundary needs, not edit.
 2. Record IDs/tips; continue independent work. Use notifications/bounded known-ID
    waits, not tight polling/discovery or duplicate workers. Collect paths/commits,
    exact checks/results, conflicts, and boundary requests.
@@ -38,6 +43,11 @@ Git/remote state.
    an external or resumed worker. On an unavailable handle, preserve its checkout
    ownership and use a durable handoff or report blocked; do not repeatedly send,
    spawn a replacement owner, or infer that its files are free to edit.
+4. Send only to explicit known message-capable handles. Deduplicate recipients
+   and batch within the host-reported limit; do not hardcode a provider cap or
+   use broad scopes to bypass it. One-shot workers are result-only unless the
+   host explicitly supports follow-up. Unknown capabilities are blockers, not
+   permission to probe by sending.
 
 ## Integrate
 

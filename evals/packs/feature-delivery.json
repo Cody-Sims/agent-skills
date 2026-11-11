@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
   "name": "feature-delivery-composition",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "source": {
-    "registrySha256": "21f31fef259f8604462ec11cbea946ee500a690a20bc2dabbf367313367a547d",
-    "memberTreeSha256": "a4d3cdb1f75e7ce51d0ff69aa62812ea3511b859eb0f83a594d08d6d6c3456be",
+    "registrySha256": "d074c1b9a10c1a28f5a8ca3def15752a294b31d86fa29e9592cee136884ba20e",
+    "memberTreeSha256": "d3ce5804edeb85420d83d66f845dad55427eedb113727274fdf3ed11fbb30c14",
     "suitePath": "evals/packs/feature-delivery.json"
   },
   "pack": {
     "name": "feature-delivery",
-    "version": "1.2.0",
+    "version": "1.3.0",
     "members": [
       {
         "name": "code-review",
@@ -21,7 +21,7 @@
       },
       {
         "name": "planning-and-task-breakdown",
-        "version": "1.1.0"
+        "version": "1.2.0"
       },
       {
         "name": "requirements-and-spec-writing",
@@ -29,7 +29,7 @@
       },
       {
         "name": "test-driven-development",
-        "version": "1.1.0"
+        "version": "1.2.0"
       },
       {
         "name": "verification-before-completion",

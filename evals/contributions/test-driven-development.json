@@ -11,6 +11,6 @@
   "comparison": null,
   "exception": {
     "type": "safety",
-    "rationale": "The streamlined workflow explicitly requires an observed expected red step before production implementation, rejects vacuous or weakened assertions, and limits exceptions to authorized nonbehavioral work. It preserves surrounding and repository-required gates instead of equating a focused pass with complete correctness. This requests a regression-safety exception; no measured output-quality gain or completed human approval is claimed."
+    "rationale": "The workflow retains observed red/green evidence and required regression gates. The revision distinguishes failed or uncertain write-tool results from unchanged state: inspect actual applied and pending changes, preserve unrelated work, and retry only the unapplied remainder. Generic behavior cases request review of partial-write recovery without weakening assertions; no measured output-quality gain or completed human approval is claimed."
   }
 }

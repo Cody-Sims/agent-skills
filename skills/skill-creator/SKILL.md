@@ -3,7 +3,7 @@ name: skill-creator
 description: "Authors, audits, and repairs Agent Skills with clear triggers, concise workflows, progressive disclosure, and valid frontmatter. Use when creating or editing SKILL.md, improving skill efficiency or routing, or fixing skill validation; not for application features or tool-interface design."
 license: MIT
 metadata:
-  version: "1.2.0"
+  version: "1.3.0"
   author: "Cody-Sims"
   tier: "core"
 ---
@@ -27,6 +27,9 @@ and its observed problem. Ask only for missing consequential scope.
    For session-informed optimization, read
    [session audit](references/session-audit.md) before querying history. Patch an
    observed gap, not a rule already repaired in the current or installed release.
+   When delivery enters scope, use `git-and-pr-workflow` delivery preflight to
+   inventory the entire authorized base-to-head range before readiness/install
+   work, not only the current edits.
 2. Define capability, activating requests, inputs, stop condition, and output.
    Check catalog descriptions for overlap; extend an existing capability or make
    neighboring boundaries explicit. Read full neighbors only when needed.
@@ -70,6 +73,8 @@ and its observed problem. Ask only for missing consequential scope.
 - [Skill template](assets/SKILL.template.md): use for a new skill, not a repair.
 - [Session audit](references/session-audit.md): use for historical failures,
   repetitive work, or research-backed workflow optimization.
+- [Event-audit helper](scripts/session-event-audit.mjs): run, rather than read,
+  only for authorized raw-log analysis when indexed evidence is insufficient.
 
 ## Output
 

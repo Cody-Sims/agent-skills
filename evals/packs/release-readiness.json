@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
   "name": "release-readiness-composition",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "source": {
-    "registrySha256": "21f31fef259f8604462ec11cbea946ee500a690a20bc2dabbf367313367a547d",
-    "memberTreeSha256": "d76e7e8374dec4815f325721e916cb867830cf1235e39249ad088b3a9c61a0f1",
+    "registrySha256": "d074c1b9a10c1a28f5a8ca3def15752a294b31d86fa29e9592cee136884ba20e",
+    "memberTreeSha256": "15a1a4165c6df514958bcadce9b0d1d419e8c0a9b07f68bb0ebef13b6dd8216b",
     "suitePath": "evals/packs/release-readiness.json"
   },
   "pack": {
     "name": "release-readiness",
-    "version": "1.2.0",
+    "version": "1.3.0",
     "members": [
       {
         "name": "code-review",
@@ -21,7 +21,7 @@
       },
       {
         "name": "git-and-pr-workflow",
-        "version": "1.1.0"
+        "version": "1.2.0"
       },
       {
         "name": "security-review",

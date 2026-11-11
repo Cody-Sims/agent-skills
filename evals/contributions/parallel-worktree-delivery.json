@@ -16,6 +16,6 @@
   "comparison": null,
   "exception": {
     "type": "safety",
-    "rationale": "The workflow reduces checkout collisions, overlapping agent writes, accidental changes to live worktrees, and unvalidated multi-branch integration. The revision preserves ownership when a historical worker handle is unavailable and refuses blind messages or replacement writers. These risk controls require behavioral and maintainer review rather than a claimed average efficiency uplift."
+    "rationale": "The workflow reduces checkout collisions, overlapping writes, and unvalidated integration. The revision propagates verified skill-loading routes and actual messaging capabilities before dispatch, batches explicit known recipients within host limits, and preserves ownership when a historical or non-messageable handle cannot accept a handoff. These controls require behavioral and maintainer review rather than a claimed average efficiency uplift."
   }
 }

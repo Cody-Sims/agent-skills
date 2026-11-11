@@ -52,7 +52,7 @@ file hash. Full-catalog commands remain the default. Packs use deterministic
 exact-version forms:
 
 ```bash
-npm run install:pack -- feature-delivery@1.2.0
+npm run install:pack -- feature-delivery@1.3.0
 npm run install:pack -- shadow-architecture-suite@1.1.0
 npm run check:pack -- feature-delivery
 npm run uninstall:pack -- feature-delivery
@@ -116,6 +116,26 @@ command surface.
 | `verification-discipline` | Hardens tests and CI so green results are meaningful through red-green proof, independent assertions, bounded expensive checks, report-only adoption, and build-purity checks. |
 | `wayfinder-planning` | Navigates Wayfinder decision maps, fog of war, and frontier tickets through bounded autonomous decision loops that resolve frontier work one claim at a time, verify each atomic synchronization, and continue within budgets and substantive stop conditions. |
 | `web-research-and-verification` | Answers questions that depend on current external information by detecting the version in use, preferring authoritative sources, corroborating, and citing URLs. |
+
+## Session-event audit
+
+When indexed session history is stale or lacks tool outcomes, the optional
+read-only helper projects explicitly authorized JSONL files into bounded
+aggregate metadata. It does not discover history, expose prompts/commands,
+classify test-red intent, or establish efficiency gains.
+
+```bash
+node skills/skill-creator/scripts/session-event-audit.mjs \
+  --start 2026-11-10T00:00:00-08:00 --end 2026-11-11T00:00:00-08:00 \
+  --input ./authorized-events.jsonl
+```
+
+Exit `2` means coverage is incomplete, not that every counted tool call failed.
+See the conditional [audit reference](skills/skill-creator/references/session-audit.md)
+for budgets, attribution, privacy boundaries, and source-watermark limits.
+The [Agent Skills authoring guidance](https://agentskills.io/skill-creation/best-practices)
+and [OpenAI skill guide](https://learn.chatgpt.com/docs/build-skills) support
+small activated workflows with on-demand references and optional scripts.
 
 ## Implementation agent
 

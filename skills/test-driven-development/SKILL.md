@@ -3,7 +3,7 @@ name: test-driven-development
 description: "Implements behavior through a verified red-green-refactor cycle. Use when adding a feature, fixing a reproducible bug, changing behavior, or explicitly working test-first; not for auditing existing test credibility or behavior-preserving cleanup alone."
 license: MIT
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
   author: "Cody-Sims"
   tier: "core"
 ---
@@ -38,6 +38,11 @@ repository runner. Write a behavior test and observe its expected failure
    Combine related selectors; do not rerun an unchanged full suite merely for
    narration or handoff. Preserve red/green evidence for each behavior and report
    unavailable validation rather than assuming it passes.
+
+For a partial or uncertain write, read
+[write recovery](references/test-design.md#partial-or-uncertain-writes) before
+retrying. Reconcile actual changes and rerun the affected cycle step; a write
+error is not observed behavioral red or green.
 
 ## Test quality
 

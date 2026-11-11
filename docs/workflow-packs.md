@@ -16,7 +16,7 @@ requests, and combined context accounting.
 Use a pack name or exact `name@version`:
 
 ```bash
-npm run install:pack -- feature-delivery@1.2.0
+npm run install:pack -- feature-delivery@1.3.0
 npm run check:pack -- feature-delivery
 npm run uninstall:pack -- feature-delivery
 ```

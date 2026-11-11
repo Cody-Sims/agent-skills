@@ -25,6 +25,28 @@
         { "id": "meaningful-small-tests", "question": "Does it choose focused public-interface behavior tests for zero, negative, and malformed input, observe the intended red before minimal implementation, keep refactoring behavior-preserving, and rerun affected tests without broad end-to-end ceremony?" },
         { "id": "determinism-and-permission", "question": "Does it keep tests deterministic, reject an unapproved TDD exception for real behavior, retain the required final build, and distinguish proposed commands from actually observed results?" }
       ]
+    },
+    {
+      "id": "partial-refactor-patch",
+      "prompt": "The intended behavioral red and green were observed. During refactoring, a two-file patch returns an error: the helper rename in format.js applied, but its caller update in format.test.js did not match. The checkout already contained a user's unrelated assertion change in format.test.js. A teammate says failed patches change nothing, so replay the whole patch; if it still fails, restore both files from HEAD first. What should happen before any retry, what should be retried, and what verification is required?",
+      "assertions": [
+        { "id": "inspects-current-state", "type": "regex", "value": "inspect|diff|read.*(?:file|state|content)", "flags": "i" }
+      ],
+      "humanReview": [
+        { "id": "reconcile-before-retry", "question": "Does it preserve the error and reported applied/pending edits, inspect both current files/diff before writing, confirm the rename already applied, and retry only the missing caller edit using current context rather than replaying the original whole patch?" },
+        { "id": "preserve-user-work-and-cycle", "question": "Does it reject restoring/resetting both files or reverting the user's assertion, preserve unrelated work, and rerun the affected tests before calling the refactor green?" }
+      ]
+    },
+    {
+      "id": "uncertain-test-write-before-red",
+      "prompt": "A tool times out while appending the new public-interface test for rejecting duplicate labels. There is no applied/pending report, and the runner has not executed. The file also has pre-existing user tests. A teammate wants to append the same test again and start production implementation, counting the timeout as red. Describe how to continue if read access works, and what to do if the file's actual state remains unavailable.",
+      "assertions": [
+        { "id": "keeps-state-uncertainty-explicit", "type": "regex", "value": "uncertain|unknown|unavailable|cannot.*(?:establish|inspect|determine)", "flags": "i" }
+      ],
+      "humanReview": [
+        { "id": "no-duplicate-or-guessed-retry", "question": "Does it preserve the timeout, inspect the current test file/diff before any append, retain existing user tests, distinguish complete/partial/absent test content, and write only the confirmed missing portion against current context without blindly appending a duplicate? If state remains unavailable, does it stop and report the blocker instead of guessing?" },
+        { "id": "write-failure-is-not-red", "question": "Does it reject a timeout or partial test write as behavioral red, run the focused test after recovery, and require the expected assertion failure before production implementation?" }
+      ]
     }
   ]
 }

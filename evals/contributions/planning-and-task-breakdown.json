@@ -6,11 +6,16 @@
       "type": "runbook",
       "reference": "skills/planning-and-task-breakdown/assets/plan-template.md",
       "summary": "Records verifiable outcomes, actual dependencies, file ownership, and validation boundaries for agreed work."
+    },
+    {
+      "type": "runbook",
+      "reference": "skills/planning-and-task-breakdown/references/operational-ledger.md",
+      "summary": "Defines observed-schema mapping, stable task ownership, compatible resume, checked missing writes, and partial-batch recovery with a conditional synthetic example."
     }
   ],
   "comparison": null,
   "exception": {
     "type": "safety",
-    "rationale": "The revision makes shared validation-resource ownership explicit and requires isolation or serialization for generated outputs, caches, ports, databases, and build state. It preserves approved scope and separates worker checks from integrated correctness. These concurrency and ownership controls warrant a requested safety exception; neither a benchmark gain nor a completed human review is claimed."
+    "rationale": "The revision preserves resource ownership and adds schema-aware, run/stream-scoped operational task identities with idempotent resume. Existing task progress and dependencies must be reconciled rather than overwritten, and partially completed SQL batches cannot be treated as rolled back. Generic behavior cases request review of these state-integrity controls; neither benchmark gains nor completed human approval are claimed."
   }
 }

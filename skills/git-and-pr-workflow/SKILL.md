@@ -3,7 +3,7 @@ name: git-and-pr-workflow
 description: "Guides safe Git branches, atomic commits, rebases, conflicts, pull requests, and post-merge cleanup. Use when branching, staging or committing, tidying local history, resolving conflicts, or opening or updating a PR; use parallel-worktree-delivery for multi-agent worktree fleets."
 license: MIT
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
   author: "Cody-Sims"
   tier: "core"
 ---
@@ -24,6 +24,13 @@ Repository rules apply.
    base in an available clean checkout; otherwise use an approved worktree or
    report a blocker. Read [worktrees and conflicts](references/worktrees-and-conflicts.md)
    for isolation. Fetch relevant refs only when remote freshness is needed.
+
+## Delivery preflight, when delivery enters scope
+
+Read [delivery preflight](references/delivery-preflight.md) before delivery-specific
+validation or installation: bind the whole unpublished range and its gates to
+the authorized target/base/head, preserving ownership and mandatory protections.
+Skip this for local-only work; local installation is not publishing approval.
 
 ## Commit
 
@@ -53,7 +60,7 @@ Repository rules apply.
 
 ## Pull request
 
-1. Review commits/full base diff before an authorized normal push to the explicit
+1. Recheck delivery preflight before an authorized normal push to the explicit
    remote/branch. Stop on unexpected history; do not delete stray commits blindly.
 2. Create/update the intended PR without duplicates: what/why, issue links, exact
    checks/results, risks, and exclusions. Read back head/base/URL; creation proves
@@ -72,4 +79,6 @@ Repository rules apply.
 ## Report
 
 Return branch/base, commits, exact checks/results, PR URL/state, and pending
-actions/blockers. No unchanged log dump or unperformed-cleanup claim.
+actions/blockers. For delivery, include target, head/base SHAs, gate inventory,
+and readiness scope or invalidation. No unchanged log dump or unperformed-cleanup
+claim.

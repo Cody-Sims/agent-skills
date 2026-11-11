@@ -3,7 +3,7 @@ name: systematic-debugging
 description: "Diagnoses failures by reproducing exact errors, testing one hypothesis at a time, and fixing the root cause. Use when a bug, failing test/build, crash, exception, wrong output, or intermittent failure needs tracing; not for reviewing a patch or auditing already-green tests."
 license: MIT
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
   author: "Cody-Sims"
   tier: "core"
 ---
@@ -46,6 +46,10 @@ an evidence-backed explanation; diagnostic probes are allowed.
    repository gates. Combine compatible selectors rather than repeating full
    suites after each probe. For flakes, report bounded runs/seeds and residual
    intermittency; one green attempt does not prove nondeterminism gone.
+
+If a probe or fix partially fails or its write outcome is uncertain, read
+[mutation recovery](references/root-cause-tracing.md#partial-or-uncertain-mutations)
+before another mutation. Reconcile actual state and rerun the relevant probe.
 
 ## Stop and output
 

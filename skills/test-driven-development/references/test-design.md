@@ -10,6 +10,7 @@ meaningful assertions, and deciding what deserves a test.
 - Determinism techniques
 - Assertion quality
 - Coverage judgment
+- Partial or uncertain writes
 
 ## Choosing the right level
 
@@ -79,3 +80,16 @@ assertions gives false confidence.
   parsing, state transitions, and error paths.
 - If a test would never fail under any realistic change, it adds maintenance
   cost without protection. Delete it.
+
+## Partial or uncertain writes
+
+1. Preserve the error and reported applied/pending outcomes. Failed write calls
+   and statement batches are not inherently atomic.
+2. Before another write, inspect affected diff/content or persistent state.
+   Classify intended changes as applied, unapplied, or uncertain. Preserve
+   unrelated/user changes; stop if actual state cannot be established.
+3. Retry only confirmed missing work against current context, never the original
+   whole patch/batch or a reset of user work. Use a transaction only when
+   supported and authorized; do not assume the failed call rolled back.
+4. Rerun the affected cycle step after recovery. A partial test write, timeout,
+   or tool error does not establish behavioral red or green.
