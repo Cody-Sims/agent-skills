@@ -1,0 +1,8 @@
+{
+  "repository": "fixture/example",
+  "action": "launch hosted task",
+  "authorization": "conditional on an enforceable five-minute hosted execution ceiling",
+  "monitoringBudget": { "reads": 3, "minutes": 5 },
+  "cancellationAuthorized": false,
+  "hostedCapSupport": "unverified"
+}

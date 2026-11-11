@@ -20,7 +20,8 @@ not for summarizing the body.
    trigger vocabulary and collide.
 8. Keep every activation signal in the description. A when-to-use section in the
    body cannot help, because the body is not loaded until after selection.
-9. Stay within 1 to 1024 characters and use no angle-bracket characters.
+9. Stay within this repository's 40 to 1024 characters and use no angle-bracket
+   characters.
 
 ## Good examples
 

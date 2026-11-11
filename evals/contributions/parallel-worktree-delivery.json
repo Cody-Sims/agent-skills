@@ -16,6 +16,6 @@
   "comparison": null,
   "exception": {
     "type": "safety",
-    "rationale": "The workflow reduces checkout collisions, overlapping writes, and unvalidated integration. The revision propagates verified skill-loading routes and actual messaging capabilities before dispatch, batches explicit known recipients within host limits, and preserves ownership when a historical or non-messageable handle cannot accept a handoff. These controls require behavioral and maintainer review rather than a claimed average efficiency uplift."
+    "rationale": "The workflow reduces checkout collisions, overlapping writes, and unvalidated integration. It propagates verified skill-loading routes and messaging capabilities, batches known recipients within host limits, and preserves unavailable workers' ownership. Compact handoffs also bind runtime/provider, requested and observed model or unknown, usable handle, and checkout identity; read-only worker persistence stays coordinator-owned. This requests a safety exception; human approval and matched efficiency gains are not claimed."
   }
 }

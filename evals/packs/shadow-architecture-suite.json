@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
   "name": "shadow-architecture-suite-composition",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "source": {
-    "registrySha256": "d074c1b9a10c1a28f5a8ca3def15752a294b31d86fa29e9592cee136884ba20e",
-    "memberTreeSha256": "57847dd308b62eea66a4ea5f748d3b0e1efb05bfd2efbcad69e91149bf1ba93c",
+    "registrySha256": "c450463819987ca19f84d949ecbb0ba1115d1281953d82403f8b79adc7f8bcb9",
+    "memberTreeSha256": "9a332450ae4e5a2de7d82089d41a240189357d8fe59fbb8f25fa7080f56950b1",
     "suitePath": "evals/packs/shadow-architecture-suite.json"
   },
   "pack": {
     "name": "shadow-architecture-suite",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "members": [
       {
         "name": "shadow-architecture",
@@ -17,11 +17,11 @@
       },
       {
         "name": "shadow-dream",
-        "version": "1.1.0"
+        "version": "1.1.1"
       },
       {
         "name": "shadow-drift",
-        "version": "1.1.0"
+        "version": "1.1.1"
       },
       {
         "name": "shadow-observe",
@@ -46,7 +46,7 @@
   "adapter": {
     "id": "deterministic-pack-fixture-v1",
     "kind": "fixture",
-    "entrypointSha256": "f6a5a32dc30f827056775878082795e76922f35ce6fd3584f9eb01b117cb66cb",
+    "entrypointSha256": "e3869af1cd64dc8cf516b0cdffb0e137f6e5542ad135ab646729dc6fe82e79c3",
     "policySha256": "00aedb8508949b1740c12d07135f27deac65a9f7657699a405d1ed5dfa9b4971",
     "launchPolicySha256": "54fcd0e8eb7ac56d027031e65150a9a7592264a6e1e97fd67aae548b30226a81"
   },

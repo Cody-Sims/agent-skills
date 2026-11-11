@@ -1,12 +1,15 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "name": "codebase-exploration-efficiency",
   "skill": "codebase-exploration",
   "cases": [
     {
       "id": "reuse-local-orientation",
-      "prompt": "Locate the smallest correct edit for checkout retry behavior. This session already has current scoped instructions, the checkout entry point, callers, nearest tests, and declared test command; no relevant files changed. Explain the next action and exploration stop condition without editing.",
+      "prompt": "Locate the smallest correct edit for checkout retry behavior, read-only. project/context.json is current retained session evidence: scoped instructions, exact entry point, callers, nearest tests, and command. No relevant files changed. Use it, inspect only a concrete remaining gap, and report the edit site and exploration stop condition.",
+      "fixture": "fixtures/retry",
       "assertions": [
+        { "id": "preserves-context-and-code", "type": "unchanged", "path": "project" },
+        { "id": "anchored-edit", "type": "contains", "value": "retry.mjs" },
         { "id": "preserves-read-only", "type": "regex", "value": "(read.only|without edit|no edit)", "flags": "i" }
       ],
       "humanReview": [

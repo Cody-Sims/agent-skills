@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
-import { readFileSync } from 'node:fs';
+import { lstatSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { validateEvaluationSuite } from './lib/evaluations.mjs';
-import { pathEntryExists, walkFiles } from './lib/paths.mjs';
+import { assertNoSymlinks, pathEntryExists, walkFiles } from './lib/paths.mjs';
 import { validateRoutingSuite } from './lib/routing-evaluations.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -25,9 +25,31 @@ export function validateEvaluationFiles({ root = ROOT } = {}) {
   for (const file of files) {
     try {
       const suite = JSON.parse(readFileSync(resolve(evalsRoot, file), 'utf8'));
-      const suiteErrors = file.endsWith('/routing.json') || file === 'routing.json'
+      const isRouting = file.endsWith('/routing.json') || file === 'routing.json';
+      const suiteErrors = isRouting
         ? validateRoutingSuite(routingSchema, suite)
         : validateEvaluationSuite(evalSchema, suite);
+      if (!isRouting && Array.isArray(suite.cases)) {
+        for (const entry of suite.cases) {
+          const resources = [
+            ...(entry?.fixture ? [{ path: entry.fixture, directory: true }] : []),
+            ...(entry?.setup ? [entry.setup] : []),
+            ...(Array.isArray(entry?.assertions) ? entry.assertions.filter((item) => item?.type === 'command') : []),
+          ];
+          for (const resource of resources) {
+            try {
+              const path = assertNoSymlinks(dirname(resolve(evalsRoot, file)), resource.path);
+              const stat = lstatSync(path);
+              if (resource.directory ? !stat.isDirectory() : !stat.isFile()) {
+                throw new Error(resource.directory ? 'must be a directory' : 'must be a regular file');
+              }
+              if (resource.directory) walkFiles(path, { includeGit: true });
+            } catch (error) {
+              suiteErrors.push(`case ${entry.id}: resource ${JSON.stringify(resource.path)}: ${error.message}`);
+            }
+          }
+        }
+      }
       if (file.endsWith('/routing.json') || file === 'routing.json') routingCases += suite.cases?.length ?? 0;
       else behaviorCases += suite.cases?.length ?? 0;
       errors.push(...suiteErrors.map((error) => `${file}: ${error}`));

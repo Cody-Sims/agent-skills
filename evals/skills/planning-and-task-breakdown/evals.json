@@ -1,12 +1,15 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "name": "planning-and-task-breakdown-efficiency",
   "skill": "planning-and-task-breakdown",
   "cases": [
     {
       "id": "shared-validation-output",
-      "prompt": "Plan the approved parser and UI updates. Their source files are disjoint, but both validation commands regenerate the same build directory and use the same temporary manifest. Assign ownership and checks for parallel delivery.",
+      "prompt": "Read project/approved-work.json and write plan.md for the agreed parser and UI updates. Their sources are disjoint but validation shares build/ and tmp/manifest.json. Assign exclusive writes, validation isolation or serialization, and one integration owner. Do not change project, execute delivery, or launch workers.",
+      "fixture": "fixtures/shared-validation",
       "assertions": [
+        { "id": "preserves-approved-work", "type": "unchanged", "path": "project" },
+        { "id": "writes-plan", "type": "fileContains", "path": "plan.md", "value": "build/" },
         { "id": "protects-shared-gate", "type": "regex", "value": "(serial|isolat|single owner|one owner)", "flags": "i" }
       ],
       "humanReview": [

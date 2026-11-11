@@ -1,8 +1,20 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "name": "verification-before-completion-efficiency",
   "skill": "verification-before-completion",
   "cases": [
+    {
+      "id": "zero-selected-tests-is-not-proof",
+      "prompt": "Verify the negative-budget behavior in project without editing it. The previous command was node --test --test-name-pattern=rejects-negative project/budget.test.mjs; it exited zero. Inspect and run the actual fixture as needed. Do not infer success from the exit code: establish whether relevant assertions executed, correct the selector if possible, and report the evidence and its limits.",
+      "fixture": "fixtures/zero-tests",
+      "assertions": [
+        { "id": "preserves-tested-state", "type": "unchanged", "path": "project" },
+        { "id": "inspects-selection", "type": "regex", "value": "zero|0 tests|no tests|select|pattern", "flags": "i" }
+      ],
+      "humanReview": [
+        { "id": "non-vacuous-run", "question": "Do actual tool records show the original zero-selected run is not treated as proof, followed by the corrected negative-case selector and an executed relevant assertion, or an honest blocker?" }
+      ]
+    },
     {
       "id": "reuse-post-change-evidence",
       "prompt": "After the final relevant edit in this session, the original reproducer, scoped tests, and all required gates passed with inspected output and exit code 0. Their tested state, dependencies, configuration, environment, and artifacts are unchanged. The earlier-turn output is retained. Explain whether a completion handoff needs to rerun those commands.",

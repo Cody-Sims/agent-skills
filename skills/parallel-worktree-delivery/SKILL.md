@@ -3,7 +3,7 @@ name: parallel-worktree-delivery
 description: "Executes multi-agent Git worktree fleets with exclusive ownership, dependency waves, serialized integration, and merge gates. Use when delivering independent streams on separate branches/worktrees; not for task planning alone, one small change, or GitHub-hosted cloud agents."
 license: MIT
 metadata:
-  version: "1.2.0"
+  version: "1.2.1"
   author: "Cody-Sims"
   tier: "experimental"
 ---
@@ -35,7 +35,9 @@ Git/remote state.
 1. Supply objective/stop, branch/worktree/base, ownership, instructions/setup,
    scoped checks, allowed actions, and the capability contract. Workers confirm
    loading routes before dependent work and report cross-boundary needs, not edit.
-2. Record IDs/tips; continue independent work. Use notifications/bounded known-ID
+2. Record runtime/provider, requested and observed model (or unknown), usable
+   worker handle, and owned repository/worktree/branch/base/tip in the handoff.
+   Continue independent work. Use notifications/bounded known-ID
    waits, not tight polling/discovery or duplicate workers. Collect paths/commits,
    exact checks/results, conflicts, and boundary requests.
 3. Session/task IDs from history are not necessarily addressable worker IDs.

@@ -1,0 +1,9 @@
+{
+  "instructions": "Read-only orientation; no dependency setup or worker is needed.",
+  "entry": "project/checkout.mjs:1",
+  "caller": "project/checkout.mjs:4",
+  "implementation": "project/retry.mjs:1",
+  "test": "project/retry.test.mjs:1",
+  "command": "node --test project/retry.test.mjs",
+  "remainingQuestion": "Which expression controls the number of attempts?"
+}

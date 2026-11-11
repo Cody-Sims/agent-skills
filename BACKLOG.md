@@ -93,6 +93,11 @@ approval gates live outside the canonical skill format.
   objective and pending human grading, metrics, a committed verification pilot,
   and a synthetic smoke command. Real model runs and independently reviewed
   uplift remain before this item is done.
+  All 24 per-skill suites now include synthetic workspace fixtures or trusted
+  setup. Suite v2/result v3 support real file, unchanged-state, and independent
+  command assertions, with negative controls for empty typed APIs, weak tests,
+  and shared Git staging. Local fixture checks do not complete human review,
+  real model comparisons, or Wayfinder interrupted-effect adapter trials.
 
 ### AS-002: Add routing and collision evaluations
 

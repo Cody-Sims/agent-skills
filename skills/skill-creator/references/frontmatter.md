@@ -9,7 +9,7 @@ It is validated against `schemas/skill.schema.json` and by
 | Field | Required | Type | Constraints |
 |---|---|---|---|
 | `name` | Yes | string | 1 to 64 characters. Matches `^[a-z0-9]+(?:-[a-z0-9]+)*$`: lowercase letters, digits, and single hyphens, with no leading, trailing, or consecutive hyphens. Must equal the parent directory name. Must not contain the reserved words that hosted validation rejects. |
-| `description` | Yes | string | 1 to 1024 characters. Third person. Contains no angle-bracket characters. States what the skill does and when to use it. Front-loads concrete trigger vocabulary. |
+| `description` | Yes | string | 40 to 1024 characters in this repository. Third person. Contains no angle-bracket characters. States what the skill does and when to use it. Front-loads concrete trigger vocabulary. |
 | `license` | Yes here | string | Short identifier. Use `MIT` for skills in this repository. |
 | `metadata` | Yes here | mapping | All values are strings. Requires `version` as a quoted semantic version like `"1.0.0"`, `author`, and `tier` of `core`, `extended`, or `experimental`. |
 | `compatibility` | No | string | 1 to 500 characters. Concrete runtime, package, command, or network requirements. Omit when there are none; most skills omit it. |

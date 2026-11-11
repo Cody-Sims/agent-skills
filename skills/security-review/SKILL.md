@@ -3,7 +3,7 @@ name: security-review
 description: "Reviews code changes and components for exploitable vulnerabilities using STRIDE, trust-boundary tracing, and evidence-ranked findings. Use when auditing security, threat modeling, or hardening endpoints and integrations against authorization, injection, SSRF, secrets, supply-chain, or prompt-injection risks; not for ordinary correctness review or skill authoring."
 license: MIT
 metadata:
-  version: "1.1.0"
+  version: "1.1.1"
   author: "Cody-Sims"
   tier: "core"
 ---

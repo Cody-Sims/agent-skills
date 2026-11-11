@@ -5,12 +5,12 @@
     {
       "type": "runbook",
       "reference": "skills/documentation-maintenance/assets/adr-template.md",
-      "summary": "Defines decision status, rejected alternatives, consequences, and supersession rather than rewriting accepted history."
+      "summary": "Defines repository-first ADR naming and IDs, decision status, rejected alternatives, consequences, and supersession rather than rewriting accepted history."
     }
   ],
   "comparison": null,
   "exception": {
     "type": "safety",
-    "rationale": "The streamlined workflow preserves accepted decision history, prevents invented acceptance, and distinguishes safely executed setup/examples from traced or unavailable checks. It prohibits speculative destructive setup and dependency installation. These record-integrity and execution boundaries justify a requested safety exception rather than an unsupported average quality improvement; human approval and runtime uplift are not claimed."
+    "rationale": "The workflow preserves accepted decision history and repository ADR naming conventions, prevents invented acceptance, and distinguishes safely executed setup/examples from traced or unavailable checks. It prohibits speculative destructive setup and dependency installation. These record-integrity and execution boundaries justify a requested safety exception rather than an unsupported average quality improvement; human approval and runtime uplift are not claimed."
   }
 }

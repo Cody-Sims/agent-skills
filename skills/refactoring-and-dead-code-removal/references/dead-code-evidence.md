@@ -47,6 +47,8 @@ These reach code without a visible reference. Rule them out explicitly:
 - Plugin registries, service locators, and dependency injection by key.
 - Configuration or data files that name handlers, routes, or classes.
 - Event names, message types, and callbacks resolved at runtime.
+- Module-load effects, decorators, and static initializers that register
+  handlers, mutate shared state, or perform required setup without direct calls.
 
 If any of these could reference the symbol, treat it as live until proven
 otherwise.

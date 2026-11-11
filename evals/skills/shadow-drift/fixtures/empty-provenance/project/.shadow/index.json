@@ -1,0 +1,5 @@
+{
+  "schemaVersion": 1,
+  "decisions": [{ "id": "fixture", "path": ".shadow/decisions/fixture.json" }],
+  "derived": [{ "path": ".shadow/derived/view.json", "sources": [] }]
+}

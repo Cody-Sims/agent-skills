@@ -31,6 +31,6 @@
   "comparison": null,
   "exception": {
     "type": "safety",
-    "rationale": "The workflow reduces architecture-governance risk by keeping future-state work proposal-only, preserving missing rationale as unknown, requiring an external human approval artifact before decision recording, and refusing acceptance, history rewriting, or implementation. This exception supports experimental entry only: the committed behavior and routing suites are structurally validated, but no hosted/model baseline comparison, independently reviewed uplift, deterministic script comparison, or promotion evidence is claimed."
+    "rationale": "The workflow reduces architecture-governance risk by keeping future-state work proposal-only, preserving missing rationale as unknown, requiring external human approval before decision recording, and refusing acceptance, history rewriting, or implementation. Current hard user scope, security, and budget constraints remain binding without graph acceptance, with conflicts surfaced rather than silently discarded. This requests an experimental safety exception; historical artifacts and synthetic fixtures do not establish current human approval, hosted/model uplift, or promotion evidence."
   }
 }

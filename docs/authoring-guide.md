@@ -180,7 +180,7 @@ is the correct success measure.
 
 ## First-party scaffolder
 
-Node.js 22 users can create a deterministic starting point without prompts:
+With Node.js 22.6 or later, create a deterministic starting point without prompts:
 
 ```bash
 npm run skill:create -- \

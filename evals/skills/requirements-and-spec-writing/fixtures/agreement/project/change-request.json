@@ -1,0 +1,6 @@
+{
+  "targetVersion": "v2",
+  "change": "Shared reports never expire.",
+  "approved": false,
+  "implementationAuthorized": false
+}

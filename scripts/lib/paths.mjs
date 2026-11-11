@@ -99,7 +99,7 @@ const IGNORED_FILES = new Set(['.DS_Store', 'Thumbs.db']);
 
 // Recursively lists regular files under `dir`, returning paths relative to
 // `dir` with POSIX separators. Rejects symlinks encountered in the tree.
-export function walkFiles(dir, { onSymlink = 'reject' } = {}) {
+export function walkFiles(dir, { onSymlink = 'reject', includeGit = false } = {}) {
   const results = [];
   const root = resolve(dir);
   if (lstatSync(root).isSymbolicLink()) {
@@ -109,7 +109,7 @@ export function walkFiles(dir, { onSymlink = 'reject' } = {}) {
     const entries = readdirSync(current, { withFileTypes: true }).sort((a, b) =>
       a.name < b.name ? -1 : a.name > b.name ? 1 : 0);
     for (const entry of entries) {
-      if (IGNORED_FILES.has(entry.name) || entry.name === '.git') continue;
+      if (IGNORED_FILES.has(entry.name) || (!includeGit && entry.name === '.git')) continue;
       const abs = resolve(current, entry.name);
       const rel = relBase ? `${relBase}/${entry.name}` : entry.name;
       if (entry.isSymbolicLink()) {

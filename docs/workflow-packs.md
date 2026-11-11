@@ -16,7 +16,7 @@ requests, and combined context accounting.
 Use a pack name or exact `name@version`:
 
 ```bash
-npm run install:pack -- feature-delivery@1.3.0
+npm run install:pack -- feature-delivery@1.3.1
 npm run check:pack -- feature-delivery
 npm run uninstall:pack -- feature-delivery
 ```
@@ -27,6 +27,12 @@ over the network. Unknown, removed, version-mismatched, conflicting, or
 member-version-mismatched packs fail before mutation. `list` reports available
 packs and the target receipt's catalog and pack selections; `list --pack NAME`
 reports that pack's exact members.
+
+`safe-refactor@1.4.0` follows exploration, refactoring, review, and completion
+verification. Refactoring starts from a passing baseline and any needed
+characterization, not an artificial failing new-behavior test. Actual defects
+or behavior changes leave this pure-refactor chain for an appropriate tested
+workflow. TDD remains part of `feature-delivery`.
 
 Receipt v3 records a full-catalog boolean, a sorted pack-name-to-version map,
 the exact union of selected skill versions and resources, source identity,
@@ -153,13 +159,14 @@ Execution or integrity failures terminate without writing a passing artifact.
 Each trial receives isolated home, configuration, cache, and temporary
 directories. Cleanup uncertainty preserves the trial root for operator action.
 
-## Completion evidence
+## Evidence boundary
 
-Local exact-provenance validation and deterministic fixture smoke passed for
-all three packs at immutable commit
-`62835884e25fb1e06bba52216d0ca51b92e8ca91`. The smoke executed no vendor host
-and is not promotion evidence. Hosted composition baselines and non-null
-thresholds remain follow-up work.
+Historical exact-provenance evidence at commit
+`62835884e25fb1e06bba52216d0ca51b92e8ca91` does not verify the current four
+pack definitions or member trees. Current precommit checks are structural;
+exact-provenance runs require matching committed bytes. Deterministic smoke
+executes no vendor host and is not promotion evidence. Hosted composition
+baselines and non-null thresholds remain follow-up work.
 
 `npm run registry` and `npm run registry:check` reject:
 

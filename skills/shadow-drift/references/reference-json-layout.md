@@ -3,6 +3,15 @@
 The fallback validator supports one deliberately narrow layout. A repository
 that declares another schema must use its own validator.
 
+## Contents
+
+- [Files](#files)
+- [Index](#index)
+- [Decision record](#decision-record)
+- [Classification](#classification)
+- [CLI](#cli)
+- [Exit codes](#exit-codes)
+
 ## Files
 
 ```text
@@ -45,9 +54,9 @@ are rejected.
 }
 ```
 
-`derived` is optional. Each derived source requires a lowercase SHA-256 digest.
-The output is stale when it is missing, a source is missing, or a source digest
-has changed.
+`derived` is optional. Each declared output needs at least one source, and each
+source requires a lowercase SHA-256 digest. The output is stale when provenance
+is empty, the output or a source is missing, or a source digest has changed.
 
 ## Decision Record
 

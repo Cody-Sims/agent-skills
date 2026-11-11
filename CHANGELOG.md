@@ -8,6 +8,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Reject declared Shadow derived output with an empty source list as stale
+  provenance; optional collection omission and matching sources remain valid.
+- Correct interacting-input reduction and untestable bisect midpoints; account
+  for module-load side effects, ambient-credential CSRF, target-specific negative
+  controls, current hard constraints, and host-specific instruction scoping.
+- Preserve repository ADR conventions and version-bound agreement evidence;
+  clarify hosted hard caps, retrieval failures, read-only audits, and worker
+  identity/bookkeeping without expanding permissions.
 - Fixed approved planning handoffs for already-clear Wayfinder maps with zero
   cycles. Wayfinder 2.1.1 accepts an explicit host-supplied `handoff.at`, retains
   final-cycle time compatibility, and rejects missing, pre-cycle, future-issued,
@@ -19,6 +27,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Add independent workspace/file/command grading and trusted fixture setup to
+  existing behavior evaluations (suite v2/result v3), with bounded redacted
+  evidence and backward-compatible legacy text grading.
+- Ground all 24 maintained skills' behavior suites in synthetic fixtures or
+  trusted setup; add executable oracle controls for empty APIs, false-green
+  tests, and another owner's staged changes. Human judgments remain pending.
 - Added a research-backed feature opportunity roadmap covering skills, workflow
   packs, catalog and evaluation tooling, and operational discovery work.
 
@@ -34,6 +48,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   establish model uplift, expected test-red intent, or billed-usage savings.
 - Updated exact skill versions and the `feature-delivery`, `safe-refactor`,
   and `release-readiness` packs to 1.3.0 for their revised dependencies.
+- Update 16 skill versions and exact pack bindings; `feature-delivery` and
+  `release-readiness` are 1.3.1, and `shadow-architecture-suite` is 1.1.1.
+  Keep all maturity records unverified and comparisons unset.
+- Correct `safe-refactor` 1.4.0 to use passing baselines/characterization rather
+  than a mandatory TDD detour. Keep changed-behavior work in a separate tested
+  workflow and retain review and verification gates.
+- Make Implementation-agent delegation proportional to independent scope and
+  risk; keep continuous traces local and read-only worker persistence owned by
+  the coordinator.
+- Require Node.js 22.6 or later for native TypeScript evaluation fixtures.
 - Completed contribution records for the earlier ten streamlined skills with
   specific safety/compliance exception requests and existing expertise sources.
   These are not fabricated comparisons, human approvals, or evidence of runtime

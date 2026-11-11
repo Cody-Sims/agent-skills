@@ -1,0 +1,5 @@
+{
+  "fixtureEvidence": true,
+  "GitHub Copilot": { "applyTo": "verified supported for this fixture" },
+  "Other Host": { "applyTo": "unverified; do not assume matching discovery" }
+}

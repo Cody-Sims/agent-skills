@@ -3,7 +3,7 @@ name: web-research-and-verification
 description: "Verifies version-sensitive external claims with authoritative sources, risk-appropriate corroboration, and citations. Use when researching APIs, libraries, standards, release notes, CVEs, current facts, or deprecations; not for repository architecture exploration or implementation alone."
 license: MIT
 metadata:
-  version: "1.1.0"
+  version: "1.1.1"
   author: "Cody-Sims"
   tier: "core"
 ---

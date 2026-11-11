@@ -3,7 +3,7 @@ name: planning-and-task-breakdown
 description: "Plans approved multi-step work as verifiable outcomes with dependencies, file ownership, and safe parallel boundaries. Use when breaking down an agreed spec, sequencing delivery, or coordinating parallel tasks; not for unresolved requirements or a small direct edit."
 license: MIT
 metadata:
-  version: "1.2.0"
+  version: "1.2.1"
   author: "Cody-Sims"
   tier: "core"
 ---

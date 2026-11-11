@@ -1,0 +1,16 @@
+{
+  "runtime": "copilot-cli",
+  "provider": "GitHub",
+  "requestedModel": "gpt-6.1-sol",
+  "observedModel": null,
+  "historicalSessionId": "fixture-history-17",
+  "usableWorkerHandle": null,
+  "messageCapability": "unavailable",
+  "repository": "fixture-repository",
+  "worktree": "project",
+  "branch": "stream/parser",
+  "base": "fixture-base",
+  "frozenTip": null,
+  "liveUncommittedFiles": ["src/parser.mjs"],
+  "ownershipReleased": false
+}

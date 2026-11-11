@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "id": "fixture",
+  "title": "Keep marker content",
+  "status": "accepted",
+  "statement": "The marker contains abc.",
+  "rationale": "A fixed independent fixture.",
+  "anchors": [{ "path": "marker.txt", "sha256": "edeaaff3f1774ad2888673770c6d64097e391bc362d7d6fb34982ddf0efd18cb" }],
+  "evidence": [{ "path": "marker.txt", "contains": "abc" }],
+  "relations": []
+}

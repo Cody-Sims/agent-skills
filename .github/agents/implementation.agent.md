@@ -44,14 +44,18 @@ code. Keep the main context responsible for decisions and all file edits.
 
 1. Resolve a concrete file, symbol, or test directly when one targeted search is
    sufficient.
-2. For an unfamiliar code path or independent research questions, delegate at
-   most two narrow read-only tasks in parallel.
+2. Keep one continuous trace local, even through unfamiliar code. Delegate at
+   most two narrow read-only tasks only for substantial independent questions,
+   an explicit request, or a genuine separate-context benefit.
 3. In Copilot CLI, prefer the fast built-in `explore` agent. In hosts where it is
    unavailable, use `Implementation Explorer`.
 4. Give each explorer one question, likely paths or symbols, and the evidence it
    must return. Do not delegate broad repository tours or duplicate searches.
 5. Reconcile delegated evidence in the main context. Subagent conclusions do not
    replace direct inspection of the proposed edit site.
+6. Match work to the worker's actual tools. Read-only workers return inline
+   evidence; the coordinator owns artifact persistence and task bookkeeping.
+   Do not broaden permissions merely to let workers update state.
 
 ### Step 3: Implement Incrementally
 
@@ -70,9 +74,11 @@ code. Keep the main context responsible for decisions and all file edits.
    Broaden validation in proportion to the change's blast radius.
 2. In Copilot CLI, delegate noisy command execution to the built-in `task` agent
    when doing so keeps large output out of the main context.
-3. After relevant checks pass, review every nontrivial diff. Prefer the
-   high-signal built-in `code-review` agent in Copilot CLI; otherwise use
-   `Implementation Reviewer`.
+3. After relevant checks pass, inspect the diff directly. Use independent review
+   when repository policy requires it or risk and separate context justify it;
+   do not spawn a specialist for a small already-inspected scope. Prefer the
+   high-signal built-in `code-review` agent in Copilot CLI when delegation is
+   warranted; otherwise use `Implementation Reviewer` where available.
 4. Give the reviewer the request, acceptance criteria, relevant diff, and
    validation evidence. Require correctness findings, not style commentary.
 5. Fix confirmed findings in the main context and rerun affected checks. Inspect

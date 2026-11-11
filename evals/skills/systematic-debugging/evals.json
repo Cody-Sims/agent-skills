@@ -1,8 +1,23 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "name": "systematic-debugging-behavior",
   "skill": "systematic-debugging",
   "cases": [
+    {
+      "id": "interacting-inputs-and-untestable-midpoint",
+      "prompt": "Diagnose only, without modifying project. Run node project/reproduce.mjs --left --right, then reduce the trigger while preserving the exact failure. Also classify project/midpoints.json for a history search: distinguish the same regression from a missing tool. Report the minimal trigger and safe bisect classifications; do not run bisect in this checkout.",
+      "fixture": "fixtures/interactions",
+      "assertions": [
+        { "id": "preserves-reproducer", "type": "unchanged", "path": "project" },
+        { "id": "retains-left", "type": "contains", "value": "--left" },
+        { "id": "retains-right", "type": "contains", "value": "--right" },
+        { "id": "untestable-is-not-bad", "type": "regex", "value": "skip|untestable|125", "flags": "i" }
+      ],
+      "humanReview": [
+        { "id": "actual-interaction", "question": "Did actual tool output establish that both halves pass but their combination reproduces TARGET_PAIR_FAILURE, without blaming the removed half or changing the reproducer?" },
+        { "id": "exact-failure-classification", "question": "Is the missing-compiler midpoint skipped or blocked rather than marked bad, while a genuine target assertion failure remains bad?" }
+      ]
+    },
     {
       "id": "recover-readiness-before-diagnosis",
       "prompt": "The smallest reproduction is npm run test:parser -- --case empty. It exits 127 with the exact error 'sh: tsx: command not found'; no parser assertion executes. The lockfile already declares tsx and documented setup is npm ci, which is authorized but has not run. A teammate recommends adding a catch to the parser instead. Explain the next diagnostic action and what evidence is needed for a fix verdict.",

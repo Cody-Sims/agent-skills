@@ -4,6 +4,19 @@ Use this contract to connect Wayfinder Planning to GitHub, GitLab, Linear, local
 Markdown, or another tracker. The skill does not assume host-specific
 frontmatter, labels, commands, or repository paths.
 
+## Contents
+
+- [Required guarantees](#required-guarantees)
+- [Normalized records](#normalized-records)
+- [Required operations](#required-operations)
+- [Recovery trace conformance](#recovery-trace-conformance)
+- [Frontier calculation](#frontier-calculation)
+- [Claim recovery](#claim-recovery)
+- [External task protocol](#external-task-protocol)
+- [Synchronization transaction](#synchronization-transaction)
+- [Host adapter notes](#host-adapter-notes)
+- [Error shape](#error-shape)
+
 ## Required guarantees
 
 An adapter must provide:

@@ -21,6 +21,10 @@ item applies to every change; skip those that are irrelevant.
 * Are integrity-sensitive values signed or validated rather than trusted as sent?
 * Can a client set fields that should be server-controlled, such as role, price,
   or owner?
+* For state-changing routes with automatically attached browser credentials,
+  can a cross-site request perform the mutation? Check applicable origin/token
+  and cookie defenses. A bearer-only route without ambient credentials does not
+  need a generic missing-CSRF-token finding.
 * Are file uploads validated for type, size, and content, and stored outside
   executable paths?
 

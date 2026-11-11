@@ -3,7 +3,7 @@ name: requirements-and-spec-writing
 description: "Turns unclear requests into agreed, testable specifications before implementation. Use when a request is vague or large, scope/acceptance criteria are unclear, or a spec, requirements, or design is requested; not for decomposing an approved spec or a small well-defined edit."
 license: MIT
 metadata:
-  version: "1.1.0"
+  version: "1.1.1"
   author: "Cody-Sims"
   tier: "core"
 ---

@@ -67,6 +67,10 @@ The snapshot documents a 59-minute maximum session; recheck when planning sessio
 duration. Do not poll for that entire limit by default: use a stated read/time
 budget with backoff and rate-limit handling. A timed-out session needs triage,
 not a success report. Unknown states/fields remain unknown until verified.
+Monitoring/read budgets are not execution or spend caps. For a requested hard
+ceiling, verify an enforceable hosted control before launch; an unsupported cap
+is a blocker, not satisfied by stopping polling. Cancellation needs authorization
+and verified support; do not promise it guarantees an exact cost ceiling.
 
 Source:
 

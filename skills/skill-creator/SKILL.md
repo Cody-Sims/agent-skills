@@ -3,7 +3,7 @@ name: skill-creator
 description: "Authors, audits, and repairs Agent Skills with clear triggers, concise workflows, progressive disclosure, and valid frontmatter. Use when creating or editing SKILL.md, improving skill efficiency or routing, or fixing skill validation; not for application features or tool-interface design."
 license: MIT
 metadata:
-  version: "1.3.0"
+  version: "1.3.1"
   author: "Cody-Sims"
   tier: "core"
 ---
@@ -21,9 +21,12 @@ and its observed problem. Ask only for missing consequential scope.
 
 ## Workflow
 
-1. Identify the mode: create, routing repair, validation repair, or efficiency
-   improvement. For an existing skill, read it and relevant neighbors; preserve
-   its name and unrelated resources. Do not restart the full creation checklist.
+1. Identify the mode: read-only audit, create, routing repair, validation repair,
+   or efficiency improvement. An audit returns cited findings and proposed
+   changes, not edits, version bumps, installation, publication, or authentication
+   setup. Steps 7-8 apply to authorized edits only. For an existing skill, read it
+   and relevant neighbors; preserve its name and unrelated resources. Do not
+   restart the full creation checklist.
    For session-informed optimization, read
    [session audit](references/session-audit.md) before querying history. Patch an
    observed gap, not a rule already repaired in the current or installed release.
@@ -60,7 +63,7 @@ and its observed problem. Ask only for missing consequential scope.
    file. Fix reported issues and rerun affected checks, not unchanged gates
    simply because another handoff occurred.
 9. For efficiency claims, compare the previous and candidate skill on matched
-   tasks with the same Copilot runtime/model and correctness rubric. Record
+   tasks with the same target runtime/model and correctness rubric. Record
    calls, output/context size, elapsed time, and available usage separately.
    Static size reductions or fixture smoke tests do not prove model uplift or
    billed-token savings. Honor contribution-review gates before publishing.
@@ -78,7 +81,8 @@ and its observed problem. Ask only for missing consequential scope.
 
 ## Output
 
-Report changed paths, final descriptions, line counts, validation results, and
-unresolved assumptions. Include measured improvements and their limits; never
-leave the handoff empty. Generate runtime copies through the supported installer,
-not hand-maintained edits.
+For an audit, report coverage, cited findings, proposed changes, and evidence
+limits without implying mutation. For edits, report changed paths, final
+descriptions, line counts, validation results, and unresolved assumptions. Include
+measured improvements and their limits; never leave the handoff empty. Generate
+runtime copies through the supported installer, not hand-maintained edits.

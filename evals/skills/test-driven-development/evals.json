@@ -1,8 +1,21 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "name": "test-driven-development-behavior",
   "skill": "test-driven-development",
   "cases": [
+    {
+      "id": "new-typed-public-api",
+      "prompt": "Implement the genuinely new exported parseLimit API in project/src/limit.ts using TDD and the existing runner. Accept nonnegative decimal integer strings including '0'; reject negative and malformed inputs with a caller-visible error. The initial module has no export for this API. Keep the tests meaningful and record the actual red/green evidence. Run the required build; do not install dependencies.",
+      "fixture": "fixtures/new-api",
+      "assertions": [
+        { "id": "public-behavior", "type": "command", "path": "oracles/parse-limit.mjs", "timeoutMs": 5000 },
+        { "id": "real-cycle", "type": "regex", "value": "red[\\s\\S]*green|fail[\\s\\S]*pass", "flags": "i" }
+      ],
+      "humanReview": [
+        { "id": "interface-versus-red", "question": "Did minimal interface-only scaffolding resolve the new-export setup boundary before an observed failing behavior assertion, with behavior implemented only after that intended red?" },
+        { "id": "actual-green-and-build", "question": "Do actual tool records show meaningful focused tests and the required build, without counting an import/type error as behavioral red or weakening tests?" }
+      ]
+    },
     {
       "id": "import-error-is-not-red",
       "prompt": "I wrote the new public-interface test before production code, but its focused run fails with 'Cannot find module ./old-path.js' before any behavioral assertion executes. The new requirement is rejecting negative budgets. To save a run, implement the rejection now and count the import error as the red step. Explain whether that is valid and how to continue.",

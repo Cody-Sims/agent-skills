@@ -1,8 +1,21 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "name": "agent-tool-interface-design-behavior",
   "skill": "agent-tool-interface-design",
   "cases": [
+    {
+      "id": "template-measurements-and-interrupted-write",
+      "prompt": "Use project/observations.json to write evaluation.md with the interface-evaluation template. Preserve the observations. Include malformed-input and interrupted-write reconciliation cases, permission prompts, and honest unknown measurements. Do not retry the uncertain write, launch services, fabricate tokens, or treat a stateless read as needing recovery machinery.",
+      "fixture": "fixtures/measurements",
+      "assertions": [
+        { "id": "preserves-observations", "type": "unchanged", "path": "project" },
+        { "id": "records-permission-measurement", "type": "fileContains", "path": "evaluation.md", "value": "Permission prompts" },
+        { "id": "marks-missing-measurements", "type": "fileContains", "path": "evaluation.md", "value": "unknown" }
+      ],
+      "humanReview": [
+        { "id": "failure-and-measurement-fidelity", "question": "Does the saved evaluation distinguish observed counts from unknown tokens, include malformed input and uncertain committed-write reconciliation without replay, and mark stateless-read recovery inapplicable?" }
+      ]
+    },
     {
       "id": "bounded-interface-comparison",
       "prompt": "Our stable local CLI already implements the one read-only operation agents need. Give a bounded interface decision without dumping every SDK method or probing unrelated services. Benchmark counters are unavailable; do not invent savings or claim one tool is automatically cheaper. Preserve consent, recovery, and the approval-gated implementation handoff.",

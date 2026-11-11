@@ -28,11 +28,14 @@ first becomes wrong.
 
 When a large input triggers a failure and a small one does not:
 
-1. Remove or disable half the input. Re-run the reproduction.
-2. If the failure persists, the cause is in the remaining half; if it
-   disappears, it is in the removed half.
-3. Repeat on the failing half until a minimal reproducing input remains.
-4. The minimal input names the exact condition the code mishandles.
+1. Remove or disable half the input. Re-run the exact reproduction and compare
+   the failure signature, not just the exit code.
+2. Keep a reduction only when it preserves the target failure. If it passes,
+   test the removed half separately; disappearance alone does not locate a cause.
+3. If both halves pass, retain their interacting combination and try smaller
+   removals. Do not discard either half as irrelevant.
+4. Repeat while preserving the failure. A minimal reproducer narrows the
+   conditions; trace the state divergence before naming the cause.
 
 The same halving applies to configuration, feature flags, and data records.
 
@@ -44,9 +47,12 @@ When the failure is new and a past state worked:
 2. Use a clean, authorized checkout isolated from concurrent work. Do not switch
    revisions in a shared or dirty working tree. Check out the midpoint there and
    run the reproduction command.
-3. Mark the midpoint good or bad and repeat on the remaining range.
-4. `git bisect run <command>` automates this when the command exits nonzero on
-   failure. Ensure the command is deterministic first.
+3. Mark good only after the target check actually passes; mark bad only for the
+   same target failure. Missing tools, incompatible dependencies, or an
+   unbuildable midpoint are untestable: skip them or abort to repair the harness.
+4. For deterministic `git bisect run <command>`, map a genuine pass to exit 0,
+   the matched target failure to 1, and an untestable revision to 125. Abort on
+   unclassified harness errors; arbitrary nonzero exits are not regression proof.
 5. The first bad revision names the change that introduced the defect. Read its
    full diff; the cause is usually there, even if the symptom is elsewhere.
 

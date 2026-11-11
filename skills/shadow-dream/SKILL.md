@@ -3,7 +3,7 @@ name: shadow-dream
 description: "Proposes evidence-linked future-state architecture options from Shadow observations and accepted constraints. Use when asked to dream, compare architecture options, define a target state, or propose migration and rollback; not for product specifications, implementation tasks, accepted decision recording, or implementation."
 license: MIT
 metadata:
-  version: "1.1.0"
+  version: "1.1.1"
   author: "Cody-Sims"
   tier: "experimental"
 ---
@@ -14,7 +14,8 @@ Produce a reviewable architecture proposal, not an approved decision.
 Inputs: question/horizon, repository instructions and declared `.shadow/`
 README/index/schemas/lifecycle/approval conventions, evidence-linked current
 observations, accepted constraints, and optional goals/risk/deadline/migration
-limits. Repository declarations take precedence; missing inputs remain unknown.
+limits. Repository declarations govern graph representation; missing inputs
+remain unknown.
 
 ## Hard Boundary
 
@@ -41,8 +42,10 @@ the conflict.
    Inference cannot become an accepted constraint; proposals cannot prove their
    own acceptance.
 4. **Extract drivers.** List evaluation criteria and mark constraints as
-   accepted, requested, inferred, or unknown. Only accepted constraints are
-   mandatory.
+   accepted, requested, inferred, or unknown. Only accepted architecture claims
+   are mandatory on that basis; current hard user scope, security, and budget
+   limits remain binding without graph acceptance. Keep optional preferences
+   distinct and surface authority conflicts rather than silently overriding them.
 5. **Generate options.** Produce at least two materially distinct architectures,
    not implementation variants. Include status quo/incremental change when a
    credible baseline.

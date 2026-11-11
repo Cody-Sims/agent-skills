@@ -4,7 +4,7 @@
     {
       "name": "agent-tool-interface-design",
       "description": "Designs and benchmarks agent-facing CLI, MCP, constrained code, and code-over-MCP interfaces. Use when reducing MCP tool sprawl, wrapping APIs for agents, choosing CLI versus MCP, or comparing interface cost, state, security, and portability; not for skill authoring or an existing server's security review.",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "license": "MIT",
       "tier": "experimental",
       "maturity": {
@@ -103,7 +103,7 @@
       },
       "path": "skills/agent-tool-interface-design",
       "skillFile": "skills/agent-tool-interface-design/SKILL.md",
-      "sha256": "b7cb8c7704aa92eedcc71c938c038dadf570d9c331f741fa70020ec99bc59fb0",
+      "sha256": "f3b14bdcea97103ced1557cf9e8c02ecab2c9fd19d9f321d69f3e9f8e285149a",
       "resources": [
         "assets/interface-evaluation-template.md",
         "references/decision-matrix.md",
@@ -279,7 +279,7 @@
     {
       "name": "copilot-cloud-agent",
       "description": "Launches and monitors GitHub-hosted Copilot tasks with explicit models and durable task/PR IDs. Use when starting cloud agents, assigning issues to hosted Copilot, selecting GPT-5.6 Sol, or checking cloud-task status; not for local CLI subagents or Git worktree fleets.",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "license": "MIT",
       "tier": "experimental",
       "maturity": {
@@ -369,7 +369,7 @@
       },
       "path": "skills/copilot-cloud-agent",
       "skillFile": "skills/copilot-cloud-agent/SKILL.md",
-      "sha256": "50007aa4bf693baa6590825b0a96eb73e5e9c084ea19337b276eae3ffc0e4b3f",
+      "sha256": "15b2c64b47f11f799a8c547360941bd37974b0708ddc32eaf8a8ad62b9af2621",
       "resources": [
         "references/github-cloud-agent-controls.md"
       ]
@@ -377,7 +377,7 @@
     {
       "name": "documentation-maintenance",
       "description": "Updates README, API docs, architecture notes, ADRs, and changelogs to match current code. Use when a code/configuration change invalidates documentation, or when writing an ADR or changelog entry; not for new requirements or maintaining a .shadow decision graph.",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "license": "MIT",
       "tier": "core",
       "maturity": {
@@ -456,7 +456,7 @@
       },
       "path": "skills/documentation-maintenance",
       "skillFile": "skills/documentation-maintenance/SKILL.md",
-      "sha256": "44c993a04b77b2a487bfb5334664941425fcd2dd9d880b1ad68e0535d6ffe740",
+      "sha256": "676733534cf37c1fe58040de1a55fdc5536ff5bf68087891a6555aed3e3d2e36",
       "resources": [
         "assets/adr-template.md",
         "assets/changelog-entry.md"
@@ -636,7 +636,7 @@
     {
       "name": "parallel-worktree-delivery",
       "description": "Executes multi-agent Git worktree fleets with exclusive ownership, dependency waves, serialized integration, and merge gates. Use when delivering independent streams on separate branches/worktrees; not for task planning alone, one small change, or GitHub-hosted cloud agents.",
-      "version": "1.2.0",
+      "version": "1.2.1",
       "license": "MIT",
       "tier": "experimental",
       "maturity": {
@@ -727,7 +727,7 @@
       },
       "path": "skills/parallel-worktree-delivery",
       "skillFile": "skills/parallel-worktree-delivery/SKILL.md",
-      "sha256": "6101d35f4582d6f69fcfa4904a0563b29bf492054a30f1660041d4a0fccbfacc",
+      "sha256": "366f661b9a28e38c6415c061bc926505c0e7c5dbe9ae530ea958b0a07d67adc2",
       "resources": [
         "references/fleet-setup.md",
         "references/integration-playbook.md"
@@ -736,7 +736,7 @@
     {
       "name": "planning-and-task-breakdown",
       "description": "Plans approved multi-step work as verifiable outcomes with dependencies, file ownership, and safe parallel boundaries. Use when breaking down an agreed spec, sequencing delivery, or coordinating parallel tasks; not for unresolved requirements or a small direct edit.",
-      "version": "1.2.0",
+      "version": "1.2.1",
       "license": "MIT",
       "tier": "core",
       "maturity": {
@@ -811,7 +811,7 @@
       },
       "path": "skills/planning-and-task-breakdown",
       "skillFile": "skills/planning-and-task-breakdown/SKILL.md",
-      "sha256": "890e72281767bcdcc5ff8972fadb169e4dce4652033fa8d6cc802c3c709b77b0",
+      "sha256": "d780146ff80281369e292adad3c9807c4f28a646499d38f874fdea286e587b6e",
       "resources": [
         "assets/plan-template.md",
         "references/operational-ledger.md"
@@ -820,7 +820,7 @@
     {
       "name": "refactoring-and-dead-code-removal",
       "description": "Refactors structure and removes proven dead code without changing observable behavior. Use when simplifying, extracting, renaming, moving, or deleting suspected unused code; requires a passing baseline and deletion evidence, not a defect fix or new behavior.",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "license": "MIT",
       "tier": "core",
       "maturity": {
@@ -896,7 +896,7 @@
       },
       "path": "skills/refactoring-and-dead-code-removal",
       "skillFile": "skills/refactoring-and-dead-code-removal/SKILL.md",
-      "sha256": "35100d1343f30e5f29cac355e6890f72d8cf27336ffb6e5ee41d61a6ffb246fb",
+      "sha256": "fdad26c07ca1eb690001632e803284b9650c1a2181727e4fedd07fefbc2f7b17",
       "resources": [
         "references/dead-code-evidence.md"
       ]
@@ -904,7 +904,7 @@
     {
       "name": "repository-agent-bootstrap",
       "description": "Audits and improves repository-owned AGENTS.md, scoped instructions, custom agents, and skill discovery without replacing conventions. Use when setting up or maintaining repository agent guidance, integrating an agent or skill, or fixing conflicting or overly broad customization; not for routine code edits, global preferences, or standalone skill authoring.",
-      "version": "1.2.0",
+      "version": "1.2.1",
       "license": "MIT",
       "tier": "core",
       "maturity": {
@@ -980,7 +980,7 @@
       },
       "path": "skills/repository-agent-bootstrap",
       "skillFile": "skills/repository-agent-bootstrap/SKILL.md",
-      "sha256": "0535bb77339bc37ed64985b3e67fdabdf5068a959fa2a3f30376b662c5aa185d",
+      "sha256": "1f84ed9cf6159bc407e816ffb1cb096da62e68f9d74e8bf1ab679e0f45ed6cee",
       "resources": [
         "references/artifact-selection.md",
         "references/skill-loading.md"
@@ -989,7 +989,7 @@
     {
       "name": "requirements-and-spec-writing",
       "description": "Turns unclear requests into agreed, testable specifications before implementation. Use when a request is vague or large, scope/acceptance criteria are unclear, or a spec, requirements, or design is requested; not for decomposing an approved spec or a small well-defined edit.",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "license": "MIT",
       "tier": "core",
       "maturity": {
@@ -1064,7 +1064,7 @@
       },
       "path": "skills/requirements-and-spec-writing",
       "skillFile": "skills/requirements-and-spec-writing/SKILL.md",
-      "sha256": "76a58287cb352493f6a3a58dceebc11848a240bf51cae9c2f3baa2d83b0c7899",
+      "sha256": "236e0a9d6df2f1d7104e5d9cd078785117a38e146a755b3825652eb77309e1f1",
       "resources": [
         "assets/spec-template.md"
       ]
@@ -1072,7 +1072,7 @@
     {
       "name": "security-review",
       "description": "Reviews code changes and components for exploitable vulnerabilities using STRIDE, trust-boundary tracing, and evidence-ranked findings. Use when auditing security, threat modeling, or hardening endpoints and integrations against authorization, injection, SSRF, secrets, supply-chain, or prompt-injection risks; not for ordinary correctness review or skill authoring.",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "license": "MIT",
       "tier": "core",
       "maturity": {
@@ -1148,7 +1148,7 @@
       },
       "path": "skills/security-review",
       "skillFile": "skills/security-review/SKILL.md",
-      "sha256": "0e12cbecdc7dc720026e6b8317dea41e81d212c381df6aa3e5347920411ba668",
+      "sha256": "7b086e35ffeba24bf3f04d18c3b73f759c2ff925f1465ea14f172d91c83c978b",
       "resources": [
         "references/secrets-and-dependencies.md",
         "references/threat-checklist.md"
@@ -1243,7 +1243,7 @@
     {
       "name": "shadow-dream",
       "description": "Proposes evidence-linked future-state architecture options from Shadow observations and accepted constraints. Use when asked to dream, compare architecture options, define a target state, or propose migration and rollback; not for product specifications, implementation tasks, accepted decision recording, or implementation.",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "license": "MIT",
       "tier": "experimental",
       "maturity": {
@@ -1333,13 +1333,13 @@
       },
       "path": "skills/shadow-dream",
       "skillFile": "skills/shadow-dream/SKILL.md",
-      "sha256": "e7edd83e48fc4713dfe683bb89d143881c9d17cce24b0f30af5fcdd922d04f4d",
+      "sha256": "ab4befb3c07ea4476455e8ce5f537ea6dcdadba1e444fe3d33ac60e2455a680f",
       "resources": []
     },
     {
       "name": "shadow-drift",
       "description": "Checks .shadow graph integrity and implementation drift read-only. Use when asked to check Shadow, validate .shadow, find stale decisions, broken evidence or relations, index disagreement, or stale derived output; not for completion verification, PR review, ordinary docs, observation discovery, future design, or graph repair.",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "license": "MIT",
       "tier": "experimental",
       "maturity": {
@@ -1429,7 +1429,7 @@
       },
       "path": "skills/shadow-drift",
       "skillFile": "skills/shadow-drift/SKILL.md",
-      "sha256": "22af5ac9f0e13e7acaf5eaa6d12b9f3ec3816cb4fe0ae0932993062cc00fa30d",
+      "sha256": "be8198854bdfdf8abb572c06dd346667884b595440ea3bd9cfd8ecc54d37aa01",
       "resources": [
         "references/reference-json-layout.md",
         "scripts/validate-shadow.mjs"
@@ -1537,7 +1537,7 @@
     {
       "name": "skill-creator",
       "description": "Authors, audits, and repairs Agent Skills with clear triggers, concise workflows, progressive disclosure, and valid frontmatter. Use when creating or editing SKILL.md, improving skill efficiency or routing, or fixing skill validation; not for application features or tool-interface design.",
-      "version": "1.3.0",
+      "version": "1.3.1",
       "license": "MIT",
       "tier": "core",
       "maturity": {
@@ -1613,7 +1613,7 @@
       },
       "path": "skills/skill-creator",
       "skillFile": "skills/skill-creator/SKILL.md",
-      "sha256": "20b9f3a84d3252432526e474423151e1d64e47985d83e92af72eae07545d7762",
+      "sha256": "399609ed633722c72b6a47b8eaa2fb2f95437dd47820b73eaae0d7f449daa188",
       "resources": [
         "assets/SKILL.template.md",
         "references/description-patterns.md",
@@ -1625,7 +1625,7 @@
     {
       "name": "systematic-debugging",
       "description": "Diagnoses failures by reproducing exact errors, testing one hypothesis at a time, and fixing the root cause. Use when a bug, failing test/build, crash, exception, wrong output, or intermittent failure needs tracing; not for reviewing a patch or auditing already-green tests.",
-      "version": "1.2.0",
+      "version": "1.2.1",
       "license": "MIT",
       "tier": "core",
       "maturity": {
@@ -1701,7 +1701,7 @@
       },
       "path": "skills/systematic-debugging",
       "skillFile": "skills/systematic-debugging/SKILL.md",
-      "sha256": "781a55a66ed1ab5bf183ddf84140cc213db797aabb28a0326dedb9c726b3ded8",
+      "sha256": "2e71d807a3044996ead5fdfac154606bd4d5e5d1121a2adc7e4bcee3a6f29ec8",
       "resources": [
         "references/flaky-tests.md",
         "references/root-cause-tracing.md"
@@ -1876,7 +1876,7 @@
     {
       "name": "verification-discipline",
       "description": "Audits and hardens existing tests and CI gates against vacuous assertions, copied production logic, unbounded checks, unenforced invariants, and dirty builds. Use when investigating suspicious green tests, repairing test credibility, or enforcing validation; not for ordinary test-first features or routine completion checks.",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "license": "MIT",
       "tier": "experimental",
       "maturity": {
@@ -1965,7 +1965,7 @@
       },
       "path": "skills/verification-discipline",
       "skillFile": "skills/verification-discipline/SKILL.md",
-      "sha256": "5555609e0d43400a64483779a6faba853443245f18c9519e7b9841138317ad4a",
+      "sha256": "44a13b92cd45498e472c10b5ecf59001bbb8e0523ea1718a0d529178f0cc07ff",
       "resources": [
         "references/invariant-and-gate-patterns.md",
         "references/red-green-proof.md"
@@ -1974,7 +1974,7 @@
     {
       "name": "wayfinder-planning",
       "description": "Navigates Wayfinder decision maps, fog of war, and frontier tickets with bounded, claim-first autonomous loops. Use when charting, resuming, or replanning multi-session uncertainty; not for static specifications, approved-spec task breakdown, agent execution, Git/PR delivery, or durable architecture recording.",
-      "version": "2.1.1",
+      "version": "2.1.2",
       "license": "MIT",
       "tier": "experimental",
       "maturity": {
@@ -2088,7 +2088,7 @@
       },
       "path": "skills/wayfinder-planning",
       "skillFile": "skills/wayfinder-planning/SKILL.md",
-      "sha256": "31aee5255fd8d627ffe5162a96d22cdd40f6d0c70785745b68f2fe4525e74858",
+      "sha256": "34819ab1f4564d1e87dddd6049e709397ca20ae35fe6d440af9df59eda39e34f",
       "resources": [
         "assets/map-template.md",
         "assets/ticket-template.md",
@@ -2102,7 +2102,7 @@
     {
       "name": "web-research-and-verification",
       "description": "Verifies version-sensitive external claims with authoritative sources, risk-appropriate corroboration, and citations. Use when researching APIs, libraries, standards, release notes, CVEs, current facts, or deprecations; not for repository architecture exploration or implementation alone.",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "license": "MIT",
       "tier": "core",
       "maturity": {
@@ -2178,7 +2178,7 @@
       },
       "path": "skills/web-research-and-verification",
       "skillFile": "skills/web-research-and-verification/SKILL.md",
-      "sha256": "5bc2619c0f5b823910163369e39403916bd8ee1fcf3622b17401186027f588c2",
+      "sha256": "7eda0df9075d55bf4e432d85d6e85d2113a97151bbe1e73142b26da72c8a617e",
       "resources": [
         "references/source-hierarchy.md"
       ]
@@ -2188,7 +2188,7 @@
   "packs": [
     {
       "name": "feature-delivery",
-      "version": "1.3.0",
+      "version": "1.3.1",
       "description": "Carries an agreed feature from requirements through implementation review, documentation, and completion verification.",
       "skills": [
         {
@@ -2197,15 +2197,15 @@
         },
         {
           "name": "documentation-maintenance",
-          "version": "1.1.0"
+          "version": "1.1.1"
         },
         {
           "name": "planning-and-task-breakdown",
-          "version": "1.2.0"
+          "version": "1.2.1"
         },
         {
           "name": "requirements-and-spec-writing",
-          "version": "1.1.0"
+          "version": "1.1.1"
         },
         {
           "name": "test-driven-development",
@@ -2256,7 +2256,7 @@
     },
     {
       "name": "release-readiness",
-      "version": "1.3.0",
+      "version": "1.3.1",
       "description": "Coordinates correctness, security, documentation, and final evidence checks before release-related Git work.",
       "skills": [
         {
@@ -2265,7 +2265,7 @@
         },
         {
           "name": "documentation-maintenance",
-          "version": "1.1.0"
+          "version": "1.1.1"
         },
         {
           "name": "git-and-pr-workflow",
@@ -2273,7 +2273,7 @@
         },
         {
           "name": "security-review",
-          "version": "1.1.0"
+          "version": "1.1.1"
         },
         {
           "name": "verification-before-completion",
@@ -2315,7 +2315,7 @@
     },
     {
       "name": "safe-refactor",
-      "version": "1.3.0",
+      "version": "1.4.0",
       "description": "Guides a behavior-preserving refactor from codebase mapping and tests through review and completion verification.",
       "skills": [
         {
@@ -2328,11 +2328,7 @@
         },
         {
           "name": "refactoring-and-dead-code-removal",
-          "version": "1.1.0"
-        },
-        {
-          "name": "test-driven-development",
-          "version": "1.2.0"
+          "version": "1.1.1"
         },
         {
           "name": "verification-before-completion",
@@ -2342,13 +2338,8 @@
       "handoffs": [
         {
           "from": "codebase-exploration",
-          "to": "test-driven-development",
-          "when": "The controlling code path, conventions, and validation commands are known."
-        },
-        {
-          "from": "test-driven-development",
           "to": "refactoring-and-dead-code-removal",
-          "when": "A failing behavior test establishes the preservation boundary."
+          "when": "The path and commands are known; establish a passing baseline and needed characterization before behavior-preserving changes. Route defects or changed behavior outside this chain."
         },
         {
           "from": "refactoring-and-dead-code-removal",
@@ -2374,7 +2365,7 @@
     },
     {
       "name": "shadow-architecture-suite",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "description": "Carries a full Shadow architecture lifecycle from current-state observations through approved decision recording and read-only drift validation.",
       "skills": [
         {
@@ -2383,11 +2374,11 @@
         },
         {
           "name": "shadow-dream",
-          "version": "1.1.0"
+          "version": "1.1.1"
         },
         {
           "name": "shadow-drift",
-          "version": "1.1.0"
+          "version": "1.1.1"
         },
         {
           "name": "shadow-observe",

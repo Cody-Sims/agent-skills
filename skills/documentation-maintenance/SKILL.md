@@ -3,7 +3,7 @@ name: documentation-maintenance
 description: "Updates README, API docs, architecture notes, ADRs, and changelogs to match current code. Use when a code/configuration change invalidates documentation, or when writing an ADR or changelog entry; not for new requirements or maintaining a .shadow decision graph."
 license: MIT
 metadata:
-  version: "1.1.0"
+  version: "1.1.1"
   author: "Cody-Sims"
   tier: "core"
 ---

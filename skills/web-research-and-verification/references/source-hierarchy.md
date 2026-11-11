@@ -59,6 +59,21 @@ Use only as leads; never as sole factual evidence.
 2. Report credible unresolved conflicts with both citations and the basis for
    any preference. Do not silently combine incompatible signatures/defaults.
 
+## Failed Retrieval
+
+Classify the failure before another attempt; bound attempts per resource.
+
+| Failure | Next action |
+|---|---|
+| Access or policy denied | Stop that resource. Do not switch tools, formats, accounts, or mirrors to bypass denial. Report restricted evidence; never reconstruct excluded content. |
+| Not found | Check one known canonical link or versioned location; do not repeatedly guess paths. |
+| Transient service/rate failure | Honor Retry-After within the research budget; make at most one bounded retry, then report unavailable evidence. |
+| Unsupported format | Use a documented accessible format only when no access restriction applies. |
+
+Missing evidence remains unknown. An independent authorized source may establish
+its own claim, but does not grant access to denied content or count as a second
+source when it merely mirrors the first.
+
 ## Sufficiency
 
 1. Corroborate material external claims with independent evidence, including a

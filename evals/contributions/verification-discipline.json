@@ -11,6 +11,6 @@
   "comparison": null,
   "exception": {
     "type": "safety",
-    "rationale": "The workflow prevents false-green tests, weakened assertions, unbounded CPU checks, and unnoticed build churn. These validation-integrity controls reduce release risk directly and are better evaluated through adversarial test review than average output-quality uplift at experimental entry."
+    "rationale": "The workflow prevents false-green tests, weakened assertions, unbounded CPU checks, and unnoticed build churn. Negative controls match the actual target: behavior, CI/configuration, or build purity, rather than requiring irrelevant production mutations. An independent synthetic reset oracle distinguishes a real counter assertion from the original weak test. This requests a safety exception for validation integrity, not model uplift or completed human approval."
   }
 }

@@ -1,0 +1,21 @@
+[
+  {
+    "path": "/cookie/preferences",
+    "method": "POST",
+    "body": "application/x-www-form-urlencoded",
+    "mutation": "changes the authenticated user's notification setting",
+    "authentication": "browser automatically attaches Secure session cookie with SameSite=None",
+    "originCheck": false,
+    "csrfToken": false,
+    "fetchMetadataCheck": false
+  },
+  {
+    "path": "/bearer/preferences",
+    "method": "POST",
+    "body": "application/json",
+    "mutation": "changes the authenticated user's notification setting",
+    "authentication": "only explicit Authorization: Bearer header from application memory",
+    "acceptsCookiesOrOtherAmbientCredentials": false,
+    "cors": "no cross-origin credential permission"
+  }
+]

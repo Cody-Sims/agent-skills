@@ -1,0 +1,16 @@
+{
+  "cli": {
+    "successfulTasks": 2,
+    "attemptedTasks": 3,
+    "permissionPrompts": 2,
+    "inputTokens": null,
+    "outputTokens": null,
+    "malformedInput": "structured validation error",
+    "interruptedWrite": "effect may have committed; no receipt or authoritative lookup is currently available"
+  },
+  "readOnlyCandidate": {
+    "state": "stateless read",
+    "interruptedWriteRecovery": "inapplicable"
+  },
+  "implementationApproved": false
+}

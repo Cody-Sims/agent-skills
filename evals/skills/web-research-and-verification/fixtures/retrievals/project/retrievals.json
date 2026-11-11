@@ -1,0 +1,6 @@
+[
+  { "resource": "restricted design", "status": 403, "reason": "organization content policy denial", "mirrorSuggested": true },
+  { "resource": "old API page", "status": 404, "knownCanonicalLink": "https://example.invalid/versioned/api" },
+  { "resource": "release page", "status": 503, "retryAfterSeconds": 1, "remainingRetryBudget": 1 },
+  { "resource": "public manual", "status": "unsupported format", "documentedAccessibleFormat": "text", "accessRestricted": false }
+]

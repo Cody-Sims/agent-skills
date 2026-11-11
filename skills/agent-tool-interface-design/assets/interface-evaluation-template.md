@@ -25,20 +25,24 @@
 | One-step operation | | | | |
 | Multi-step composition | | | | |
 | Large-result filtering | | | | |
+| Malformed input | | | | |
 | Authorization denial | | | | |
 | Timeout and recovery | | | | |
+| Interrupted write and outcome reconciliation | | | | |
 | Cleanup | | | | |
 
 ## Measurements
 
 Use the same model, environment, inputs, and trial count for every candidate.
+Mark unavailable measurements `unknown` and irrelevant cases `inapplicable`;
+do not infer success or zero cost from missing observations.
 
-| Candidate | Success rate | Input tokens | Output tokens | Startup context bytes | Round trips | Wall time | Output bytes | Retries | Cleanup failures |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| CLI | | | | | | | | | |
-| Direct MCP | | | | | | | | | |
-| Code adapter | | | | | | | | | |
-| Code-over-MCP | | | | | | | | | |
+| Candidate | Success rate | Input tokens | Output tokens | Startup context bytes | Round trips | Wall time | Output bytes | Retries | Permission prompts | Cleanup failures |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| CLI | | | | | | | | | | |
+| Direct MCP | | | | | | | | | | |
+| Code adapter | | | | | | | | | | |
+| Code-over-MCP | | | | | | | | | | |
 
 ## Security and Operations
 

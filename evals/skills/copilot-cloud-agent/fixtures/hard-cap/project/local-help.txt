@@ -1,0 +1,2 @@
+fixture-client --max-time MINUTES
+Limits local status monitoring only. No hosted execution-cap claim is documented.

@@ -1,8 +1,21 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "name": "shadow-architecture-behavior",
   "skill": "shadow-architecture",
   "cases": [
+    {
+      "id": "custom-lifecycle-stale-approval",
+      "prompt": "Record an adopted decision from the current proposal in project/.shadow only if its declared approval gate is satisfied. Inspect the repository's custom lifecycle and actual revision-bound approval. Stop and report the blocker if approval is stale; do not rewrite observation/proposal kinds or infer new approval.",
+      "fixture": "fixtures/custom-lifecycle",
+      "assertions": [
+        { "id": "preserves-source-kinds-and-history", "type": "unchanged", "path": "project" },
+        { "id": "stale-approval", "type": "regex", "value": "stale|revision|unapproved|approval", "flags": "i" },
+        { "id": "no-decision-created", "type": "fileAbsent", "path": "project/.shadow/records/decision-17.json" }
+      ],
+      "humanReview": [
+        { "id": "custom-authority", "question": "Does it follow the declared note/draft/adopted lifecycle, reject revision-1 approval for substantive proposal revision 2, preserve both source kinds, and require a separately approved decision rather than promoting either source?" }
+      ]
+    },
     {
       "id": "bounded-mechanical-maintenance",
       "prompt": "Synchronize only one .shadow index entry with its existing reviewed record. The README declares a custom legacy path and schema, permits mechanical synchronization, and promises that this legacy shape remains readable. Do not migrate the graph, rewrite the decision, gather observations, or re-render anything. Explain the bounded validation and approval boundary.",

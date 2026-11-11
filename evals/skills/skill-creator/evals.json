@@ -1,8 +1,20 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "name": "skill-creator-efficiency",
   "skill": "skill-creator",
   "cases": [
+    {
+      "id": "read-only-audit-without-publishing-tools",
+      "prompt": "Audit project/skills/fixture-skill/SKILL.md against project/CONTRIBUTING.md read-only. Report cited findings and proposed changes only. gh skill is unavailable and authentication/setup is not authorized. Do not edit, bump versions, publish, refresh installed copies, or fabricate an evaluation result.",
+      "fixture": "fixtures/read-only-audit",
+      "assertions": [
+        { "id": "audit-does-not-mutate", "type": "unchanged", "path": "project" },
+        { "id": "finds-length-boundary", "type": "regex", "value": "39|40|description.*(?:short|length)", "flags": "i" }
+      ],
+      "humanReview": [
+        { "id": "audit-mode-and-bound", "question": "Does it identify the actual 39-character description as below the repository's 40-character minimum, return recommendations without mutation, and avoid gh/auth setup, publication, version bumps, or install refresh?" }
+      ]
+    },
     {
       "id": "targeted-routing-repair",
       "prompt": "Repair an existing valid skill whose description incorrectly activates on ordinary application edits. Its workflow and resources are otherwise correct. Describe the smallest change and validation plan.",

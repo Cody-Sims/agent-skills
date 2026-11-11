@@ -1,8 +1,21 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "name": "refactoring-and-dead-code-removal-behavior",
   "skill": "refactoring-and-dead-code-removal",
   "cases": [
+    {
+      "id": "static-initialization-is-use",
+      "prompt": "Assess whether project/legacy-handler.mjs can be deleted as dead code; do not change files. Static reference search finds no construction or call of LegacyHandler. Inspect its actual initialization and startup/registry path before giving a deletion verdict. Use only this fixture.",
+      "fixture": "fixtures/initialization",
+      "assertions": [
+        { "id": "preserves-live-handler", "type": "unchanged", "path": "project" },
+        { "id": "identifies-initialization", "type": "regex", "value": "initializ|static|side.effect|register", "flags": "i" }
+      ],
+      "humanReview": [
+        { "id": "side-effect-evidence", "question": "Does it trace startup through the module-load static registration and retain the required legacy handler rather than infer deadness from absent constructors?" },
+        { "id": "pure-helper-near-miss", "question": "Does it keep this evidence requirement conditional rather than prohibit deletion of a genuinely private, unreachable, side-effect-free helper?" }
+      ]
+    },
     {
       "id": "deletion-keeps-full-gates",
       "prompt": "You just ran the repository test command and build successfully on the unchanged checkout. Cleanup is limited to one obsolete private helper and its dedicated test. History explains its old purpose; repository-wide reference searches, call-graph checks, configuration/string/dynamic-access checks, and package exports independently confirm it is unreachable and not consumed externally. Live neighboring behavior has characterization tests. After deletion, the focused tests pass. Can you skip the full suite and build to reduce latency, and what final evidence should be reported?",

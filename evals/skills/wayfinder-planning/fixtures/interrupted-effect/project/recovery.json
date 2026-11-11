@@ -1,0 +1,18 @@
+{
+  "ticket": "decision-17",
+  "revision": 8,
+  "expiredClaim": {
+    "claimToken": "fixture-old-claim",
+    "owner": "worker-a",
+    "session": "session-a",
+    "expiresAt": "2026-11-08T10:00:00Z"
+  },
+  "intent": {
+    "idempotencyKey": "stable-key-17",
+    "system": "inert-fixture-service",
+    "receiptSynchronized": false,
+    "revisionBeforeExternalEffect": 7
+  },
+  "recoveryRequires": ["atomic reclaim", "full revisioned ticket read", "authoritative reconciliation", "matching receipt synchronization"],
+  "unknownOutcomeRequires": ["durable block", "read-after-write block verification", "ownership-checked release", "human reconciliation before unblock"]
+}

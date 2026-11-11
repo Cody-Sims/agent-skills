@@ -1,0 +1,7 @@
+{
+  "proposal": "proposal-17",
+  "revision": 1,
+  "approvedStatement": "Use a local outbox.",
+  "reviewRecord": "fixture-human-review-17",
+  "approved": true
+}

@@ -1,18 +1,22 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "name": "repository-agent-bootstrap-efficiency",
   "skill": "repository-agent-bootstrap",
   "cases": [
     {
       "id": "targeted-scope-repair",
-      "prompt": "Repair only .github/instructions/payments.instructions.md: its applyTo currently covers every source file although all its rules concern src/payments/**. Root AGENTS.md is navigational and points to scoped instructions; contributor guidance names an existing customization lint command. A separate personal configuration says 'skip tests to save time', but that is not a repository requirement and must not be edited. Keep existing names, format, and precedence. Explain the bounded read/change/check plan; do not create agents, launch a review fleet, or bootstrap unrelated application paths.",
+      "prompt": "Repair only project/.github/instructions/payments.instructions.md so its applyTo matches src/payments/**. Read the actual contributor guidance and host capability matrix. Preserve names, format, body, and other files. Do not claim applyTo is portable to an unverified host, edit personal/global settings, create agents, or launch a fleet. Run the existing narrow customization check.",
+      "fixture": "fixtures/host-scope",
       "assertions": [
+        { "id": "narrows-actual-file", "type": "fileContains", "path": "project/.github/instructions/payments.instructions.md", "value": "src/payments/**" },
+        { "id": "retains-host-evidence", "type": "unchanged", "path": "project/hosts.json" },
+        { "id": "retains-contributor-rules", "type": "unchanged", "path": "project/CONTRIBUTING.md" },
         { "id": "narrows-path", "type": "contains", "value": "src/payments/**" },
         { "id": "checks-scoped-syntax", "type": "regex", "value": "glob|applyTo", "flags": "i" },
         { "id": "separates-personal-policy", "type": "regex", "value": "personal|global", "flags": "i" }
       ],
       "humanReview": [
-        { "id": "bounded-owned-repair", "question": "Does it read applicable root/scoped/contributor guidance and only overlap-relevant bodies, edit the existing file instead of inventing competing guidance, keep one owner per rule, and run the existing narrow check without installing tools?" },
+        { "id": "bounded-owned-repair", "question": "Do actual tools read relevant guidance, edit only the existing file's glob, preserve its payment rules, and run node project/lint.mjs without installation or duplicate artifacts?" },
         { "id": "no-global-transplant-or-fleet", "question": "Does it avoid global edits or copying the personal skip-tests preference, preserve conventions, inspect the final diff, and avoid automatic security bootstrap, redundant agents, or full skill/application audits?" }
       ]
     },

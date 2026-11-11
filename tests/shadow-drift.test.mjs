@@ -105,6 +105,45 @@ test('reports a valid reference graph as aligned', () => {
   }
 });
 
+test('reports declared derived output without sources as stale', () => {
+  const root = makeTempDir('shadow-derived-no-sources-');
+  try {
+    createValidGraph(root);
+    const indexPath = resolve(root, '.shadow/index.json');
+    const index = JSON.parse(readFileSync(indexPath, 'utf8'));
+    index.derived[0].sources = [];
+    writeJson(indexPath, index);
+
+    const execution = runValidator(root);
+    assert.equal(execution.status, 1, execution.stderr);
+    const report = parseOutput(execution);
+    assert.deepEqual(report.integrity.staleDerivedOutput, [{
+      path: '.shadow/derived/summary.json',
+      reason: 'Derived output has no source provenance.',
+    }]);
+    assert.deepEqual(report.findings.aligned.map((finding) => finding.decisionId), ['decision-a']);
+    assert.equal(report.summary.integrityFindings, 1);
+  } finally {
+    removeDir(root);
+  }
+});
+
+test('allows an omitted optional derived collection', () => {
+  const root = makeTempDir('shadow-no-derived-');
+  try {
+    createValidGraph(root);
+    const indexPath = resolve(root, '.shadow/index.json');
+    const index = JSON.parse(readFileSync(indexPath, 'utf8'));
+    delete index.derived;
+    writeJson(indexPath, index);
+    const execution = runValidator(root);
+    assert.equal(execution.status, 0, execution.stderr);
+    assert.deepEqual(parseOutput(execution).integrity.staleDerivedOutput, []);
+  } finally {
+    removeDir(root);
+  }
+});
+
 for (const [label, contains] of [
   ['empty', ''],
   ['whitespace-only', ' '],

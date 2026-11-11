@@ -3,6 +3,12 @@
 Retrieved 2026-08-23. Treat measurements below as source-specific examples, not
 universal constants.
 
+## Contents
+
+- [Verified](#verified)
+- [Inferred design principles](#inferred-design-principles)
+- [Unknown until measured locally](#unknown-until-measured-locally)
+
 ## Verified
 
 ### MCP is a protocol boundary, not an agent orchestration strategy

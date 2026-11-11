@@ -5,12 +5,12 @@
     {
       "type": "runbook",
       "reference": "skills/requirements-and-spec-writing/assets/spec-template.md",
-      "summary": "Defines constraints, non-goals, acceptance criteria, privacy and security requirements, open decisions, and rollout boundaries."
+      "summary": "Defines constraints, non-goals, acceptance criteria, security requirements, rollout boundaries, and optional actual agreement evidence bound to a specification version."
     }
   ],
   "comparison": null,
   "exception": {
     "type": "safety",
-    "rationale": "The specification workflow prevents an unapproved draft or unavailable requester from becoming authorization for implementation. It keeps consequential policy, retention, security, and rollout choices requester-owned and pairs requirements with observable acceptance criteria. The revision retains these consent boundaries while narrowing exploration; this requests a safety exception, not invented requester agreement or measured quality uplift."
+    "rationale": "The specification workflow prevents an unapproved draft or unavailable requester from becoming authorization for implementation. Optional agreement evidence must identify the actual approved specification version and review; earlier agreement cannot authorize a revised retention policy. Consequential policy, security, and rollout choices remain requester-owned and observable. This requests a safety exception, not invented agreement, completed review, or measured quality uplift."
   }
 }

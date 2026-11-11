@@ -5,12 +5,12 @@
     {
       "type": "runbook",
       "reference": "skills/refactoring-and-dead-code-removal/references/dead-code-evidence.md",
-      "summary": "Defines deletion evidence including dynamic registration, configuration, reflection, aliases, public exports, and external consumers."
+      "summary": "Defines deletion evidence including module-load, decorator and static-initializer side effects, dynamic registration, configuration, reflection, aliases, public exports, and external consumers."
     }
   ],
   "comparison": null,
   "exception": {
     "type": "safety",
-    "rationale": "The streamlined procedure retains a passing baseline, characterization where needed, preservation of live behavior and tests, and full-suite/build gates after deletion. Unknown dynamic or external use is not proof of dead code, and failure recovery cannot discard others' changes. Destructive-deletion risk is the relevant measure; no model uplift or human approval is fabricated."
+    "rationale": "The procedure retains a passing baseline, characterization where needed, preservation of live behavior and tests, and full-suite/build gates after deletion. Missing call sites do not prove module-load, decorator, or static-initializer effects dead; unknown dynamic or external use remains insufficient evidence. Failure recovery cannot discard others' changes. This requests a safety exception for destructive-deletion risk, not fabricated model uplift or human approval."
   }
 }

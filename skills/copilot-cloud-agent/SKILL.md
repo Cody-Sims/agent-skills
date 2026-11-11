@@ -3,7 +3,7 @@ name: copilot-cloud-agent
 description: "Launches and monitors GitHub-hosted Copilot tasks with explicit models and durable task/PR IDs. Use when starting cloud agents, assigning issues to hosted Copilot, selecting GPT-5.6 Sol, or checking cloud-task status; not for local CLI subagents or Git worktree fleets."
 license: MIT
 metadata:
-  version: "1.1.0"
+  version: "1.1.1"
   author: "Cody-Sims"
   tier: "experimental"
 ---
@@ -18,6 +18,8 @@ requests authorize no launch, assignment, resumption, cancellation, or merge.
 1. Record repository/action, known IDs, base/head refs, bounded prompt, PR choice,
    and requested model. Confirm hosted scope and plan/organization policy.
    Omitted model means Auto, not a specific GPT choice.
+   If a hard execution-time or spend ceiling is required, verify enforceable
+   hosted support before launch; otherwise report blocked and seek a decision.
 2. **Status only:** read known IDs directly for state/model/refs/artifacts.
    Discover bounded matches only if the ID is missing; never relaunch for status.
 3. **Authorized launch/assignment:** read applicable
@@ -41,7 +43,8 @@ requests authorize no launch, assignment, resumption, cancellation, or merge.
    deltas; bounded logs only for triage. Stop for `completed`, `failed`, `timed_out`,
    `cancelled`, or needed user input. `queued`, `in_progress`, `idle`, and
    `waiting_for_user` are not completion. Budget exhaustion means active/blocked;
-   no unauthorized resume/relaunch/retry.
+   no unauthorized resume/relaunch/retry. A polling budget does not cap hosted
+   compute/spend or authorize cancellation.
 8. Review PR/code and repository-required checks before an authorized merge.
    Completed sessions prove neither correctness nor approval.
 

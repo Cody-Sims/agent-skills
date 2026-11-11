@@ -120,4 +120,8 @@ report blocked requirements. Follow-up: $supported_handle_operation_or_handoff.
 Do not message result-only workers or use broad recipient scopes.
 Run $scoped_checks; do not run coordinator gates or race shared outputs.
 Report changed paths, commit tip, exact check/results, conflicts, and blockers.
+Handoff identity: runtime/provider; requested/observed model or unknown; usable
+worker handle/message capability; repository/worktree/branch/base/frozen tip.
+If read-only tools cannot persist artifacts or task state, return inline evidence;
+the coordinator owns persistence and bookkeeping. Do not broaden permissions.
 ```

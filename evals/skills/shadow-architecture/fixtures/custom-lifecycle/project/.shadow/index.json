@@ -1,0 +1,7 @@
+{
+  "records": [
+    { "id": "observation-17", "path": "records/observation-17.json" },
+    { "id": "proposal-17", "path": "records/proposal-17.json" }
+  ],
+  "approval": "approvals/proposal-17.json"
+}

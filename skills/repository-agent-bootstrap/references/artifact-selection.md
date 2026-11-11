@@ -10,8 +10,11 @@ artifacts.
    Keep this file short and point to specialized content rather than inlining it.
 2. **Does it apply to the whole repository regardless of path?** Use repository
    instructions for broad project rules such as language, style, and workflow.
-3. **Does it apply only to certain paths?** Use path-scoped instructions with an
-   accurate `applyTo` glob so the guidance loads only where it is relevant.
+3. **Does it apply only to certain paths?** Use the target host's supported
+   scoping/discovery mechanism. Use an accurate `applyTo` glob only where that
+   host honors it; it is not universally portable. Preserve working single-host
+   guidance. For mixed or unknown hosts, verify support and report unsupported
+   scope rather than promise loading behavior or duplicate the rule.
 4. **Is it a reusable, multi-step task workflow?** Use a skill so it loads on
    demand through progressive disclosure instead of always occupying context.
 5. **Does it need a distinct role, isolated context, tool boundary, or handoff?**

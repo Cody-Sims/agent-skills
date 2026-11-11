@@ -1,0 +1,10 @@
+{
+  "status": "agreed",
+  "tasks": [
+    { "id": "parser", "writes": ["src/parser/**"], "command": "npm run test:parser" },
+    { "id": "ui", "writes": ["src/ui/**"], "command": "npm run test:ui" }
+  ],
+  "sharedValidationWrites": ["build/", "tmp/manifest.json"],
+  "sharedIntegrationWrites": ["CHANGELOG.md", "package.json"],
+  "requiredFinalGate": "npm test"
+}

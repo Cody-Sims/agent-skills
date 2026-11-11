@@ -15,7 +15,7 @@
     {
       "type": "other",
       "reference": "tests/shadow-drift.test.mjs",
-      "summary": "Exercises the bundled fallback validator for aligned and failing graphs, relation and index integrity, drift and unknown evidence, path containment, deterministic output, malformed data, and documented exit codes."
+      "summary": "Exercises aligned and failing graphs, relation/index integrity, drift and unknown evidence, path containment, deterministic output, and documented exit codes; a reproduced empty-source provenance regression has matching-source and omitted-collection controls."
     },
     {
       "type": "specification",
@@ -36,6 +36,6 @@
   "comparison": null,
   "exception": {
     "type": "safety",
-    "rationale": "The workflow reduces architecture-governance risk by validating read-only, refusing automatic repair or approval, preserving unsupported conclusions as unknown, enforcing contained paths, and failing clearly for unsupported layouts. This exception supports experimental entry only: the committed behavior and routing suites are structurally validated and the deterministic fallback-validator tests pass, but no hosted/model baseline comparison, independently reviewed uplift, or promotion evidence is claimed."
+    "rationale": "The workflow reduces architecture-governance risk through read-only validation, no automatic repair or approval, explicit unknowns, contained paths, and unsupported-layout failure. The fallback now rejects declared derived output with no source provenance while retaining optional collection omission and matching-source success. Direct regression controls establish this deterministic correction, not model uplift. This requests a safety exception; historical contribution artifacts do not approve the current tree or establish promotion evidence."
   }
 }

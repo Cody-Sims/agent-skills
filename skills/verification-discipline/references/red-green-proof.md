@@ -16,8 +16,11 @@ name. Keep the full suite for the final gate.
 
 ## Prove it fails for the right reason
 
-1. Make the smallest temporary production mutation that should violate the new
-   assertion.
+1. Choose the smallest temporary negative control for the claimed property:
+   mutate production behavior for a behavioral assertion; for CI wiring or build
+   purity, change the relevant invocation/configuration or inject a forbidden
+   build write in an isolated fixture. Exercise the real owning guard, not a
+   substitute check. Never alter expectations or mocks to simulate sensitivity.
 2. Run the focused command and confirm it fails on the intended assertion.
 3. Restore only the deliberate mutation before continuing. Do not overwrite
    unrelated user work.
@@ -25,8 +28,8 @@ name. Keep the full suite for the final gate.
 5. Record the proof, for example: "Temporarily removed the stat-stage reset; the
    reset assertion failed; restored it and the test passed."
 
-Do not commit the temporary mutation. If the test stays green while the behavior
-is broken, the test is not proving the behavior and must be rewritten.
+Do not commit the temporary control. If the guard stays green while its claimed
+property is broken, it is not proving that property and must be strengthened.
 
 ## Avoid green lies
 

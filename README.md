@@ -31,7 +31,7 @@ other hosts. Claude Code does not read `.agents/skills`, so it requires a
 
 ## Quick start
 
-Requires Node.js 22 or later.
+Requires Node.js 22.6 or later, including native TypeScript fixture support.
 
 ```bash
 git clone https://github.com/Cody-Sims/agent-skills.git
@@ -40,8 +40,8 @@ npm run validate
 npm run install:agents
 ```
 
-`npm run validate` checks every `SKILL.md` against the frontmatter contract in
-`schemas/skill.schema.json`. `npm run install:agents` copies skills into the
+`npm run validate` checks skills, improvement policy, behavior/routing suites,
+and structural pack bindings. `npm run install:agents` copies skills into the
 runtimes it detects on the machine. Preview the plan first with
 `npm run check:agents` and remove installed copies with
 `npm run uninstall:agents`.
@@ -52,8 +52,8 @@ file hash. Full-catalog commands remain the default. Packs use deterministic
 exact-version forms:
 
 ```bash
-npm run install:pack -- feature-delivery@1.3.0
-npm run install:pack -- shadow-architecture-suite@1.1.0
+npm run install:pack -- feature-delivery@1.3.1
+npm run install:pack -- shadow-architecture-suite@1.1.1
 npm run check:pack -- feature-delivery
 npm run uninstall:pack -- feature-delivery
 ```
@@ -64,11 +64,16 @@ retains shared skills required elsewhere. See
 [`docs/lifecycle-and-provenance.md`](docs/lifecycle-and-provenance.md) for safe
 migration and rollback behavior.
 
-`shadow-architecture-suite@1.1.0` provides the full linear Shadow lifecycle:
+`shadow-architecture-suite@1.1.1` provides the full linear Shadow lifecycle:
 observe current architecture, dream future-state options, record an explicitly
 human-approved decision, then check for drift after decisions and implementation
 are updated. Invoke `shadow-architecture` independently when the task only needs
 to record or maintain current-state decisions.
+
+`safe-refactor@1.4.0` uses a passing baseline and any needed characterization
+before behavior-preserving changes. It no longer requires a failing
+new-behavior test; defects and changed behavior belong in a separate tested
+workflow.
 
 To install a single skill from GitHub CLI (version 2.90.0 or later), without
 cloning:
@@ -140,9 +145,10 @@ small activated workflows with on-demand references and optional scripts.
 ## Implementation agent
 
 The repository includes an `Implementation` custom agent that coordinates the
-catalog's existing skills, delegates narrow code search and review into isolated
-read-only contexts, edits incrementally, and requires fresh validation before
-completion. Copilot CLI uses its optimized built-in `explore`, `task`, and
+catalog's existing skills, keeps one continuous trace local, and delegates
+substantial independent questions or risk-appropriate review into read-only
+contexts. It owns worker bookkeeping, edits incrementally, and requires fresh
+validation before completion. Copilot CLI uses its built-in `explore`, `task`, and
 `code-review` agents when available. Hidden repository profiles provide focused
 exploration and review fallbacks for VS Code.
 
@@ -248,15 +254,15 @@ agent-skills/
 
 | Command | Runs | Purpose |
 |---|---|---|
-| `npm run validate` | Repository validators | Validate every `SKILL.md` and the continuous-improvement policy. |
-| `npm run skill:create -- --name <slug> --description <text> [--author <name>] [--references] [--scripts] [--assets]` | First-party skill scaffolder | Create a validated portable skill and per-skill behavior and routing fixtures without overwriting existing paths. Requires Node.js 22 or later. |
+| `npm run validate` | Repository validators | Validate skills, improvement policy, behavior/routing suites, and structural pack bindings. |
+| `npm run skill:create -- --name <slug> --description <text> [--author <name>] [--references] [--scripts] [--assets]` | First-party skill scaffolder | Create a validated portable skill and per-skill behavior and routing fixtures without overwriting existing paths. |
 | `npm run improvement:validate` | Improvement policy validator | Validate budgets and protected-path configuration. |
 | `npm run improvement:preflight -- --item <item.json> --run <run.json>` | Improvement preflight | Validate approval, lease, scope, and budgets before editing. |
 | `npm run improvement:verify -- --item <item.json> --run <run.json>` | Improvement verification | Validate required checks and terminal run evidence. |
 | `npm run improvement:plan -- --queue <queue.json> [--now <timestamp>]` | Recurring planner | Emit a read-only `learn`, `implement`, or `no-op` decision under kill-switch, lease, cadence, dependency, and budget gates. |
 | `npm run pilot:validate -- --report <report.json>` | Pilot report validator | Enforce versioned graduation thresholds, evidence counts, and maintainer approval. |
 | `npm run drift:detect -- [artifact pairs] --lifecycle <manifest> --as-of <date> [--out <report>]` | Drift detector | Compare behavior, routing, runtime, cost, and lifecycle evidence and emit a sanitized corrective proposal. |
-| `npm run eval:validate` | Evaluation suite validator | Validate the committed behavior suite without model execution. |
+| `npm run eval:validate` | Evaluation suite validator | Validate behavior/routing suites and fixture, setup, and oracle resources without executing them. |
 | `npm run eval:smoke` | Synthetic evaluation smoke test | Exercise isolation, grading, metrics, and artifact generation. |
 | `npm run eval -- --suite <suite> --adapter <command> --adapter-id <id> --model <version> --out <result>` | Behavior evaluation runner | Compare baseline and candidate outputs through an identified model adapter. |
 | `npm run routing:smoke` | Synthetic routing smoke test | Exercise repeated trials and confusion reporting. |

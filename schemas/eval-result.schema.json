@@ -7,12 +7,12 @@
   "required": ["schemaVersion", "suite", "skill", "suiteSha256", "skillSha256", "generatedAt", "cases", "summary"],
   "allOf": [
     {
-      "if": { "properties": { "schemaVersion": { "const": 2 } } },
+      "if": { "properties": { "schemaVersion": { "enum": [2, 3] } } },
       "then": { "required": ["adapter"] }
     }
   ],
   "properties": {
-    "schemaVersion": { "type": "integer", "enum": [1, 2] },
+    "schemaVersion": { "type": "integer", "enum": [1, 2, 3] },
     "suite": { "type": "string", "minLength": 1 },
     "skill": { "type": "string", "minLength": 1 },
     "suiteSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
@@ -84,7 +84,7 @@
       "required": ["id", "type", "passed", "evidence"],
       "properties": {
         "id": { "type": "string", "minLength": 1 },
-        "type": { "type": "string", "enum": ["contains", "notContains", "regex"] },
+        "type": { "type": "string", "enum": ["contains", "notContains", "regex", "fileContains", "fileEquals", "fileAbsent", "unchanged", "command"] },
         "passed": { "type": "boolean" },
         "evidence": {
           "type": "string",
@@ -94,7 +94,11 @@
             "Forbidden text was absent.",
             "Forbidden text was present.",
             "Regular expression matched.",
-            "Regular expression did not match."
+            "Regular expression did not match.",
+            "Workspace assertion passed.",
+            "Workspace assertion failed.",
+            "Independent command passed.",
+            "Independent command failed."
           ]
         }
       }

@@ -1,0 +1,8 @@
+{
+  "id": "proposal-17",
+  "kind": "proposal",
+  "reviewState": "draft",
+  "revision": 2,
+  "statement": "Use a new hosted queue service rather than the revision-1 local outbox.",
+  "source": "observation-17"
+}

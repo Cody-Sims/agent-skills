@@ -1,12 +1,14 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "name": "code-review-behavior",
   "skill": "code-review",
   "cases": [
     {
       "id": "boundary-defect-read-only",
-      "prompt": "Review this entire staged patch for merge readiness without editing files. The unchanged contract permits requests only when remaining quota is greater than zero. src/quota.js now contains line 1: export function allowed(remaining) {; line 2: return remaining >= 0; line 3: }. The only test asserts allowed(1) is true. No repository review commands are required. Report your verdict, evidence, and verification limits.",
+      "prompt": "Review project/change.patch and the complete project fixture for merge readiness without editing files. Read project/CONTRACT.md for the unchanged quota contract and inspect the actual source and test. No repository review command is required. Report the defect location, verdict, missing coverage, and verification limits.",
+      "fixture": "fixtures/boundary",
       "assertions": [
+        { "id": "preserves-project", "type": "unchanged", "path": "project" },
         { "id": "locates-defect", "type": "contains", "value": "src/quota.js:2" },
         { "id": "blocking-verdict", "type": "regex", "value": "request changes|block", "flags": "i" }
       ],

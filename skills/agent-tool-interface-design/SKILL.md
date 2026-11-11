@@ -3,7 +3,7 @@ name: agent-tool-interface-design
 description: "Designs and benchmarks agent-facing CLI, MCP, constrained code, and code-over-MCP interfaces. Use when reducing MCP tool sprawl, wrapping APIs for agents, choosing CLI versus MCP, or comparing interface cost, state, security, and portability; not for skill authoring or an existing server's security review."
 license: MIT
 metadata:
-  version: "1.1.0"
+  version: "1.1.1"
   author: "Cody Sims and contributors"
   tier: "experimental"
 ---

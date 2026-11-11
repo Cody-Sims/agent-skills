@@ -3,7 +3,7 @@ name: verification-discipline
 description: "Audits and hardens existing tests and CI gates against vacuous assertions, copied production logic, unbounded checks, unenforced invariants, and dirty builds. Use when investigating suspicious green tests, repairing test credibility, or enforcing validation; not for ordinary test-first features or routine completion checks."
 license: MIT
 metadata:
-  version: "1.1.0"
+  version: "1.1.1"
   author: "Cody-Sims"
   tier: "experimental"
 ---
@@ -23,8 +23,10 @@ skip cases, or copy production logic to obtain green; failures are findings.
    return types, or absence of a throw. Read
    [red-green proof](references/red-green-proof.md) when adding/strengthening
    assertions or investigating vacuity.
-3. **Prove sensitivity.** Mutate production reversibly; the focused test must fail
-   on the intended assertion, then pass after restoring only that mutation. Never
+3. **Prove sensitivity.** Use a reversible negative control matching the target:
+   mutate production for behavior assertions, or isolated CI/config/build inputs
+   for gate and build properties. The real guard must fail on the intended
+   assertion, then pass after restoring only that control. Never
    overwrite unrelated work or commit the mutation. If unsafe, mark proof blocked.
    Still-green mutants need stronger tests; real bugs need fixes or blockers,
    never looser expectations.

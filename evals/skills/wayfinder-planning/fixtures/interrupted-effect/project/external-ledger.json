@@ -1,0 +1,13 @@
+{
+  "confirmed": {
+    "idempotencyKey": "stable-key-17",
+    "receipt": "fixture-receipt-17",
+    "effectCount": 1,
+    "outcome": "succeeded"
+  },
+  "unknown": {
+    "idempotencyKey": "stable-key-18",
+    "outcome": "unavailable",
+    "receipt": null
+  }
+}

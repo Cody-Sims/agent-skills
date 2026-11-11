@@ -1,8 +1,13 @@
 # Specification: TITLE
 
 Status: draft or agreed
+Version: IDENTIFIER
+Agreement evidence (optional): actual review record and the version it approved.
 Author: NAME
 Date: YYYY-MM-DD
+
+Substantive changes require agreement on the new version; earlier approval is
+not consent to a changed requirement.
 
 ## Objective
 

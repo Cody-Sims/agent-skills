@@ -1,0 +1,8 @@
+{
+  "type": "object",
+  "required": ["id", "kind", "reviewState", "revision", "statement"],
+  "properties": {
+    "kind": { "enum": ["observation", "proposal", "decision"] },
+    "reviewState": { "enum": ["note", "draft", "adopted"] }
+  }
+}

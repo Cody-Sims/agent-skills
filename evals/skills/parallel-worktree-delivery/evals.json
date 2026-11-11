@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "name": "parallel-worktree-delivery-behavior",
   "skill": "parallel-worktree-delivery",
   "cases": [
@@ -31,8 +31,12 @@
     },
     {
       "id": "historical-session-is-not-worker-handle",
-      "prompt": "An authorized local fleet needs a handoff from a worker mentioned in past session history. The historical session UUID is not listed as a visible message-capable worker, and one message attempt returned unavailable. Its primary checkout still has live uncommitted files. Describe the safe next action without launching another owner or mutating that checkout.",
+      "prompt": "Use project/worker-identity.json to write a compact durable handoff.md for an authorized local fleet. The historical session is not an addressable worker and one attempt returned unavailable. Preserve live checkout ownership and current files. Record runtime/provider, requested versus observed model or unknown, usable handle/message capability, and repository/worktree/branch/base/tip. Do not send again, discover repeatedly, launch a replacement, or mutate project.",
+      "fixture": "fixtures/handoff",
       "assertions": [
+        { "id": "preserves-owned-checkout", "type": "unchanged", "path": "project" },
+        { "id": "durable-runtime-identity", "type": "fileContains", "path": "handoff.md", "value": "copilot-cli" },
+        { "id": "durable-branch-identity", "type": "fileContains", "path": "handoff.md", "value": "stream/parser" },
         { "id": "handoff-or-blocker", "type": "regex", "value": "handoff|blocked|blocker", "flags": "i" }
       ],
       "humanReview": [

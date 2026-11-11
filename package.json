@@ -6,7 +6,7 @@
   "private": true,
   "repository": "https://github.com/Cody-Sims/agent-skills",
   "engines": {
-    "node": ">=22"
+    "node": ">=22.6"
   },
   "scripts": {
     "validate": "node scripts/validate-skills.mjs && node scripts/continuous-improvement.mjs validate-policy && node scripts/validate-evaluations.mjs && node scripts/validate-pack-evaluations.mjs --structural",

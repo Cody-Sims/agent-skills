@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "name": "wayfinder-planning-behavior",
   "skill": "wayfinder-planning",
   "cases": [
@@ -246,8 +246,10 @@
     },
     {
       "id": "reconcile-external-task-after-stale-sync",
-      "prompt": "A human-authorized Wayfinder task calls an external system. The external action succeeds, but before the receipt can be synchronized into the ticket, the tracker revision becomes stale. Continue safely without producing the external effect twice. Also explain the fail-closed path if authoritative reconciliation cannot determine whether the action occurred.",
+      "prompt": "Inspect project/recovery.json and project/external-ledger.json, which capture an interrupted external-effect-to-receipt-sync boundary. Return the recovery sequence for the confirmed and unknown outcomes, including expired-lease reclamation. Do not mutate fixture state or call external systems. No live tracker adapter is supplied: distinguish a plan and checker evidence from a demonstrated live recovery.",
+      "fixture": "fixtures/interrupted-effect",
       "assertions": [
+        { "id": "preserves-durable-state", "type": "unchanged", "path": "project" },
         {
           "id": "stable-idempotency-key",
           "type": "contains",

@@ -1,0 +1,5 @@
+[
+  { "revision": "midpoint-a", "exitCode": 127, "stderr": "compiler: command not found", "assertionExecuted": false },
+  { "revision": "midpoint-b", "exitCode": 1, "stderr": "TARGET_PAIR_FAILURE: flags interact", "assertionExecuted": true },
+  { "revision": "midpoint-c", "exitCode": 0, "stdout": "target check passed", "assertionExecuted": true }
+]

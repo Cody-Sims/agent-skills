@@ -1,7 +1,7 @@
 ---
 title: Skill Evaluations
 description: Define and run isolated baseline-versus-candidate behavior evaluations for Agent Skills
-ms.date: 2026-07-25
+ms.date: 2026-11-09
 ms.topic: how-to
 ---
 
@@ -11,12 +11,14 @@ Behavior evaluations compare the same prompt and objective assertions in two
 separate adapter processes:
 
 * The baseline receives no skill content.
-* The candidate receives the current `SKILL.md` content.
+* The candidate receives the current complete skill tree and `SKILL.md` content.
 
 Each execution gets a distinct temporary working directory. Optional fixtures
-are copied into that directory after containment and symlink checks. This is
-filesystem isolation, not an operating-system or network sandbox. Review the
-adapter as trusted code and grant only the credentials it needs.
+are copied into that directory after containment and symlink checks. Trusted
+setup scripts can prepare actual Git state or inert symlink scenarios before
+the adapter runs. This is filesystem isolation, not an operating-system or
+network sandbox. Review the adapter, setup, and graders as trusted code and
+grant only the credentials they need.
 
 Generated artifacts record prompt and output SHA-256 hashes, assertion evidence,
 suite and candidate-skill SHA-256 hashes, pass rates, duration, and token usage.
@@ -24,23 +26,99 @@ They do not retain raw prompts or model outputs. Human-review questions remain
 `pending` until an independent reviewer records a judgment outside the
 automated run.
 
-New behavior and routing runs emit result schema version 2 with mandatory
-adapter and exact model identity; routing results also bind the suite hash.
-Validators continue accepting legacy version 1 artifacts, but identity-dependent
-comparison and drift workflows may reject them as non-comparable.
+Behavior suite version 2 emits result schema version 3 for workspace and
+command assertions. Legacy text-only suite version 1 still emits result
+version 2; routing also emits version 2. New runs require adapter and exact
+model identity, and routing results bind the suite hash. Validators retain
+legacy artifacts, but outcome assertions cannot be labeled as legacy results,
+and identity-dependent comparisons may reject older evidence.
 
 ## Suite Format
 
-The committed pilot lives at `evals/evals.json` and is validated against
+The committed pilot lives at `evals/evals.json`; each maintained skill also has
+a suite at `evals/skills/<name>/evals.json`. Suites are validated against
 `schemas/eval-suite.schema.json`. Each case defines:
 
 * A stable case ID and realistic prompt
 * An optional fixture directory relative to the suite
-* One or more `contains`, `notContains`, or `regex` assertions
+* An optional trusted setup script relative to the suite
+* One or more objective assertions
 * Optional human-review questions for subjective qualities
 
 Keep training examples separate from held-out validation cases. Do not place
 generated results, private prompts, secrets, or customer data in the repository.
+
+### Outcome assertions
+
+Suite version 2 adds assertions against actual workspace or process state.
+Text assertions remain useful for reports but cannot prove that a file was
+written, a test ran, or a Git operation preserved someone else's index.
+
+| Type | Fields beyond `id` and `type` | Checks |
+|---|---|---|
+| `contains`, `notContains`, `regex` | `value`; optional regex `flags` | Adapter response text. |
+| `fileContains`, `fileEquals` | `path`, `value` | Literal content in a regular workspace file. |
+| `fileAbsent` | `path` | No entry at that workspace path, including dangling symlinks. |
+| `unchanged` | `path` | Same pre/post snapshot, including added files, modes, nested symlink targets, and Git metadata. |
+| `command` | `path`; optional `timeoutMs` | A reviewed independent Node oracle returns `passed: true`. |
+
+Workspace paths are relative and cannot escape the workspace. File assertions
+do not follow symlinks and read at most 256 KiB. Snapshots are bounded to 2,000
+entries and 16 MiB. Setup and command paths resolve under the suite directory,
+not the mutable task tree.
+
+For example:
+
+```json
+{
+  "schemaVersion": 2,
+  "name": "deliverable-check",
+  "skill": "planning-and-task-breakdown",
+  "cases": [{
+    "id": "write-plan",
+    "prompt": "Write plan.md with exclusive ownership for the approved tasks.",
+    "assertions": [
+      { "id": "artifact", "type": "fileContains", "path": "plan.md", "value": "Owner" }
+    ],
+    "humanReview": [
+      { "id": "ownership", "question": "Are writes exclusive and integration gates assigned?" }
+    ]
+  }]
+}
+```
+
+### Trusted setup and independent commands
+
+A case may declare `"setup": { "path": "prepare.mjs", "timeoutMs": 5000 }`.
+The runner executes that reviewed suite script separately for both variants,
+before taking snapshots. A command assertion similarly names an oracle such
+as `"path": "oracles/check.mjs"`. The Node script runs with the workspace as
+its working directory and receives only this JSON on stdin:
+
+```json
+{ "protocolVersion": 1, "workspace": "/isolated/workspace" }
+```
+
+Setup must return `{ "ready": true }`; an oracle must return a boolean
+`passed` field. Neither receives the variant, model response, or expected
+assertions. These scripts use the supervised no-shell launcher, a reduced
+environment, bounded output, and a default 10-second timeout, configurable
+from 1 through 30,000 milliseconds. Cleanup uncertainty preserves the workspace.
+
+Keep oracle scripts outside copied fixtures and use independent public behavior,
+mutation sensitivity, or actual Git state rather than model-authored receipts.
+Withholding them from requests is not hostile-code confinement: no OS sandbox
+prevents a trusted adapter from accessing other paths.
+
+All 24 per-skill suites include synthetic execution fixtures or trusted setup.
+Local controls exercise deliverables, read-only state, new typed APIs,
+false-green tests, provenance, and shared Git staging. The typed API control
+uses native TypeScript stripping and requires Node.js 22.6 or later.
+These controls establish harness behavior, not model adherence or uplift.
+Wayfinder's interrupted-effect fixture is not a demonstrated live adapter
+recovery; real interrupted-effect trials remain pending.
+
+### Contribution evidence
 
 For contribution evidence, place a reviewed and sanitized result under a root
 `evals/results/` path and reference its committed suite. The contribution

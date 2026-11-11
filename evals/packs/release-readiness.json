@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
   "name": "release-readiness-composition",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "source": {
-    "registrySha256": "d074c1b9a10c1a28f5a8ca3def15752a294b31d86fa29e9592cee136884ba20e",
-    "memberTreeSha256": "15a1a4165c6df514958bcadce9b0d1d419e8c0a9b07f68bb0ebef13b6dd8216b",
+    "registrySha256": "c450463819987ca19f84d949ecbb0ba1115d1281953d82403f8b79adc7f8bcb9",
+    "memberTreeSha256": "3b64ffd6f19f27712e521ad54f01fe5388cd1486ca38e1ead1660fa16cf79ba2",
     "suitePath": "evals/packs/release-readiness.json"
   },
   "pack": {
     "name": "release-readiness",
-    "version": "1.3.0",
+    "version": "1.3.1",
     "members": [
       {
         "name": "code-review",
@@ -17,7 +17,7 @@
       },
       {
         "name": "documentation-maintenance",
-        "version": "1.1.0"
+        "version": "1.1.1"
       },
       {
         "name": "git-and-pr-workflow",
@@ -25,7 +25,7 @@
       },
       {
         "name": "security-review",
-        "version": "1.1.0"
+        "version": "1.1.1"
       },
       {
         "name": "verification-before-completion",
@@ -54,7 +54,7 @@
   "adapter": {
     "id": "deterministic-pack-fixture-v1",
     "kind": "fixture",
-    "entrypointSha256": "f6a5a32dc30f827056775878082795e76922f35ce6fd3584f9eb01b117cb66cb",
+    "entrypointSha256": "e3869af1cd64dc8cf516b0cdffb0e137f6e5542ad135ab646729dc6fe82e79c3",
     "policySha256": "00aedb8508949b1740c12d07135f27deac65a9f7657699a405d1ed5dfa9b4971",
     "launchPolicySha256": "54fcd0e8eb7ac56d027031e65150a9a7592264a6e1e97fd67aae548b30226a81"
   },

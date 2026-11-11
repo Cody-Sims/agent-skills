@@ -1,8 +1,21 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "name": "shadow-dream-behavior",
   "skill": "shadow-dream",
   "cases": [
+    {
+      "id": "current-hard-limits-bind-without-acceptance",
+      "prompt": "Compare two future-state queue options using project/context.json. My current hard scope is no new external service and no implementation or persistence; this limit is not yet a Shadow decision. Lower memory use is only an optional preference. Return a proposed comparison with migration and rollback, preserving both the accepted architecture evidence and current hard scope.",
+      "fixture": "fixtures/hard-limits",
+      "assertions": [
+        { "id": "proposal-only", "type": "unchanged", "path": "project" },
+        { "id": "honors-current-limit", "type": "regex", "value": "no new external service|no external service|existing.*(?:database|service)", "flags": "i" },
+        { "id": "two-options", "type": "regex", "value": "Option\\s+(1|A)[\\s\\S]*Option\\s+(2|B)", "flags": "i" }
+      ],
+      "humanReview": [
+        { "id": "authority-and-preference", "question": "Do both materially distinct options respect the current hard no-new-service limit without needing graph acceptance, while lower memory stays optional and missing rationale remains unknown?" }
+      ]
+    },
     {
       "id": "bounded-proposal-persistence-conflict",
       "prompt": "Compare two future states for the queue boundary only. Relevant observations and accepted constraints are provided, but accepted rationale is missing. Save one proposal: the declared proposal schema would also require modifying an accepted decision and its index. Keep the comparison concise without surveying unrelated modules or making those changes; include meaningful migration gates and rollback for both options.",

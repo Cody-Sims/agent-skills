@@ -1,0 +1,11 @@
+{
+  "observed": "An in-process queue loses pending work on restart.",
+  "existingInfrastructure": ["application process", "PostgreSQL database"],
+  "acceptedArchitecture": {
+    "id": "decision-17",
+    "statement": "Use at-least-once delivery with no flag-day migration.",
+    "rationale": null
+  },
+  "currentHardScope": ["no new external service", "proposal only"],
+  "optionalPreference": "reduce memory use"
+}

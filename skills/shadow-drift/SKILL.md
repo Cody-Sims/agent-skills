@@ -4,7 +4,7 @@ description: "Checks .shadow graph integrity and implementation drift read-only.
 license: MIT
 compatibility: "Requires Node.js 18 or newer only when the bundled fallback validator is used; no network access or third-party packages."
 metadata:
-  version: "1.1.0"
+  version: "1.1.1"
   author: "Cody-Sims"
   tier: "experimental"
 ---

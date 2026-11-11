@@ -3,7 +3,7 @@ name: refactoring-and-dead-code-removal
 description: "Refactors structure and removes proven dead code without changing observable behavior. Use when simplifying, extracting, renaming, moving, or deleting suspected unused code; requires a passing baseline and deletion evidence, not a defect fix or new behavior."
 license: MIT
 metadata:
-  version: "1.1.0"
+  version: "1.1.1"
   author: "Cody-Sims"
   tier: "core"
 ---

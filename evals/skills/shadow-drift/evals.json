@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "name": "shadow-drift-behavior",
   "skill": "shadow-drift",
   "cases": [
@@ -57,8 +57,10 @@
     },
     {
       "id": "fallback-validation",
-      "prompt": "There is no declared Shadow validator. Validate this reference JSON .shadow layout offline, emit structured output, and fail clearly if the layout is unsupported.",
+      "prompt": "There is no declared Shadow validator. Validate the actual project/.shadow reference JSON graph offline with structured output and no changes. Inspect the declared derived output's provenance, report the real exit status and findings, and do not refresh hashes or turn an integrity failure into success.",
+      "fixture": "fixtures/empty-provenance",
       "assertions": [
+        { "id": "read-only-graph", "type": "unchanged", "path": "project" },
         {
           "id": "fallback-script",
           "type": "contains",
@@ -70,9 +72,10 @@
           "value": "--format json"
         },
         {
-          "id": "unsupported-layout",
-          "type": "contains",
-          "value": "unsupported"
+          "id": "missing-provenance",
+          "type": "regex",
+          "value": "provenance|stale",
+          "flags": "i"
         },
         {
           "id": "no-network",
@@ -84,7 +87,7 @@
       "humanReview": [
         {
           "id": "fallback-boundary",
-          "question": "Does the response use the bundled validator only for the documented reference JSON layout and avoid success-shaped fallback results?"
+          "question": "Does actual execution use the bundled checker only for its reference layout and report sources=[] as stale-derived integrity failure with exit 1, without writes or success-shaped fallback?"
         }
       ]
     },

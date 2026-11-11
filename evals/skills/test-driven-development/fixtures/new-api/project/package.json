@@ -1,0 +1,8 @@
+{
+  "type": "module",
+  "scripts": {
+    "test": "node --experimental-strip-types --test tests/limit.test.mjs",
+    "build": "node --experimental-strip-types --check src/limit.ts"
+  },
+  "engines": { "node": ">=22.6" }
+}

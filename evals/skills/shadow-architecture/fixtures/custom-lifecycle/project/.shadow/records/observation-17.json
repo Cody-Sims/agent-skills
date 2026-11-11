@@ -1,0 +1,7 @@
+{
+  "id": "observation-17",
+  "kind": "observation",
+  "reviewState": "note",
+  "revision": 1,
+  "statement": "Queue processing currently retries in memory."
+}

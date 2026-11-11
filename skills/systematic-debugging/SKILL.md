@@ -3,7 +3,7 @@ name: systematic-debugging
 description: "Diagnoses failures by reproducing exact errors, testing one hypothesis at a time, and fixing the root cause. Use when a bug, failing test/build, crash, exception, wrong output, or intermittent failure needs tracing; not for reviewing a patch or auditing already-green tests."
 license: MIT
 metadata:
-  version: "1.2.0"
+  version: "1.2.1"
   author: "Cody-Sims"
   tier: "core"
 ---

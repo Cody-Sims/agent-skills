@@ -3,7 +3,7 @@ name: repository-agent-bootstrap
 description: "Audits and improves repository-owned AGENTS.md, scoped instructions, custom agents, and skill discovery without replacing conventions. Use when setting up or maintaining repository agent guidance, integrating an agent or skill, or fixing conflicting or overly broad customization; not for routine code edits, global preferences, or standalone skill authoring."
 license: MIT
 metadata:
-  version: "1.2.0"
+  version: "1.2.1"
   author: "Cody-Sims"
   tier: "core"
 ---

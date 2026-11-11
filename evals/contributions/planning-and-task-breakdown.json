@@ -5,7 +5,7 @@
     {
       "type": "runbook",
       "reference": "skills/planning-and-task-breakdown/assets/plan-template.md",
-      "summary": "Records verifiable outcomes, actual dependencies, file ownership, and validation boundaries for agreed work."
+      "summary": "Records verifiable outcomes, actual dependencies, exclusive writes, shared-resource reservations, and integration-gate ownership for agreed work."
     },
     {
       "type": "runbook",
@@ -16,6 +16,6 @@
   "comparison": null,
   "exception": {
     "type": "safety",
-    "rationale": "The revision preserves resource ownership and adds schema-aware, run/stream-scoped operational task identities with idempotent resume. Existing task progress and dependencies must be reconciled rather than overwritten, and partially completed SQL batches cannot be treated as rolled back. Generic behavior cases request review of these state-integrity controls; neither benchmark gains nor completed human approval are claimed."
+    "rationale": "The workflow and template preserve exclusive writes, assigned integration gates, and isolated or serialized validation resources. Schema-aware run/stream identities support idempotent ledger resume: existing progress and dependencies are reconciled, not overwritten, and partial SQL failures do not imply rollback. Worker checks remain distinct from integrated correctness. These controls request a safety exception without benchmark gains or completed human approval."
   }
 }

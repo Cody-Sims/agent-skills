@@ -1,8 +1,9 @@
-# ADR NNNN: Short Decision Title
+# ADR ID: Short Decision Title
 
-Copy this file into the repository's decision-record location, replace `NNNN` with
-the next sequential number, and fill in every section. Keep the record concise and
-focused on one decision.
+Use the repository's existing decision-record location, filename, and identifier
+conventions, including dated slugs where used. Only when no convention exists,
+use the next sequential number. Do not rename accepted history to match this
+template. Fill in each applicable section, focused on one decision.
 
 ## Status
 

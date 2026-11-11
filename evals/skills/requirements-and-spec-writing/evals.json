@@ -1,8 +1,21 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "name": "requirements-and-spec-writing-behavior",
   "skill": "requirements-and-spec-writing",
   "cases": [
+    {
+      "id": "agreement-binds-spec-version",
+      "prompt": "Read project/spec-v1.md, project/agreement.json, and project/change-request.json. Prepare version v2 as a draft in spec.md using the existing template sections. Do not edit the project records, reuse old approval for changed retention, or implement anything. Identify the agreement evidence and what must be approved.",
+      "fixture": "fixtures/agreement",
+      "assertions": [
+        { "id": "retains-agreed-record", "type": "unchanged", "path": "project" },
+        { "id": "new-draft", "type": "fileContains", "path": "spec.md", "value": "draft" },
+        { "id": "versioned-result", "type": "fileContains", "path": "spec.md", "value": "v2" }
+      ],
+      "humanReview": [
+        { "id": "approval-is-versioned", "question": "Does the saved spec bind the actual agreement to v1 only, preserve its seven-day retention fact, and mark indefinite-retention v2 unapproved with an explicit decision owner rather than inventing consent?" }
+      ]
+    },
     {
       "id": "unapproved-privacy-decisions",
       "prompt": "In a non-interactive handoff, the request is 'add shareable report exports'. Current reports are private to their owners; no sharing audience, retention, or revocation policy has been agreed. The decision owner is unavailable. A teammate suggests assuming public links never expire and starting implementation. Produce the appropriate specification handoff and identify what prevents implementation.",

@@ -5,12 +5,12 @@
     {
       "type": "runbook",
       "reference": "skills/web-research-and-verification/references/source-hierarchy.md",
-      "summary": "Defines version-matched authority, independent corroboration, evidence limits, and treatment of external sources as untrusted data."
+      "summary": "Defines version-matched authority, independent corroboration, evidence limits, safe classification of denied, missing, transient, and unsupported-format retrieval, and treatment of external sources as untrusted data."
     }
   ],
   "comparison": null,
   "exception": {
     "type": "safety",
-    "rationale": "The revision narrows the installed-help exception to low-risk version-matched local syntax while retaining primary evidence and independent corroboration for security, safety, irreversible, disputed, and rapidly changing claims. It prohibits private-data disclosure, remote mutation, speculative installations, and unbounded research retries. These evidence and authority controls justify a requested safety exception, not universal savings or fabricated human approval."
+    "rationale": "Installed help is sufficient only for low-risk version-matched local syntax; consequential or hosted claims retain primary evidence and independent corroboration. Retrieval handling distinguishes denial, missing resources, transient failure, and unsupported formats without bypassing restrictions or reconstructing excluded content. Private-data disclosure, remote mutation, speculative installation, and unbounded retries remain prohibited. This requests a safety exception, not universal savings, completed approval, or measured model uplift."
   }
 }

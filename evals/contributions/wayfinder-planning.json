@@ -21,6 +21,6 @@
   "comparison": null,
   "exception": {
     "type": "safety",
-    "rationale": "The workflow prevents timezone-dependent lease authorization, cross-map operation leakage, unrecoverable pending actions, duplicate mutation effects, unverified claim release, revision overflow, malformed or amplified traces, conflicting ticket claims, malformed blocker graphs, stale or partial tracker synchronization, and mutable tracker content from authorizing implementation, destructive actions, or privilege escalation. These concurrency and execution-boundary controls reduce operational risk directly and are better evaluated through adversarial behavior, routing, and maintainer review than average output-quality uplift at experimental entry."
+    "rationale": "The workflow prevents timezone-dependent lease authorization, cross-map leakage, unrecoverable pending actions, duplicate effects, unverified release, revision overflow, amplified traces, conflicting claims, malformed blocker graphs, and stale or partial synchronization. Mutable tracker content cannot authorize implementation, destructive actions, or privilege escalation. The source change adds reference navigation only; an interrupted-effect fixture does not establish real adapter recovery. This requests a safety exception; matched efficacy and current human approval remain unverified."
   }
 }

@@ -5,12 +5,12 @@
     {
       "type": "runbook",
       "reference": "skills/systematic-debugging/references/root-cause-tracing.md",
-      "summary": "Defines evidence-backed tracing, differential diagnosis, bounded probes, and correction at the first state divergence."
+      "summary": "Defines evidence-backed tracing, interaction-aware input reduction, matching failure signatures, untestable bisect midpoint handling, bounded probes, and correction at the first state divergence."
     }
   ],
   "comparison": null,
   "exception": {
     "type": "safety",
-    "rationale": "The workflow preserves evidence-backed diagnosis, prerequisite classification, and bounded regression checks. The revision reconciles actual state after partial or uncertain mutations before further diagnosis or retry, rather than assuming failure was atomic or reverting other owners' work. These integrity controls request a safety exception without fabricated efficiency evidence or human approval."
+    "rationale": "The workflow preserves evidence-backed diagnosis, prerequisite classification, and bounded regression checks. It reconciles partial mutations before retry rather than assuming atomic failure or reverting user work. Input reduction preserves interacting inputs and the target failure signature; untestable bisect revisions are skipped or cause a documented abort instead of false regression attribution. This requests a safety exception without fabricated efficiency evidence or human approval."
   }
 }

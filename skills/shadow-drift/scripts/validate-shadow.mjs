@@ -521,6 +521,8 @@ function validateGraph(rootOption) {
       reason = 'Derived output is missing.';
     } else if (!lstatSync(output).isFile()) {
       throw new ValidationError('UNSAFE_PATH', `Derived output is not a regular file: ${derived.path}`, 2);
+    } else if (derived.sources.length === 0) {
+      reason = 'Derived output has no source provenance.';
     }
     for (const source of derived.sources) {
       const result = inspectReference(root, source);

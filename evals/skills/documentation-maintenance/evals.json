@@ -1,8 +1,21 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "name": "documentation-maintenance-behavior",
   "skill": "documentation-maintenance",
   "cases": [
+    {
+      "id": "dated-slug-convention-before-template",
+      "prompt": "Prepare the proposed caching ADR at project/docs/decisions/2026-11-09-cache.md. Read the actual repository naming/status convention and accepted history. Use the ADR template for content, not to impose sequential IDs. Preserve the existing README and accepted record; no choice is approved or implemented.",
+      "fixture": "fixtures/dated-adr",
+      "assertions": [
+        { "id": "preserves-history", "type": "unchanged", "path": "project/docs/decisions/2026-10-01-storage.md" },
+        { "id": "preserves-convention", "type": "unchanged", "path": "project/docs/decisions/README.md" },
+        { "id": "proposed-artifact", "type": "fileContains", "path": "project/docs/decisions/2026-11-09-cache.md", "value": "Status: proposed" }
+      ],
+      "humanReview": [
+        { "id": "convention-and-consent", "question": "Does the ADR retain the dated-slug convention without inventing NNNN numbering, contain context/decision/alternatives/consequences, and preserve accepted history without fabricating acceptance or implementation?" }
+      ]
+    },
     {
       "id": "cli-migration-and-unrun-examples",
       "prompt": "Maintain docs for an implemented CLI change: the old --json option is removed and the current parser accepts --format json. README.md and docs/cli.md contain the old setup command and example; CHANGELOG.md has an Unreleased section. Component responsibilities are unchanged. CLI execution is unavailable here, but the parser can be inspected. Explain the document changes and the evidence needed before claiming the updated setup and examples run.",
